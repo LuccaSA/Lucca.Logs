@@ -19,4 +19,16 @@
     <ProjectReference Include="..\Lucca.Logs\Lucca.Logs.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Configs\minimal.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Configs\missing.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Configs\standard.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
