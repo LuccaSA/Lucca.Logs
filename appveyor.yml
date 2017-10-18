@@ -7,9 +7,9 @@ environment:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
   SONAR_TOKEN:
-    secure: Me5q4yUJOKIlb9CqTf0pX+VZMD8/isut8xnkXhYLKX8kTIBMsDJy8z5IvG4qCNV0
+    secure: C0pyF3L1eWo4V0x6wF6iBAwLg4z1quHYYWiuhYpE6JgjvbFO7fxr3O+S0FvTiNYD
   GITHUB_ACCESS_TOKEN:
-    secure: qaRVCJIQlZqi26ou9B8sBQ/K/LduIZrEB2NvkhoGemVOEXnoHZGMu3b4Pr77/VpU
+    secure: QChsTeWw2NFueSl/EprFziE6E6lEIbPfVj3NyAu0xoFJMoEk+ZpTjnwWqQMAXN+a
   CODECOV_TOKEN:
     secure: 9YIi32m7/nAZ8j+mTd2bDR6JjS1g5nC2cUST1u2WvagUFIR41DOqOyhYH52SqA5h
 
@@ -97,8 +97,10 @@ after_build:
     dotnet pack Lucca.Logs\Lucca.Logs.csproj --configuration %CONFIGURATION% /p:Version="%APPVEYOR_BUILD_VERSION%" -o artifacts
 
 test_script:
-- OpenCover.Console.exe -returntargetcode -oldstyle -register:user -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test /p:DebugType=full -c Debug" -filter:"+[Lucca.Logs*]* -[*Tests*]*" -excludebyattribute:"*.ExcludeFromCodeCoverage*" -output:coverage-opencover.xml
-- codecov -f coverage-opencover.xml
+- echo Starting coverage
+- OpenCover.Console.exe -returntargetcode -oldstyle -register:user -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test /p:DebugType=full -c Debug Lucca.Logs.Tests\Lucca.Logs.Tests.csproj" -filter:"+[Lucca.Logs*]* -[*Tests*]*" -excludebyattribute:"*.ExcludeFromCodeCoverage*" -output:coverage-opencover.xml
+- echo Starting codecov upload
+- codecov -v -f coverage-opencover.xml
 
 artifacts:
   - path: Lucca.Logs\artifacts\*.nupkg
