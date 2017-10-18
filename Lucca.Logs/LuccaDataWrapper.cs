@@ -168,22 +168,17 @@ namespace Lucca.Logs
             }
             return urlBuilder.ToString();
         }
-
-        public static class LogFilter
-        {
-            public static Func<Exception, bool> ExceptionFilter;
-        }
-
+        
         public static class LogExtractor
         {
-            public static Func<Exception, IEnumerable<KeyValuePair<string, string>>> CustomKeys;
+            public static Func<Exception, IEnumerable<KeyValuePair<string, string>>> CustomKeys { get; set; }
         }
 
         [Flags]
         internal enum UriPart
         {
             None = 0,
-            Scheme = 1 << 0,
+            Scheme = 1,
             Host = 1 << 1,
             Port = 1 << 2,
             Path = 1 << 3,

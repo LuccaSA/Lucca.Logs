@@ -64,7 +64,7 @@ namespace Lucca.Logs.Tests
             });
             var injected = provider.GetRequiredService<InjectOption>();
 
-            Assert.Equal("test", injected.Options.ConnexionString);
+            Assert.Equal("test", injected.Options.ConnectionString);
         }
 
         [Fact]
@@ -78,7 +78,7 @@ namespace Lucca.Logs.Tests
             });
             var injected = provider.GetRequiredService<InjectOption>();
 
-            Assert.Equal("myConnectionString", injected.Options.ConnexionString);
+            Assert.Equal("myConnectionString", injected.Options.ConnectionString);
         }
 
         [Fact]

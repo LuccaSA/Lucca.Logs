@@ -46,19 +46,7 @@ namespace Lucca.Logs
             RegisterProvider(services);
             return services;
         }
-
-        /// <summary>
-        /// Apply NLog configuration from XML config.
-        /// </summary>
-        /// <param name="fileName">absolute path  NLog configuration file.</param>
-        /// <returns>LoggingConfiguration for chaining</returns>
-        private static LoggingConfiguration ConfigureNLog(string fileName)
-        {
-            var configuration = new XmlLoggingConfiguration(fileName, true);
-            LogManager.Configuration = configuration;
-            return configuration;
-        }
-
+        
         private static void RegisterProvider(IServiceCollection services)
         {
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();

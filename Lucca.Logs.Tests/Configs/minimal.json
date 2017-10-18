@@ -1,5 +1,5 @@
 ﻿{
   "LuccaLogs": {
-    "ConnexionString": "test"
+    "ConnectionString": "test"
   }
 }

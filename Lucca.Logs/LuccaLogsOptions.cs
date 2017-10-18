@@ -23,7 +23,7 @@ namespace Lucca.Logs
         /// <summary>
         /// Exceptional Connexion String
         /// </summary>
-        public string ConnexionString { get; set; }
+        public string ConnectionString { get; set; }
 
         /// <summary>
         /// Custom log file path
@@ -73,9 +73,9 @@ namespace Lucca.Logs
         {
             ErrorStore errorStore;
 
-            if (!String.IsNullOrEmpty(ConnexionString))
+            if (!String.IsNullOrEmpty(ConnectionString))
             {
-                errorStore = new SQLErrorStore(ConnexionString, AplicationName);
+                errorStore = new SQLErrorStore(ConnectionString, AplicationName);
             }
             else
             {

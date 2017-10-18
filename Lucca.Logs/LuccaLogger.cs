@@ -147,7 +147,7 @@ namespace Lucca.Logs
 			=> _logger.IsEnabled(logLevel);
     }
 
-    internal static class NlogHelper
+    internal static class NLogHelper
     {
         /// <summary>
         /// Convert loglevel to NLog variant.

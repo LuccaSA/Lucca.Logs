@@ -7,7 +7,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Lucca.Logs
 {
-	public class LuccaLogsProvider : ILoggerProvider
+	public sealed class LuccaLogsProvider : ILoggerProvider
 	{
 		private readonly LuccaLoggerOptions _options;
 		private readonly IHttpContextAccessor _httpContextAccessor;
@@ -26,6 +26,7 @@ namespace Lucca.Logs
 
         public void Dispose()
         {
+            // no disposable ressources
         }
     }
 }

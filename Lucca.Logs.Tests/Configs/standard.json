@@ -1,6 +1,6 @@
 ﻿{
   "LuccaLogs": {
-    "ConnexionString": "myConnectionString",
+    "ConnectionString": "myConnectionString",
     "LogFilePath": "path",
     "LogmaticApiKey": "logmaticKey",
     "EventIdSeparator": "eventId",
