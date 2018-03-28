@@ -122,22 +122,22 @@ namespace Lucca.Logs
 
             data.Add(_userAgent, httpRequest.Headers["User-Agent"].ToString());
              
-            if (httpRequest.Body.Length <= 0)
-            {
-                return data;
-            }
+            //if (!httpRequest.Body.CanRead)
+            //{
+            //    return data;
+            //}
 
-            string documentContents;
-            using (var stream = new MemoryStream())
-            {
-                httpRequest.Body.Seek(0, SeekOrigin.Begin);
-                httpRequest.Body.CopyTo(stream);
-                documentContents = Encoding.UTF8.GetString(stream.ToArray());
-            }
-            if (!String.IsNullOrEmpty(documentContents))
-            {
-                data.Add(_rawPostedData, documentContents);
-            }
+            //string documentContents;
+            //using (var stream = new MemoryStream())
+            //{
+            //    httpRequest.Body.Seek(0, SeekOrigin.Begin);
+            //    httpRequest.Body.CopyTo(stream);
+            //    documentContents = Encoding.UTF8.GetString(stream.ToArray());
+            //}
+            //if (!String.IsNullOrEmpty(documentContents))
+            //{
+            //    data.Add(_rawPostedData, documentContents);
+            //}
 
             return data;
         }
