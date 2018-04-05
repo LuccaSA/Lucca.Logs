@@ -4,8 +4,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NLog;
 using NLog.Config;
+using StackExchange.Exceptional;
 
 namespace Lucca.Logs
 {
@@ -17,13 +19,13 @@ namespace Lucca.Logs
             return loggingBuilder;
         }
 
-        public static ILoggingBuilder AddLuccaLogs(this ILoggingBuilder loggingBuilder, Action<LuccaLoggerOptions> configureOptions)
+        public static ILoggingBuilder AddLuccaLogs(this ILoggingBuilder loggingBuilder, Action<LuccaLoggerOptions> configureOptions, ErrorStore errorStore = null)
         {
-            loggingBuilder.Services.AddLuccaLogs(configureOptions);
+            loggingBuilder.Services.AddLuccaLogs(configureOptions, errorStore);
             return loggingBuilder;
         }
 
-        public static IServiceCollection AddLuccaLogs(this IServiceCollection services, IConfigurationSection config, Action<LuccaLoggerOptions> configureOptions = null)
+        private static IServiceCollection AddLuccaLogs(this IServiceCollection services, IConfigurationSection config, Action<LuccaLoggerOptions> configureOptions = null)
         {
             if (!config.Exists())
             {
@@ -35,15 +37,25 @@ namespace Lucca.Logs
             {
                 services.Configure(configureOptions);
             }
+
             RegisterProvider(services);
             return services;
         }
 
-        public static IServiceCollection AddLuccaLogs(this IServiceCollection services, Action<LuccaLoggerOptions> configureOptions)
+        private static IServiceCollection AddLuccaLogs(this IServiceCollection services, Action<LuccaLoggerOptions> configureOptions, ErrorStore errorStore = null)
         {
             services.AddOptions();
             services.Configure(configureOptions);
             RegisterProvider(services);
+
+            var provider = services.BuildServiceProvider();
+            var opt = provider.GetService<IOptions<LuccaLoggerOptions>>();
+            services.Configure<ExceptionalSettings>(o =>
+            {
+
+                o.DefaultStore = errorStore ?? opt.Value.GenerateExceptionalStore();
+            });
+
             return services;
         }
         

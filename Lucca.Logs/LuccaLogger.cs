@@ -122,6 +122,7 @@ namespace Lucca.Logs
                 error = exception.LogNoContext(_categoryName, false, dic, _appName);
             }
 
+             
             return error?.GUID;
         }
 

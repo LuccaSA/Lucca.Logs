@@ -18,7 +18,7 @@ namespace Lucca.Logs
         /// <summary>
         /// Default application name
         /// </summary>
-        public string AplicationName { get; set; }
+        public string ApplicationName { get; set; }
 
         /// <summary>
         /// Exceptional Connexion String
@@ -60,33 +60,18 @@ namespace Lucca.Logs
             set => _nlog = value;
         }
 
-        public ExceptionalSettings Exceptional
-        {
-            get => _exceptional ?? (_exceptional = GenerateLuccaDefaultErrorStore());
-            set => _exceptional = value;
-        }
-
-        private LoggingConfiguration _nlog;
-        private ExceptionalSettings _exceptional;
-
-        private ExceptionalSettings GenerateLuccaDefaultErrorStore()
-        {
-            ErrorStore errorStore;
-
+        private LoggingConfiguration _nlog; 
+         
+        public ErrorStore GenerateExceptionalStore()
+        { 
             if (!String.IsNullOrEmpty(ConnectionString))
             {
-                errorStore = new SQLErrorStore(ConnectionString, AplicationName);
+                return new SQLErrorStore(ConnectionString, ApplicationName);
             }
             else
             {
-                errorStore = new MemoryErrorStore(new ErrorStoreSettings { ApplicationName = AplicationName });
-            }
-
-            var setting = new ExceptionalSettings();
-
-            setting.DefaultStore = errorStore;
-
-            return setting;
+                return new MemoryErrorStore(new ErrorStoreSettings { ApplicationName = ApplicationName });
+            } 
         }
 
         private LoggingConfiguration GenerateLuccaDefaultConfig()

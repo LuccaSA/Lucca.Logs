@@ -17,8 +17,7 @@ namespace Lucca.Logs
 			_options = options.Value;
 			_httpContextAccessor = httpContextAccessor;
 
-			LogManager.Configuration = _options.Nlog;
-            Exceptional.Configure(_options.Exceptional);
+			LogManager.Configuration = _options.Nlog; 
         }
 
 		public ILogger CreateLogger(string categoryName)
