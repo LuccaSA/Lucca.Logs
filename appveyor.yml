@@ -53,7 +53,7 @@ build_script:
 after_build:
 - cmd: >-
     "C:\ProgramData\chocolatey\lib\msbuild-sonarqube-runner\tools\MSBuild.SonarQube.Runner.exe" end /d:"sonar.login=%SONAR_TOKEN%"
-- ps: dotnet pack Lucca.Logs\Lucca.Logs.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION -o ..\..\artifacts
+- ps: dotnet pack Lucca.Logs\Lucca.Logs.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION -o ..\artifacts
 
 test_script:
 - echo Starting coverage
