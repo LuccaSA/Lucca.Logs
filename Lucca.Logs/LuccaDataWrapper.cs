@@ -116,28 +116,28 @@ namespace Lucca.Logs
             
             if (String.IsNullOrEmpty(ip))
             {
-                ip = httpRequest.HttpContext.Connection.RemoteIpAddress.ToString();
+                ip = httpRequest.HttpContext.Connection.RemoteIpAddress?.ToString();
             }
             data.Add(_hostAddress, ip);
 
             data.Add(_userAgent, httpRequest.Headers["User-Agent"].ToString());
-             
-            //if (!httpRequest.Body.CanRead)
-            //{
-            //    return data;
-            //}
 
-            //string documentContents;
-            //using (var stream = new MemoryStream())
-            //{
-            //    httpRequest.Body.Seek(0, SeekOrigin.Begin);
-            //    httpRequest.Body.CopyTo(stream);
-            //    documentContents = Encoding.UTF8.GetString(stream.ToArray());
-            //}
-            //if (!String.IsNullOrEmpty(documentContents))
-            //{
-            //    data.Add(_rawPostedData, documentContents);
-            //}
+            if (!httpRequest.Body.CanRead)
+            {
+                return data;
+            }
+
+            string documentContents;
+            using (var stream = new MemoryStream())
+            {
+                httpRequest.Body.Seek(0, SeekOrigin.Begin);
+                httpRequest.Body.CopyTo(stream);
+                documentContents = Encoding.UTF8.GetString(stream.ToArray());
+            }
+            if (!String.IsNullOrEmpty(documentContents))
+            {
+                data.Add(_rawPostedData, documentContents);
+            }
 
             return data;
         }

@@ -76,7 +76,5 @@ namespace Lucca.Logs.Tests
             var target = option.Value.Nlog.FindTargetByName<MemoryTarget>("inmemory");
             return target;
         }
-
-
     }
 }

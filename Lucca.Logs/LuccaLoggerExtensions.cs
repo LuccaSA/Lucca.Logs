@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -58,7 +62,13 @@ namespace Lucca.Logs
 
             return services;
         }
-        
+
+        public static IApplicationBuilder UseLuccaLogs(this IApplicationBuilder app)
+        {
+            return app.UseMiddleware<EnableRequestContentRewindMiddleware>();
+        }
+
+
         private static void RegisterProvider(IServiceCollection services)
         {
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -66,5 +76,23 @@ namespace Lucca.Logs
         }
     }
 
+    /// <summary>
+    /// Middleware to enable HttpRequest Body content inspection
+    /// </summary>
+    public class EnableRequestContentRewindMiddleware
+    {
+        private readonly RequestDelegate _next;
+
+        public EnableRequestContentRewindMiddleware(RequestDelegate next)
+        {
+            _next = next;
+        }
+
+        public async Task Invoke(HttpContext context)
+        {
+            context.Request.EnableRewind();
+            await _next(context);
+        }
+    }
 
 }

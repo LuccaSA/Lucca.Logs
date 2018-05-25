@@ -18,50 +18,60 @@ namespace Lucca.Logs
 
 		private readonly string _categoryName;
 		private readonly IHttpContextAccessor _httpContextAccessor;
-		private readonly Logger _logger;
+		private readonly Logger _nloLogger;
 		private readonly LuccaLoggerOptions _options;
         private readonly string _appName;
 
-		public LuccaLogger(string categoryName, IHttpContextAccessor httpContextAccessor, Logger logger, LuccaLoggerOptions options, string appName)
+		public LuccaLogger(string categoryName, IHttpContextAccessor httpContextAccessor, Logger nloLogger, LuccaLoggerOptions options, string appName)
 		{
 			_categoryName = categoryName;
 			_httpContextAccessor = httpContextAccessor;
-			_logger = logger;
+			_nloLogger = nloLogger;
 			_options = options;
             _appName = appName;
         }
 
 		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            Guid? guid = null;
-            if (Exceptional.IsLoggingEnabled)
-            {
-                guid = ExceptionalLog(exception);
-            }
-
-            // Log to NLog
-            NLog.LogLevel nLogLogLevel = logLevel.ToNLogLevel();
-            if (!IsNlogEnabled(nLogLogLevel))
-            {
-                return;
-            }
             if (formatter == null)
             {
                 throw new ArgumentNullException(nameof(formatter));
             }
+
+            NLog.LogLevel nLogLogLevel = logLevel.ToNLogLevel();
+            bool isLogging = IsNlogEnabled(nLogLogLevel);
+
+            if(!isLogging && (exception == null || !Exceptional.IsLoggingEnabled))
+            {
+                return;
+            }
+
+            Dictionary<string, string> customData = LuccaDataWrapper.GatherData(exception, _httpContextAccessor?.HttpContext?.Request, _appName);
+
+            Guid? guid = null;
+            if (Exceptional.IsLoggingEnabled)
+            {
+                guid = ExceptionalLog(exception, customData);
+            }
+            
+            if (!isLogging)
+            {
+                return;
+            }
+            
             string message = formatter(state, exception);
 
+            // Log to NLog
             LogEventInfo eventInfo = CreateNlogEventInfo(eventId, exception, nLogLogLevel, message);
 
             // Get cutom data and inject
-            AppendLuccaData(exception, guid, eventInfo);
+            AppendLuccaData(guid, eventInfo, customData);
 
-            _logger.Log(eventInfo);
+            _nloLogger.Log(eventInfo);
         }
 
-        private void AppendLuccaData(Exception exception, Guid? guid, LogEventInfo eventInfo)
+        private void AppendLuccaData(Guid? guid, LogEventInfo eventInfo, Dictionary<string, string> customData)
         {
-            Dictionary<string, string> customData = LuccaDataWrapper.GatherData(exception, _httpContextAccessor?.HttpContext?.Request, _appName);
 
             foreach (KeyValuePair<string, string> kv in customData)
             {
@@ -77,7 +87,7 @@ namespace Lucca.Logs
         private LogEventInfo CreateNlogEventInfo(EventId eventId, Exception exception, NLog.LogLevel nLogLogLevel, string message)
         {
             //message arguments are not needed as it is already checked that the loglevel is enabled.
-            LogEventInfo eventInfo = LogEventInfo.Create(nLogLogLevel, _logger.Name, message);
+            LogEventInfo eventInfo = LogEventInfo.Create(nLogLogLevel, _nloLogger.Name, message);
             eventInfo.Exception = exception;
             if (!_options.IgnoreEmptyEventId || eventId.Id != 0 || !string.IsNullOrEmpty(eventId.Name))
             {
@@ -103,25 +113,22 @@ namespace Lucca.Logs
             return eventInfo;
         }
 
-        private Guid? ExceptionalLog(Exception exception)
+        private Guid? ExceptionalLog(Exception exception, Dictionary<string, string> customData)
         {
             if (exception == null)
             {
                 return null;
             }
-            // Log exceptions to exceptional
-            var dic = new Dictionary<string, string>();
             
             Error error;
             if (_httpContextAccessor.HttpContext != null)
             {
-                error = exception.Log(_httpContextAccessor.HttpContext, _categoryName, false, dic, _appName);
+                error = exception.Log(_httpContextAccessor.HttpContext, _categoryName, false, customData, _appName);
             }
             else
             {
-                error = exception.LogNoContext(_categoryName, false, dic, _appName);
+                error = exception.LogNoContext(_categoryName, false, customData, _appName);
             }
-
              
             return error?.GUID;
         }
@@ -144,8 +151,7 @@ namespace Lucca.Logs
 		/// <summary>
 		/// Is logging enabled for this logger at this <paramref name="logLevel"/>?
 		/// </summary>
-		private bool IsNlogEnabled(NLog.LogLevel logLevel)
-			=> _logger.IsEnabled(logLevel);
+		private bool IsNlogEnabled(NLog.LogLevel logLevel) => _nloLogger.IsEnabled(logLevel);
     }
 
     internal static class NLogHelper
