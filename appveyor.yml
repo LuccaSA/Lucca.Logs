@@ -62,7 +62,7 @@ test_script:
 - codecov -v -f coverage-opencover.xml
 
 artifacts:
-  - path: Lucca.Logs\artifacts\*.nupkg
+  - path: artifacts\*.nupkg
     name: lib
 
 deploy:
