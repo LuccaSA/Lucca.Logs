@@ -49,7 +49,7 @@ namespace Lucca.Logs
             Dictionary<string, string> customData = LuccaDataWrapper.GatherData(exception, _httpContextAccessor?.HttpContext?.Request, _appName);
 
             Guid? guid = null;
-            if (Exceptional.IsLoggingEnabled)
+            if (Exceptional.IsLoggingEnabled && exception != null)
             {
                 guid = ExceptionalLog(exception, customData);
             }

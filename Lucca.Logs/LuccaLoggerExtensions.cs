@@ -41,22 +41,30 @@ namespace Lucca.Logs
             {
                 services.Configure(configureOptions);
             }
-
             RegisterProvider(services);
+            var provider = services.BuildServiceProvider();
+            var opt = provider.GetService<IOptions<LuccaLoggerOptions>>();
+            services.Configure<ExceptionalSettings>(o =>
+            {
+                o.DefaultStore = opt.Value.GenerateExceptionalStore();
+                Exceptional.Configure(o);
+            });
             return services;
         }
 
         private static IServiceCollection AddLuccaLogs(this IServiceCollection services, Action<LuccaLoggerOptions> configureOptions, ErrorStore errorStore = null)
         {
             services.AddOptions();
-            services.Configure(configureOptions);
+            if (configureOptions != null)
+            {
+                services.Configure(configureOptions);
+            }
             RegisterProvider(services);
 
             var provider = services.BuildServiceProvider();
             var opt = provider.GetService<IOptions<LuccaLoggerOptions>>();
             services.Configure<ExceptionalSettings>(o =>
             {
-
                 o.DefaultStore = errorStore ?? opt.Value.GenerateExceptionalStore();
             });
 
