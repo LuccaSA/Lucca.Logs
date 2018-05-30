@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLog;
-using NLog.Config;
 using StackExchange.Exceptional;
 
 namespace Lucca.Logs
@@ -60,22 +55,24 @@ namespace Lucca.Logs
                 services.Configure(configureOptions);
             }
             RegisterProvider(services);
-
             var provider = services.BuildServiceProvider();
             var opt = provider.GetService<IOptions<LuccaLoggerOptions>>();
             services.Configure<ExceptionalSettings>(o =>
             {
                 o.DefaultStore = errorStore ?? opt.Value.GenerateExceptionalStore();
             });
-
             return services;
         }
 
-        public static IApplicationBuilder UseLuccaLogs(this IApplicationBuilder app)
+        public static IApplicationBuilder UseLuccaLogs(this IApplicationBuilder app, bool enableContentLog = true)
         {
-            return app.UseMiddleware<EnableRequestContentRewindMiddleware>();
+            var builder = app;
+            if (enableContentLog)
+            {
+                builder = builder.UseMiddleware<EnableRequestContentRewindMiddleware>();
+            }
+            return builder;
         }
-
 
         private static void RegisterProvider(IServiceCollection services)
         {
@@ -83,24 +80,4 @@ namespace Lucca.Logs
             services.AddSingleton<ILoggerProvider, LuccaLogsProvider>();
         }
     }
-
-    /// <summary>
-    /// Middleware to enable HttpRequest Body content inspection
-    /// </summary>
-    public class EnableRequestContentRewindMiddleware
-    {
-        private readonly RequestDelegate _next;
-
-        public EnableRequestContentRewindMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
-
-        public async Task Invoke(HttpContext context)
-        {
-            context.Request.EnableRewind();
-            await _next(context);
-        }
-    }
-
 }

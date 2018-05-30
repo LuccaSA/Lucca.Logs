@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLog;
-using StackExchange.Exceptional;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
+using NLog; 
 
 namespace Lucca.Logs
 {
@@ -20,7 +18,7 @@ namespace Lucca.Logs
 			LogManager.Configuration = _options.Nlog; 
         }
 
-		public ILogger CreateLogger(string categoryName)
+		public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName)
             => new LuccaLogger(categoryName, _httpContextAccessor, LogManager.GetLogger(categoryName), _options, string.Empty);
 
         public void Dispose()
