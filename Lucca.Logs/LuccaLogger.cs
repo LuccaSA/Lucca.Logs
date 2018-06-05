@@ -9,29 +9,29 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Lucca.Logs
 {
-	public class LuccaLogger : ILogger
-	{
-		private static readonly object _emptyEventId = default(EventId);    // Cache boxing of empty EventId-struct
-		private static readonly object _zeroEventId = default(EventId).Id;  // Cache boxing of zero EventId-Value
+    public class LuccaLogger : ILogger
+    {
+        private static readonly object _emptyEventId = default(EventId);    // Cache boxing of empty EventId-struct
+        private static readonly object _zeroEventId = default(EventId).Id;  // Cache boxing of zero EventId-Value
 
-		private Tuple<string, string, string> _eventIdPropertyNames;
+        private Tuple<string, string, string> _eventIdPropertyNames;
 
-		private readonly string _categoryName;
-		private readonly IHttpContextAccessor _httpContextAccessor;
-		private readonly Logger _nloLogger;
-		private readonly LuccaLoggerOptions _options;
+        private readonly string _categoryName;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly Logger _nloLogger;
+        private readonly LuccaLoggerOptions _options;
         private readonly string _appName;
 
-		public LuccaLogger(string categoryName, IHttpContextAccessor httpContextAccessor, Logger nloLogger, LuccaLoggerOptions options, string appName)
-		{
-			_categoryName = categoryName;
-			_httpContextAccessor = httpContextAccessor;
-			_nloLogger = nloLogger;
-			_options = options;
+        public LuccaLogger(string categoryName, IHttpContextAccessor httpContextAccessor, Logger nloLogger, LuccaLoggerOptions options, string appName)
+        {
+            _categoryName = categoryName;
+            _httpContextAccessor = httpContextAccessor;
+            _nloLogger = nloLogger;
+            _options = options;
             _appName = appName;
         }
 
-		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (formatter == null)
             {
@@ -41,24 +41,26 @@ namespace Lucca.Logs
             NLog.LogLevel nLogLogLevel = logLevel.ToNLogLevel();
             bool isLogging = IsNlogEnabled(nLogLogLevel);
 
-            if(!isLogging && (exception == null || !Exceptional.IsLoggingEnabled))
+            if (!isLogging && (exception == null || !Exceptional.IsLoggingEnabled))
             {
                 return;
             }
 
-            Dictionary<string, string> customData = LuccaDataWrapper.GatherData(exception, _httpContextAccessor?.HttpContext?.Request, _appName);
+            bool isError = logLevel == LogLevel.Error || logLevel == LogLevel.Critical;
+
+            Dictionary<string, string> customData = LuccaDataWrapper.GatherData(exception, _httpContextAccessor?.HttpContext?.Request, isError, _appName);
 
             Guid? guid = null;
             if (Exceptional.IsLoggingEnabled && exception != null)
             {
                 guid = ExceptionalLog(exception, customData);
             }
-            
+
             if (!isLogging)
             {
                 return;
             }
-            
+
             string message = formatter(state, exception);
 
             // Log to NLog
@@ -119,7 +121,7 @@ namespace Lucca.Logs
             {
                 return null;
             }
-            
+
             Error error;
             if (_httpContextAccessor.HttpContext != null)
             {
@@ -129,29 +131,29 @@ namespace Lucca.Logs
             {
                 error = exception.LogNoContext(_categoryName, false, customData, _appName);
             }
-             
+
             return error?.GUID;
         }
 
         public bool IsEnabled(LogLevel logLevel)
-		{
-			NLog.LogLevel convertLogLevel = logLevel.ToNLogLevel();
-			return IsNlogEnabled(convertLogLevel);
-		}
+        {
+            NLog.LogLevel convertLogLevel = logLevel.ToNLogLevel();
+            return IsNlogEnabled(convertLogLevel);
+        }
 
-		public IDisposable BeginScope<TState>(TState state)
-		{
-			if (state == null)
-			{
-				throw new ArgumentNullException(nameof(state));
-			}
-			return NestedDiagnosticsLogicalContext.Push(state);
-		}
+        public IDisposable BeginScope<TState>(TState state)
+        {
+            if (state == null)
+            {
+                throw new ArgumentNullException(nameof(state));
+            }
+            return NestedDiagnosticsLogicalContext.Push(state);
+        }
 
-		/// <summary>
-		/// Is logging enabled for this logger at this <paramref name="logLevel"/>?
-		/// </summary>
-		private bool IsNlogEnabled(NLog.LogLevel logLevel) => _nloLogger.IsEnabled(logLevel);
+        /// <summary>
+        /// Is logging enabled for this logger at this <paramref name="logLevel"/>?
+        /// </summary>
+        private bool IsNlogEnabled(NLog.LogLevel logLevel) => _nloLogger.IsEnabled(logLevel);
     }
 
     internal static class NLogHelper

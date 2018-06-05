@@ -36,17 +36,10 @@ namespace Lucca.Logs
             {
                 services.Configure(configureOptions);
             }
-            RegisterProvider(services);
-            var provider = services.BuildServiceProvider();
-            var opt = provider.GetService<IOptions<LuccaLoggerOptions>>();
-            services.Configure<ExceptionalSettings>(o =>
-            {
-                o.DefaultStore = opt.Value.GenerateExceptionalStore();
-                Exceptional.Configure(o);
-            });
+            services.RegisterLuccaLogsProvider();
             return services;
         }
-
+         
         private static IServiceCollection AddLuccaLogs(this IServiceCollection services, Action<LuccaLoggerOptions> configureOptions, ErrorStore errorStore = null)
         {
             services.AddOptions();
@@ -54,13 +47,7 @@ namespace Lucca.Logs
             {
                 services.Configure(configureOptions);
             }
-            RegisterProvider(services);
-            var provider = services.BuildServiceProvider();
-            var opt = provider.GetService<IOptions<LuccaLoggerOptions>>();
-            services.Configure<ExceptionalSettings>(o =>
-            {
-                o.DefaultStore = errorStore ?? opt.Value.GenerateExceptionalStore();
-            });
+            services.RegisterLuccaLogsProvider(); 
             return services;
         }
 
@@ -74,7 +61,7 @@ namespace Lucca.Logs
             return builder;
         }
 
-        private static void RegisterProvider(IServiceCollection services)
+        private static void RegisterLuccaLogsProvider(this IServiceCollection services)
         {
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<ILoggerProvider, LuccaLogsProvider>();

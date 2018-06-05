@@ -72,9 +72,9 @@ namespace Lucca.Logs
             return jsonLayout;
         }
 
-        internal static Dictionary<string, string> GatherData(Exception e, HttpRequest httpRequest, string appName)
+        internal static Dictionary<string, string> GatherData(Exception e, HttpRequest httpRequest, bool isError, string appName)
         {
-            Dictionary<string, string> data = GatherData(httpRequest, appName);
+            Dictionary<string, string> data = GatherData(httpRequest, isError, appName);
             if (LogExtractor.CustomKeys != null)
             {
                 foreach (KeyValuePair<string, string> kv in LogExtractor.CustomKeys(e))
@@ -85,7 +85,7 @@ namespace Lucca.Logs
             return data;
         }
 
-        internal static Dictionary<string, string> GatherData(HttpRequest httpRequest, string appName)
+        internal static Dictionary<string, string> GatherData(HttpRequest httpRequest, bool isError, string appName)
         {
             var data = new Dictionary<string, string>();
             if (!String.IsNullOrEmpty(appName))
@@ -122,7 +122,7 @@ namespace Lucca.Logs
 
             data.Add(_userAgent, httpRequest.Headers["User-Agent"].ToString());
 
-            if (!httpRequest.Body.CanRead || !httpRequest.Body.CanSeek)
+            if (!isError || !httpRequest.Body.CanRead || !httpRequest.Body.CanSeek)
             {
                 return data;
             }
