@@ -26,11 +26,17 @@ namespace Lucca.Logs
 
         private static IServiceCollection AddLuccaLogs(this IServiceCollection services, IConfigurationSection config, Action<LuccaLoggerOptions> configureOptions = null)
         {
+            if (config == null)
+            {
+                throw new ArgumentNullException(nameof(config));
+            }
+
             if (!config.Exists())
             {
                 throw new LogConfigurationException("Missing configuration section");
             }
             services.AddOptions();
+            services.AddExceptional();
             services.Configure<LuccaLoggerOptions>(config);
             if (configureOptions != null)
             {
@@ -43,10 +49,25 @@ namespace Lucca.Logs
         private static IServiceCollection AddLuccaLogs(this IServiceCollection services, Action<LuccaLoggerOptions> configureOptions, ErrorStore errorStore = null)
         {
             services.AddOptions();
+
             if (configureOptions != null)
             {
-                services.Configure(configureOptions);
+                services.Configure<LuccaLoggerOptions>(o =>
+                {
+                    o.ExplicitErrorStore = errorStore;
+                    configureOptions(o);
+                });
             }
+
+            if(errorStore != null)
+            {
+                services.AddExceptional(o =>
+                {
+                    o.Store.Type = errorStore.GetType().ToString();
+                    o.DefaultStore = errorStore;
+                });
+            }
+
             services.RegisterLuccaLogsProvider(); 
             return services;
         }

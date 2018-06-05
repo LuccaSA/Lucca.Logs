@@ -20,12 +20,16 @@ namespace Lucca.Logs.Tests
         [InlineData(LogLevel.Warning)]
         public void FactoryTest(LogLevel logLevel)
         {
+            MemoryTarget target = null; 
             ServiceProvider provider = TestHelper.Register<DummyLogFactoryPlayer>(loggingBuilder =>
             {
-                loggingBuilder.AddLuccaLogs(BootStrapNLogInMemoryOption);
+                loggingBuilder.AddLuccaLogs(o =>
+                {
+                    target = BootStrapNLogInMemoryOption(o);
+                });
             });
             var player = provider.GetRequiredService<DummyLogFactoryPlayer>();
-            MemoryTarget target = GetTarget(provider);
+            //MemoryTarget target = GetTarget(provider);
 
             player.Log(logLevel, 42, new Exception(), "the answer");
            
@@ -42,12 +46,16 @@ namespace Lucca.Logs.Tests
         [InlineData(LogLevel.Warning)]
         public void LoggerTest(LogLevel logLevel)
         {
+            MemoryTarget target = null;
             ServiceProvider provider = TestHelper.Register<DummyLogPlayer>(loggingBuilder =>
             {
-                loggingBuilder.AddLuccaLogs(BootStrapNLogInMemoryOption);
+                loggingBuilder.AddLuccaLogs(o =>
+                {
+                    target = BootStrapNLogInMemoryOption(o);
+                });
             });
             var player = provider.GetRequiredService<DummyLogPlayer>();
-            MemoryTarget target = GetTarget(provider);
+            //MemoryTarget target = GetTarget(provider);
 
             player.Log(logLevel, 42, new Exception(), "the answer");
 
@@ -55,7 +63,7 @@ namespace Lucca.Logs.Tests
             Assert.Equal(expected, target.Logs.FirstOrDefault());
         }
 
-        private static void BootStrapNLogInMemoryOption(LuccaLoggerOptions loggerOptions)
+        private static MemoryTarget BootStrapNLogInMemoryOption(LuccaLoggerOptions loggerOptions)
         {
             var target = new MemoryTarget
             {
@@ -68,13 +76,14 @@ namespace Lucca.Logs.Tests
             nlogConf.LoggingRules.Add(networkRule);
 
             loggerOptions.Nlog = nlogConf;
-        }
-
-        private MemoryTarget GetTarget(IServiceProvider provider)
-        {
-            var option = provider.GetRequiredService<IOptions<LuccaLoggerOptions>>();
-            var target = option.Value.Nlog.FindTargetByName<MemoryTarget>("inmemory");
             return target;
         }
+
+        //private MemoryTarget GetTarget(IServiceProvider provider)
+        //{
+        //    var option = provider.GetRequiredService<IOptions<LuccaLoggerOptions>>();
+        //    var target = option.Value.Nlog.FindTargetByName<MemoryTarget>("inmemory");
+        //    return target;
+        //}
     }
 }

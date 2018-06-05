@@ -16,7 +16,7 @@ namespace Lucca.Logs.Tests
 
         public ExceptionalInjectionTest()
         {
-            _memoryStore = new MemoryErrorStore();
+            _memoryStore = new MemoryErrorStore(42);
         }
 
         [Theory]

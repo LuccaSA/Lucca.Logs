@@ -20,25 +20,24 @@ namespace Lucca.Logs
 
             _changeListener = options.OnChange((o, name) =>
                 {
-                    PropagateExceptionalOptions(o);
+                    PropagateOptions(o);
                 });
 
-            PropagateExceptionalOptions(_options.CurrentValue);
+            PropagateOptions(_options.CurrentValue);
         }
 
-        private static void PropagateExceptionalOptions(LuccaLoggerOptions options)
+        private static void PropagateOptions(LuccaLoggerOptions options)
         {
+            LogManager.Configuration = options.Nlog;
             Exceptional.Configure(exceptionalSetting =>
-            {
+            { 
                 exceptionalSetting.DefaultStore = options.GenerateExceptionalStore();
             });
         }
-
+         
         public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName)
         {
             LuccaLoggerOptions opt = _options.CurrentValue;
-            LogManager.Configuration = opt.Nlog;
-
             return new LuccaLogger(categoryName, _httpContextAccessor, LogManager.GetLogger(categoryName), opt, string.Empty);
         }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -25,8 +26,7 @@ namespace Lucca.Logs.Tests.Integration
 
         public BasicVerbsTest()
         {
-            _memoryStore = new MemoryErrorStore();
-            Exceptional.Settings.DefaultStore = _memoryStore;
+            _memoryStore = new MemoryErrorStore(42);
 
             var builder = new WebHostBuilder()
                 .ConfigureServices(s => s.AddSingleton(_memoryStore))
@@ -40,7 +40,7 @@ namespace Lucca.Logs.Tests.Integration
         [Fact]
         public async Task ExOnGet()
         {
-            var response = await _client.GetAsync("/DirectException");
+            var response = await _client.GetAsync("/api/directException");
             List<Error> found = await _memoryStore.GetAllAsync();
 
             response.EnsureSuccessStatusCode();
@@ -55,7 +55,7 @@ namespace Lucca.Logs.Tests.Integration
             var json = JsonConvert.SerializeObject(dto);
 
             HttpContent payload = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _client.PostAsync("/DirectException", payload);
+            var response = await _client.PostAsync("/api/directException", payload);
             response.EnsureSuccessStatusCode();
             List<Error> found = await _memoryStore.GetAllAsync();
 
@@ -79,7 +79,9 @@ namespace Lucca.Logs.Tests.Integration
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddMvc()
+                .AddApplicationPart(typeof(DirectExceptionController).Assembly);
+
             services.AddLogging(l =>
             {
                 l.AddLuccaLogs(o =>
@@ -101,7 +103,7 @@ namespace Lucca.Logs.Tests.Integration
         public string Data { get; set; }
     }
 
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class DirectExceptionController : Controller
     {
         private readonly ILoggerFactory _loggerFactory;

@@ -60,18 +60,23 @@ namespace Lucca.Logs
             set => _nlog = value;
         }
 
+        internal ErrorStore ExplicitErrorStore { get; set; }
+
         private LoggingConfiguration _nlog; 
          
         public ErrorStore GenerateExceptionalStore()
-        { 
+        {
             if (!String.IsNullOrEmpty(ConnectionString))
             {
                 return new SQLErrorStore(ConnectionString, ApplicationName);
             }
-            else
+
+            if (ExplicitErrorStore != null)
             {
-                return new MemoryErrorStore(new ErrorStoreSettings { ApplicationName = ApplicationName });
-            } 
+                return ExplicitErrorStore;
+            }
+
+            return new MemoryErrorStore(new ErrorStoreSettings { ApplicationName = ApplicationName });
         }
 
         private LoggingConfiguration GenerateLuccaDefaultConfig()

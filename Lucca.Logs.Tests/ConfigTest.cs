@@ -11,19 +11,15 @@ namespace Lucca.Logs.Tests
 {
     public class ConfigTest
     {
-
-        [Fact(Skip = "Later")]
+        [Fact]
         public void NoConfigShouldThrowException()
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
                 ServiceProvider provider = TestHelper.Register<DummyLogPlayer>(loggingBuilder =>
                 {
-                    loggingBuilder.AddLuccaLogs(o =>
-                    {
-                    }, null);
+                    loggingBuilder.AddLuccaLogs((IConfigurationSection)null);
                 });
-                provider.GetRequiredService<DummyLogPlayer>();
             });
         }
 
