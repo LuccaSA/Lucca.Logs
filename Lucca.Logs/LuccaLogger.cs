@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
+using Lucca.Logs.Shared;
 using Microsoft.Extensions.Logging;
 using NLog;
 using StackExchange.Exceptional;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
-namespace Lucca.Logs
+namespace Lucca.Logs.AspnetCore
 {
     public class LuccaLogger : ILogger
     {
@@ -17,15 +17,15 @@ namespace Lucca.Logs
         private Tuple<string, string, string> _eventIdPropertyNames;
 
         private readonly string _categoryName;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextWrapper _httpContextWrapper;
         private readonly Logger _nloLogger;
         private readonly LuccaLoggerOptions _options;
         private readonly string _appName;
 
-        public LuccaLogger(string categoryName, IHttpContextAccessor httpContextAccessor, Logger nloLogger, LuccaLoggerOptions options, string appName)
+        public LuccaLogger(string categoryName, IHttpContextWrapper httpContextAccessor, Logger nloLogger, LuccaLoggerOptions options, string appName)
         {
             _categoryName = categoryName;
-            _httpContextAccessor = httpContextAccessor;
+            _httpContextWrapper = httpContextAccessor;
             _nloLogger = nloLogger;
             _options = options;
             _appName = appName;
@@ -39,7 +39,7 @@ namespace Lucca.Logs
             }
 
             NLog.LogLevel nLogLogLevel = logLevel.ToNLogLevel();
-            bool isLogging = IsNlogEnabled(nLogLogLevel);
+            bool isLogging = IsNlogEnabled(nLogLogLevel, _nloLogger);
 
             if (!isLogging && (exception == null || !Exceptional.IsLoggingEnabled))
             {
@@ -48,12 +48,12 @@ namespace Lucca.Logs
 
             bool isError = logLevel == LogLevel.Error || logLevel == LogLevel.Critical;
 
-            Dictionary<string, string> customData = LuccaDataWrapper.GatherData(exception, _httpContextAccessor?.HttpContext?.Request, isError, _appName);
+            Dictionary<string, string> customData = LuccaDataWrapper.GatherData(exception, _httpContextWrapper, isError, _appName);
 
             Guid? guid = null;
             if (Exceptional.IsLoggingEnabled && exception != null)
             {
-                guid = ExceptionalLog(exception, customData);
+                guid = _httpContextWrapper.ExceptionalLog(exception, customData, _categoryName, _appName);
             }
 
             if (!isLogging)
@@ -67,14 +67,13 @@ namespace Lucca.Logs
             LogEventInfo eventInfo = CreateNlogEventInfo(eventId, exception, nLogLogLevel, message);
 
             // Get cutom data and inject
-            AppendLuccaData(guid, eventInfo, customData);
+            AppendLuccaData(guid, eventInfo, _options, customData);
 
             _nloLogger.Log(eventInfo);
         }
 
-        private void AppendLuccaData(Guid? guid, LogEventInfo eventInfo, Dictionary<string, string> customData)
+        private static void AppendLuccaData(Guid? guid, LogEventInfo eventInfo, LuccaLoggerOptions options, Dictionary<string, string> customData)
         {
-
             foreach (KeyValuePair<string, string> kv in customData)
             {
                 eventInfo.Properties[kv.Key] = kv.Value;
@@ -82,7 +81,7 @@ namespace Lucca.Logs
 
             if (guid.HasValue)
             {
-                eventInfo.Properties[LuccaDataWrapper.Link] = _options.GuidLink + guid.Value.ToString("N");
+                eventInfo.Properties[LuccaDataWrapper.Link] = options.GuidLink + guid.Value.ToString("N");
             }
         }
 
@@ -115,30 +114,15 @@ namespace Lucca.Logs
             return eventInfo;
         }
 
-        private Guid? ExceptionalLog(Exception exception, Dictionary<string, string> customData)
-        {
-            if (exception == null)
-            {
-                return null;
-            }
 
-            Error error;
-            if (_httpContextAccessor.HttpContext != null)
-            {
-                error = exception.Log(_httpContextAccessor.HttpContext, _categoryName, false, customData, _appName);
-            }
-            else
-            {
-                error = exception.LogNoContext(_categoryName, false, customData, _appName);
-            }
-
-            return error?.GUID;
-        }
+        /// <summary>
+        /// Is logging enabled for this logger at this <paramref name="logLevel"/>?
+        /// </summary>
+        private static bool IsNlogEnabled(NLog.LogLevel logLevel, Logger nloLogger) => nloLogger.IsEnabled(logLevel);
 
         public bool IsEnabled(LogLevel logLevel)
         {
-            NLog.LogLevel convertLogLevel = logLevel.ToNLogLevel();
-            return IsNlogEnabled(convertLogLevel);
+            return IsNlogEnabled(logLevel.ToNLogLevel(), _nloLogger);
         }
 
         public IDisposable BeginScope<TState>(TState state)
@@ -149,11 +133,6 @@ namespace Lucca.Logs
             }
             return NestedDiagnosticsLogicalContext.Push(state);
         }
-
-        /// <summary>
-        /// Is logging enabled for this logger at this <paramref name="logLevel"/>?
-        /// </summary>
-        private bool IsNlogEnabled(NLog.LogLevel logLevel) => _nloLogger.IsEnabled(logLevel);
     }
 
     internal static class NLogHelper

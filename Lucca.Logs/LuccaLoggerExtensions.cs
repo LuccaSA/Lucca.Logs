@@ -1,14 +1,14 @@
 ﻿using System;
+using Lucca.Logs.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using StackExchange.Exceptional;
 
-namespace Lucca.Logs
+namespace Lucca.Logs.AspnetCore
 {
     public static class LuccaLoggerExtensions
     {
@@ -85,6 +85,7 @@ namespace Lucca.Logs
         private static void RegisterLuccaLogsProvider(this IServiceCollection services)
         {
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.TryAddSingleton<IHttpContextWrapper, HttpContextCore>();
             services.AddSingleton<ILoggerProvider, LuccaLogsProvider>();
         }
     }

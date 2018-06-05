@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 
-namespace Lucca.Logs
+namespace Lucca.Logs.AspnetCore
 {
     /// <summary>
     /// Middleware to enable HttpRequest Body content inspection

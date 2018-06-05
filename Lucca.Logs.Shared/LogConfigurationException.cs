@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lucca.Logs
+namespace Lucca.Logs.Shared
 {
     public class LogConfigurationException : Exception
     {
