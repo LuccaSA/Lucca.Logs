@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Lucca.Logs\Lucca.Logs.AspnetCore.csproj" />
+    <ProjectReference Include="..\Lucca.Logs.AspnetCore\Lucca.Logs.AspnetCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>

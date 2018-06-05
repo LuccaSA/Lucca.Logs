@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucca.Logs.AspnetCore", "Lucca.Logs\Lucca.Logs.AspnetCore.csproj", "{6B907874-FFC6-48AA-B51A-C4576ABB53F3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucca.Logs.Tests", "Lucca.Logs.Tests\Lucca.Logs.Tests.csproj", "{221FA58C-7C0A-4AB6-BC2E-10019E644FA4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{197078C6-5A40-4AE3-96B1-5C8F79A01673}"
@@ -13,7 +11,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		build.ps1 = build.ps1
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucca.Logs.Shared", "Lucca.Logs.Shared\Lucca.Logs.Shared.csproj", "{23A7D90B-E4B8-4AC3-AF2C-408FD948A190}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucca.Logs.Shared", "Lucca.Logs.Shared\Lucca.Logs.Shared.csproj", "{23A7D90B-E4B8-4AC3-AF2C-408FD948A190}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucca.Logs.AspnetLegacy", "Lucca.Logs.AspnetLegacy\Lucca.Logs.AspnetLegacy.csproj", "{B71E9DD0-0680-47B2-AD57-A04E6ACCF7FC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucca.Logs.AspnetCore", "Lucca.Logs.AspnetCore\Lucca.Logs.AspnetCore.csproj", "{5252480D-FB14-4FCF-9ACE-DABC4A0D1746}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +23,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6B907874-FFC6-48AA-B51A-C4576ABB53F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6B907874-FFC6-48AA-B51A-C4576ABB53F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6B907874-FFC6-48AA-B51A-C4576ABB53F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6B907874-FFC6-48AA-B51A-C4576ABB53F3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{221FA58C-7C0A-4AB6-BC2E-10019E644FA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{221FA58C-7C0A-4AB6-BC2E-10019E644FA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{221FA58C-7C0A-4AB6-BC2E-10019E644FA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -33,6 +31,14 @@ Global
 		{23A7D90B-E4B8-4AC3-AF2C-408FD948A190}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23A7D90B-E4B8-4AC3-AF2C-408FD948A190}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23A7D90B-E4B8-4AC3-AF2C-408FD948A190}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B71E9DD0-0680-47B2-AD57-A04E6ACCF7FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B71E9DD0-0680-47B2-AD57-A04E6ACCF7FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B71E9DD0-0680-47B2-AD57-A04E6ACCF7FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B71E9DD0-0680-47B2-AD57-A04E6ACCF7FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5252480D-FB14-4FCF-9ACE-DABC4A0D1746}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5252480D-FB14-4FCF-9ACE-DABC4A0D1746}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5252480D-FB14-4FCF-9ACE-DABC4A0D1746}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5252480D-FB14-4FCF-9ACE-DABC4A0D1746}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
