@@ -19,30 +19,30 @@ namespace Lucca.Logs.AspnetCore
 
         private HttpRequest Request => _httpContextAccessor?.HttpContext?.Request;
 
-        public string ExtractUrl(UriPart uriPart)
+        public string ExtractUrl(Uripart uriPart)
         {
             if (Request == null)
                 return null;
 
             var urlBuilder = new StringBuilder();
-            if ((uriPart & UriPart.Scheme) == UriPart.Scheme && !String.IsNullOrWhiteSpace(Request.Scheme))
+            if ((uriPart & Uripart.Scheme) == Uripart.Scheme && !String.IsNullOrWhiteSpace(Request.Scheme))
             {
                 urlBuilder.Append(Request.Scheme + "://");
             }
-            if ((uriPart & UriPart.Host) == UriPart.Host)
+            if ((uriPart & Uripart.Host) == Uripart.Host)
             {
                 urlBuilder.Append(Request.Host.Host);
             }
-            if ((uriPart & UriPart.Port) == UriPart.Port && Request.Host.Port > 0)
+            if ((uriPart & Uripart.Port) == Uripart.Port && Request.Host.Port > 0)
             {
                 urlBuilder.Append(":" + Request.Host.Port);
             }
-            if ((uriPart & UriPart.Path) == UriPart.Path)
+            if ((uriPart & Uripart.Path) == Uripart.Path)
             {
                 urlBuilder.Append(Request.PathBase.ToUriComponent());
                 urlBuilder.Append(Request.Path.ToUriComponent());
             }
-            if ((uriPart & UriPart.Query) == UriPart.Query)
+            if ((uriPart & Uripart.Query) == Uripart.Query)
             {
                 urlBuilder.Append(Request.QueryString.Value);
             }
@@ -81,6 +81,7 @@ namespace Lucca.Logs.AspnetCore
             }
             catch (Exception)
             {
+                // discard exception
             }
             return documentContents;
         }

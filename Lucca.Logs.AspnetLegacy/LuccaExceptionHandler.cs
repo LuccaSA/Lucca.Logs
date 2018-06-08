@@ -4,28 +4,28 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.ExceptionHandling;
+using Lucca.Logs.Shared;
 
 namespace Lucca.Logs.AspnetLegacy
 {
-    public class LuccaExceptionHandler : IExceptionHandler
+    public class ExceptionHandler : IExceptionHandler
     {
-        public void Handle(ExceptionHandlerContext context)
+        private void Handle(ExceptionHandlerContext context)
         {
-            //int status = 0;
-            //if (context.Exception is DomainException)
-            //{
-            //    status = (int)((DomainException)context.Exception).Status;
-            //}
-            //else if (context.Exception is APIException)
-            //{
-            //    status = (int)((APIException)context.Exception).Status;
-            //}
+            IExceptionalFilter efilter = context.RequestContext.Configuration.DependencyResolver.GetService(typeof(IExceptionalFilter)) as IExceptionalFilter;
 
-            //context.Result = new TextPlainErrorResult
-            //{
-            //    Request = context.ExceptionContext.Request,
-            //    Content = status >= 400 && status < 500 ? context.Exception.Message : Lucca.Web.Sdk.Exceptions.JsonExceptionAttribute.ErrorMessage
-            //};
+            if (efilter == null)
+            {
+                return;
+            }
+
+            string message = efilter.IsInternalException(context.Exception) ? efilter.GenericErrorMessage : context.Exception.Message;
+
+            context.Result = new TextPlainErrorResult
+            {
+                Request = context.ExceptionContext.Request,
+                Content = message
+            };
         }
 
         public Task HandleAsync(ExceptionHandlerContext context, CancellationToken cancellationToken)
@@ -33,12 +33,7 @@ namespace Lucca.Logs.AspnetLegacy
             Handle(context);
             return Task.CompletedTask;
         }
-
-        public bool ShouldHandle(ExceptionHandlerContext context)
-        {
-            return true;
-        }
-
+         
         private class TextPlainErrorResult : IHttpActionResult
         {
             public HttpRequestMessage Request { get; set; }

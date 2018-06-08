@@ -3,7 +3,7 @@
 namespace Lucca.Logs.Shared
 {
     [Flags]
-    public enum UriPart
+    public enum Uripart
     {
         None = 0,
         Scheme = 1,

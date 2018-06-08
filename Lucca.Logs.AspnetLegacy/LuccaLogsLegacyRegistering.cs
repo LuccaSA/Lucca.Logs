@@ -8,7 +8,7 @@ namespace Lucca.Logs.AspnetLegacy
         public static void AddLuccaLogs(this ServicesContainer servicesContainer)
         {
             servicesContainer.Add(typeof(IExceptionLogger), new LuccaExceptionLogger());
-            servicesContainer.Replace(typeof(IExceptionHandler), new LuccaExceptionHandler());
+            servicesContainer.Replace(typeof(IExceptionHandler), new ExceptionHandler());
         }
     }
 }

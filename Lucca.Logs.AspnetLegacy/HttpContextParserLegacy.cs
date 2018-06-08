@@ -34,29 +34,29 @@ namespace Lucca.Logs.AspnetLegacy
             }
         }
 
-        public string ExtractUrl(UriPart uriPart)
+        public string ExtractUrl(Uripart uriPart)
         {
             if (Request == null)
                 return null;
 
             var urlBuilder = new StringBuilder();
-            if ((uriPart & UriPart.Scheme) == UriPart.Scheme && !String.IsNullOrWhiteSpace(Request.Url.Scheme))
+            if ((uriPart & Uripart.Scheme) == Uripart.Scheme && !String.IsNullOrWhiteSpace(Request.Url.Scheme))
             {
                 urlBuilder.Append(Request.Url.Scheme + "://");
             }
-            if ((uriPart & UriPart.Host) == UriPart.Host)
+            if ((uriPart & Uripart.Host) == Uripart.Host)
             {
                 urlBuilder.Append(Request.Url.DnsSafeHost);
             }
-            if ((uriPart & UriPart.Port) == UriPart.Port && Request.Url.Port > 0)
+            if ((uriPart & Uripart.Port) == Uripart.Port && Request.Url.Port > 0)
             {
                 urlBuilder.Append(":" + Request.Url.Port);
             }
-            if ((uriPart & UriPart.Path) == UriPart.Path)
+            if ((uriPart & Uripart.Path) == Uripart.Path)
             {
                 urlBuilder.Append(Request.Url.LocalPath);
             }
-            if ((uriPart & UriPart.Query) == UriPart.Query)
+            if ((uriPart & Uripart.Query) == Uripart.Query)
             {
                 urlBuilder.Append(Request.Url.Query);
             }
@@ -76,7 +76,7 @@ namespace Lucca.Logs.AspnetLegacy
 
         public string TryGetBodyContent()
         {
-            if (Request == null || !(Request.InputStream.Length <= 0))
+            if (Request == null || Request.InputStream.Length == 0)
             {
                 return null;
             }
@@ -92,6 +92,7 @@ namespace Lucca.Logs.AspnetLegacy
             }
             catch (Exception)
             {
+                // discard exception
             }
             return documentContents;
         }

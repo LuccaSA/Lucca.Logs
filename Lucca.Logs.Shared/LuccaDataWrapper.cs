@@ -96,11 +96,11 @@ namespace Lucca.Logs.Shared
                 return data;
             }
 
-            data.Add(_pageRest, httpRequest.ExtractUrl(UriPart.Path | UriPart.Query));
-            data.Add(_page, httpRequest.ExtractUrl(UriPart.Full));
+            data.Add(_pageRest, httpRequest.ExtractUrl(Uripart.Path | Uripart.Query));
+            data.Add(_page, httpRequest.ExtractUrl(Uripart.Full));
             data.Add(_verb, httpRequest.Method);
-            data.Add(_uri, httpRequest.ExtractUrl(UriPart.Path));
-            data.Add(_serverName, httpRequest.ExtractUrl(UriPart.Host));
+            data.Add(_uri, httpRequest.ExtractUrl(Uripart.Path));
+            data.Add(_serverName, httpRequest.ExtractUrl(Uripart.Host));
             // https://stackoverflow.com/a/39139875
             data.Add(_appPool, Environment.GetEnvironmentVariable("APP_POOL_ID", EnvironmentVariableTarget.Process));
 
