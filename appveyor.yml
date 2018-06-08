@@ -53,8 +53,9 @@ build_script:
 after_build:
 - cmd: >-
     "C:\ProgramData\chocolatey\lib\sonarscanner-msbuild-net46\tools\SonarScanner.MSBuild.exe" end /d:"sonar.login=%SONAR_TOKEN%"
-- ps: dotnet pack Lucca.Logs.AspnetCore\Lucca.Logs.AspnetCore.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION -o ..\artifacts
 - ps: dotnet pack Lucca.Logs.Shared\Lucca.Logs.Shared.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION -o ..\artifacts
+- ps: dotnet pack Lucca.Logs.AspnetCore\Lucca.Logs.AspnetCore.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION -o ..\artifacts
+- ps: dotnet pack Lucca.Logs.AspnetLegacy\Lucca.Logs.AspnetLegacy.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION -o ..\artifacts
 
 test_script:
 - echo Starting coverage
