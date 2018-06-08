@@ -69,7 +69,7 @@ namespace Lucca.Logs.Shared
             return jsonLayout;
         }
 
-        internal static Dictionary<string, string> GatherData(Exception e, IHttpContextWrapper httpRequest, bool isError, string appName)
+        internal static Dictionary<string, string> GatherData(Exception e, IHttpContextParser httpRequest, bool isError, string appName)
         {
             Dictionary<string, string> data = GatherData(httpRequest, isError, appName);
             if (LogExtractor.CustomKeys != null)
@@ -82,7 +82,7 @@ namespace Lucca.Logs.Shared
             return data;
         }
 
-        internal static Dictionary<string, string> GatherData(IHttpContextWrapper httpRequest, bool isError, string appName)
+        internal static Dictionary<string, string> GatherData(IHttpContextParser httpRequest, bool isError, string appName)
         {
             var data = new Dictionary<string, string>();
             if (!String.IsNullOrEmpty(appName))

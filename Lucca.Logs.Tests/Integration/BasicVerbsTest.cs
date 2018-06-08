@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Lucca.Logs.AspnetCore;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using StackExchange.Exceptional;
 using StackExchange.Exceptional.Stores;
@@ -62,82 +56,6 @@ namespace Lucca.Logs.Tests.Integration
             Assert.Single(found);
             Assert.Contains("RawPostedData", found.First().CustomData.Keys);
             Assert.Equal(@"{""Data"":""hey !""}", found.First().CustomData["RawPostedData"]);
-        }
-    }
-
-    public class Startup
-    {
-        private readonly ErrorStore _memoryErrorStore;
-
-        public Startup(IConfiguration configuration, ErrorStore memoryErrorStore)
-        {
-            Configuration = configuration;
-            this._memoryErrorStore = memoryErrorStore;
-        }
-
-        public IConfiguration Configuration { get; set; }
-
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddMvc()
-                .AddApplicationPart(typeof(DirectExceptionController).Assembly);
-
-            services.AddLogging(l =>
-            {
-                l.AddLuccaLogs(o =>
-                {
-
-                }, _memoryErrorStore);
-            });
-        }
-
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-        {
-            app.UseMvc();
-            app.UseLuccaLogs();
-        }
-    }
-
-    public class TestDto
-    {
-        public string Data { get; set; }
-    }
-
-    [Route("api/[controller]")]
-    public class DirectExceptionController : Controller
-    {
-        private readonly ILoggerFactory _loggerFactory;
-
-        public DirectExceptionController(ILoggerFactory loggerFactory)
-        {
-            _loggerFactory = loggerFactory;
-        }
-
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            try
-            {
-                throw new NotImplementedException("get");
-            }
-            catch (Exception e)
-            {
-                _loggerFactory.CreateLogger<DirectExceptionController>().LogError(e, "DirectExceptionController");
-            }
-            return Enumerable.Empty<string>();
-        }
-
-        [HttpPost]
-        public void Post([FromBody] TestDto dto)
-        {
-            try
-            {
-                throw new NotImplementedException("post");
-            }
-            catch (Exception e)
-            {
-                _loggerFactory.CreateLogger<DirectExceptionController>().LogError(e, "DirectExceptionController");
-            }
         }
     }
 }

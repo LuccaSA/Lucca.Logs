@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Lucca.Logs.Shared
 {
-    public interface IHttpContextWrapper
+    public interface IHttpContextParser
     {
         string ExtractUrl(UriPart uriPart);
         string Method { get; }

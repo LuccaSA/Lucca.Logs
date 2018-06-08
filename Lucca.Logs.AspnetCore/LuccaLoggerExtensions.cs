@@ -1,12 +1,15 @@
 ﻿using System;
 using Lucca.Logs.Shared;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using StackExchange.Exceptional;
+#if NETCOREAPP2_0
+using Microsoft.AspNetCore.Http;
+#else
+using Lucca.Logs.AspnetLegacy;
+#endif
 
 namespace Lucca.Logs.AspnetCore
 {
@@ -36,7 +39,9 @@ namespace Lucca.Logs.AspnetCore
                 throw new LogConfigurationException("Missing configuration section");
             }
             services.AddOptions();
+#if NETCOREAPP2_0
             services.AddExceptional();
+#endif
             services.Configure<LuccaLoggerOptions>(config);
             if (configureOptions != null)
             {
@@ -45,7 +50,7 @@ namespace Lucca.Logs.AspnetCore
             services.RegisterLuccaLogsProvider();
             return services;
         }
-         
+
         private static IServiceCollection AddLuccaLogs(this IServiceCollection services, Action<LuccaLoggerOptions> configureOptions, ErrorStore errorStore = null)
         {
             services.AddOptions();
@@ -59,34 +64,40 @@ namespace Lucca.Logs.AspnetCore
                 });
             }
 
-            if(errorStore != null)
+            if (errorStore != null)
             {
+#if NETCOREAPP2_0
                 services.AddExceptional(o =>
                 {
                     o.Store.Type = errorStore.GetType().ToString();
                     o.DefaultStore = errorStore;
                 });
+#else
+                Exceptional.Configure(o =>
+                {
+                    o.Store.Type = errorStore.GetType().ToString();
+                    o.DefaultStore = errorStore;
+                });
+#endif
             }
 
-            services.RegisterLuccaLogsProvider(); 
+            services.RegisterLuccaLogsProvider();
             return services;
-        }
-
-        public static IApplicationBuilder UseLuccaLogs(this IApplicationBuilder app, bool enableContentLog = true)
-        {
-            var builder = app;
-            if (enableContentLog)
-            {
-                builder = builder.UseMiddleware<EnableRequestContentRewindMiddleware>();
-            }
-            return builder;
         }
 
         private static void RegisterLuccaLogsProvider(this IServiceCollection services)
         {
+#if NETCOREAPP2_0
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.TryAddSingleton<IHttpContextWrapper, HttpContextCore>();
+            services.TryAddSingleton<IHttpContextParser, HttpContextParserCore>();
             services.AddSingleton<ILoggerProvider, LuccaLogsProvider>();
+            services.AddSingleton<IExceptionalWrapper, ExceptionalWrapperCore>();
+#else
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessorLegacy>();
+            services.TryAddSingleton<IHttpContextParser, HttpContextParserLegacy>();
+            services.AddSingleton<ILoggerProvider, LuccaLogsProvider>();
+            services.AddSingleton<IExceptionalWrapper, ExceptionalWrapperLegacy>();
+#endif
         }
     }
 }

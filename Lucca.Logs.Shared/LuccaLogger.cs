@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Lucca.Logs.Shared;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using NLog;
-using StackExchange.Exceptional;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
-namespace Lucca.Logs.AspnetCore
+namespace Lucca.Logs.Shared
 {
     public class LuccaLogger : ILogger
     {
@@ -17,17 +16,21 @@ namespace Lucca.Logs.AspnetCore
         private Tuple<string, string, string> _eventIdPropertyNames;
 
         private readonly string _categoryName;
-        private readonly IHttpContextWrapper _httpContextWrapper;
+        private readonly IHttpContextParser _httpContextWrapper;
         private readonly Logger _nloLogger;
         private readonly LuccaLoggerOptions _options;
+        private readonly IEnumerable<IExceptionalFilter> _filters;
+        private readonly IExceptionalWrapper _exceptionalWrapper;
         private readonly string _appName;
 
-        public LuccaLogger(string categoryName, IHttpContextWrapper httpContextAccessor, Logger nloLogger, LuccaLoggerOptions options, string appName)
+        public LuccaLogger(string categoryName, IHttpContextParser httpContextAccessor, Logger nloLogger, LuccaLoggerOptions options, IEnumerable<IExceptionalFilter> filters, IExceptionalWrapper exceptionalWrapper, string appName)
         {
             _categoryName = categoryName;
             _httpContextWrapper = httpContextAccessor;
             _nloLogger = nloLogger;
             _options = options;
+            _filters = filters;
+            _exceptionalWrapper = exceptionalWrapper;
             _appName = appName;
         }
 
@@ -41,7 +44,7 @@ namespace Lucca.Logs.AspnetCore
             NLog.LogLevel nLogLogLevel = logLevel.ToNLogLevel();
             bool isLogging = IsNlogEnabled(nLogLogLevel, _nloLogger);
 
-            if (!isLogging && (exception == null || !Exceptional.IsLoggingEnabled))
+            if (!isLogging && (exception == null || !_exceptionalWrapper.Enabled))
             {
                 return;
             }
@@ -51,9 +54,12 @@ namespace Lucca.Logs.AspnetCore
             Dictionary<string, string> customData = LuccaDataWrapper.GatherData(exception, _httpContextWrapper, isError, _appName);
 
             Guid? guid = null;
-            if (Exceptional.IsLoggingEnabled && exception != null)
+            if (_exceptionalWrapper.Enabled && exception != null)
             {
-                guid = _httpContextWrapper.ExceptionalLog(exception, customData, _categoryName, _appName);
+                if (_filters.All(ef => !ef.FilterException(exception)))
+                {
+                    guid = _httpContextWrapper.ExceptionalLog(exception, customData, _categoryName, _appName);
+                }
             }
 
             if (!isLogging)
@@ -132,37 +138,6 @@ namespace Lucca.Logs.AspnetCore
                 throw new ArgumentNullException(nameof(state));
             }
             return NestedDiagnosticsLogicalContext.Push(state);
-        }
-    }
-
-    internal static class NLogHelper
-    {
-        /// <summary>
-        /// Convert loglevel to NLog variant.
-        /// </summary>
-        /// <param name="logLevel">level to be converted.</param>
-        /// <returns></returns>
-        internal static NLog.LogLevel ToNLogLevel(this LogLevel logLevel)
-        {
-            switch (logLevel)
-            {
-                case LogLevel.Trace:
-                    return NLog.LogLevel.Trace;
-                case LogLevel.Debug:
-                    return NLog.LogLevel.Debug;
-                case LogLevel.Information:
-                    return NLog.LogLevel.Info;
-                case LogLevel.Warning:
-                    return NLog.LogLevel.Warn;
-                case LogLevel.Error:
-                    return NLog.LogLevel.Error;
-                case LogLevel.Critical:
-                    return NLog.LogLevel.Fatal;
-                case LogLevel.None:
-                    return NLog.LogLevel.Off;
-                default:
-                    return NLog.LogLevel.Debug;
-            }
         }
     }
 }

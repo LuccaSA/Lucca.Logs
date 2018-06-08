@@ -2,22 +2,37 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Web;
 using Lucca.Logs.Shared;
-using Microsoft.AspNetCore.Http;
 using StackExchange.Exceptional;
 
-namespace Lucca.Logs.AspnetCore
+namespace Lucca.Logs.AspnetLegacy
 {
-    public sealed class HttpContextCore : IHttpContextWrapper
+    public sealed class HttpContextParserLegacy : IHttpContextParser
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public HttpContextCore(IHttpContextAccessor httpContextAccessor)
+        public HttpContextParserLegacy(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
 
-        private HttpRequest Request => _httpContextAccessor?.HttpContext?.Request;
+        private HttpRequest Request
+        {
+            get
+            {
+                HttpRequest request = null;
+                try
+                {
+                    request = _httpContextAccessor?.HttpContext?.Request;
+                }
+                catch (Exception e)
+                {
+                   // ignored
+                }
+                return request;
+            }
+        }
 
         public string ExtractUrl(UriPart uriPart)
         {
@@ -25,47 +40,43 @@ namespace Lucca.Logs.AspnetCore
                 return null;
 
             var urlBuilder = new StringBuilder();
-            if ((uriPart & UriPart.Scheme) == UriPart.Scheme && !String.IsNullOrWhiteSpace(Request.Scheme))
+            if ((uriPart & UriPart.Scheme) == UriPart.Scheme && !String.IsNullOrWhiteSpace(Request.Url.Scheme))
             {
-                urlBuilder.Append(Request.Scheme + "://");
+                urlBuilder.Append(Request.Url.Scheme + "://");
             }
             if ((uriPart & UriPart.Host) == UriPart.Host)
             {
-                urlBuilder.Append(Request.Host.Host);
+                urlBuilder.Append(Request.Url.DnsSafeHost);
             }
-            if ((uriPart & UriPart.Port) == UriPart.Port && Request.Host.Port > 0)
+            if ((uriPart & UriPart.Port) == UriPart.Port && Request.Url.Port > 0)
             {
-                urlBuilder.Append(":" + Request.Host.Port);
+                urlBuilder.Append(":" + Request.Url.Port);
             }
             if ((uriPart & UriPart.Path) == UriPart.Path)
             {
-                urlBuilder.Append(Request.PathBase.ToUriComponent());
-                urlBuilder.Append(Request.Path.ToUriComponent());
+                urlBuilder.Append(Request.Url.LocalPath);
             }
             if ((uriPart & UriPart.Query) == UriPart.Query)
             {
-                urlBuilder.Append(Request.QueryString.Value);
+                urlBuilder.Append(Request.Url.Query);
             }
             return urlBuilder.ToString();
         }
 
-        public string Method => Request?.Method;
+        public string Method => Request?.HttpMethod;
 
         public bool ContainsHeader(string header)
         {
-            if (Request == null)
-                return false;
-
-            return Request.Headers.ContainsKey(header);
+            return Request?.Headers.Get(header) != null;
         }
 
-        public string GetHEader(string header) => Request?.Headers[header];
+        public string GetHEader(string header) => Request?.Headers.Get(header);
 
-        public string Ip => Request?.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+        public string Ip => Request?.UserHostAddress;
 
         public string TryGetBodyContent()
         {
-            if (Request == null || !Request.Body.CanRead || !Request.Body.CanSeek)
+            if (Request == null || !(Request.InputStream.Length <= 0))
             {
                 return null;
             }
@@ -74,8 +85,8 @@ namespace Lucca.Logs.AspnetCore
             {
                 using (var stream = new MemoryStream())
                 {
-                    Request.Body.Seek(0, SeekOrigin.Begin);
-                    Request.Body.CopyTo(stream);
+                    Request.InputStream.Seek(0, SeekOrigin.Begin);
+                    Request.InputStream.CopyTo(stream);
                     documentContents = Encoding.UTF8.GetString(stream.ToArray());
                 }
             }
@@ -93,10 +104,10 @@ namespace Lucca.Logs.AspnetCore
             }
 
             Error error;
-
-            if (Request?.HttpContext != null)
+            var ctx = _httpContextAccessor?.HttpContext;
+            if (ctx != null)
             {
-                error = exception.Log(Request.HttpContext, categoryName, false, customData, appName);
+                error = exception.Log(ctx, categoryName, false, customData, appName);
             }
             else
             {
@@ -105,6 +116,5 @@ namespace Lucca.Logs.AspnetCore
 
             return error?.GUID;
         }
-
     }
 }

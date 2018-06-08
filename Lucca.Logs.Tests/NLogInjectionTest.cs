@@ -32,7 +32,7 @@ namespace Lucca.Logs.Tests
             var player = provider.GetRequiredService<DummyLogFactoryPlayer>();
 
             player.Log(logLevel, 42, new Exception(), "the answer");
-           
+            
             string expected = String.Format("the answer|{0}|Exception of type 'System.Exception' was thrown.|42", logLevel.ToNLogLevel());
             Assert.Equal(expected, target.Logs.FirstOrDefault());
         }
