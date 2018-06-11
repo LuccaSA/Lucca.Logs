@@ -54,12 +54,9 @@ namespace Lucca.Logs.Shared
             Dictionary<string, string> customData = LuccaDataWrapper.GatherData(exception, _httpContextWrapper, isError, _appName);
 
             Guid? guid = null;
-            if (_exceptionalWrapper.Enabled && exception != null)
+            if (_exceptionalWrapper.Enabled && exception != null && _filters.All(ef => !ef.FilterException(exception)))
             {
-                if (_filters.All(ef => !ef.FilterException(exception)))
-                {
-                    guid = _httpContextWrapper.ExceptionalLog(exception, customData, _categoryName, _appName);
-                }
+                guid = _httpContextWrapper.ExceptionalLog(exception, customData, _categoryName, _appName);
             }
 
             if (!isLogging)

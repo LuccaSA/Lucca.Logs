@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace Lucca.Logs.AspnetLegacy
 {
-    public class Logger
+    public static class Logger
     {
         private static readonly Lazy<ILoggerFactory> _defaultLogger = new Lazy<ILoggerFactory>(() =>
         {
