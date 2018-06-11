@@ -20,7 +20,5 @@ namespace Lucca.Logs.AspnetLegacy
         {
             return _serviceCollection.CreateLuccaLogsFactory(configure);
         }
-
-        
     }
 }

@@ -31,7 +31,7 @@ namespace Lucca.Logs.Shared
         private const string _luccaForwardedHeader = "X-Forwarded-By-Lucca";
         private const string _forwardedHeader = "X-Forwarded-For";
 
-        internal static string[] Keys() => new[]
+        private static string[] Keys => new[]
         {
             _warning,
             _pageRest,
@@ -61,7 +61,7 @@ namespace Lucca.Logs.Shared
             jsonLayout.Attributes.Add(new JsonAttribute("exception", "${exception:format=ShortType,Message,Method,Data}"));
             jsonLayout.Attributes.Add(new JsonAttribute(Link, "${event-properties:item=" + Link + "}"));
 
-            foreach (string key in Keys())
+            foreach (string key in Keys)
             {
                 jsonLayout.Attributes.Add(new JsonAttribute(key, "${event-properties:item=" + key + "}"));
             }
@@ -84,7 +84,7 @@ namespace Lucca.Logs.Shared
 
         internal static Dictionary<string, string> GatherData(IHttpContextParser httpRequest, bool isError, string appName)
         {
-            var data = new Dictionary<string, string>();
+            var data = new Dictionary<string, string>(16);
             if (!String.IsNullOrEmpty(appName))
             {
                 data.Add(_appName, appName);
@@ -139,6 +139,5 @@ namespace Lucca.Logs.Shared
         {
             public static Func<Exception, IEnumerable<KeyValuePair<string, string>>> CustomKeys { get; set; }
         }
-
     }
 }

@@ -7,6 +7,5 @@ namespace Lucca.Logs.Shared
     {
         bool Enabled { get; }
         void Configure(Action<ExceptionalSettingsBase> configSettings);
-
     }
 }
