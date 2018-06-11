@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
+using Lucca.Logs.AspnetCore;
+using Lucca.Logs.Shared;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using NLog.Config;
 using NLog.Targets;
 using Xunit;
@@ -29,10 +30,9 @@ namespace Lucca.Logs.Tests
                 });
             });
             var player = provider.GetRequiredService<DummyLogFactoryPlayer>();
-            //MemoryTarget target = GetTarget(provider);
 
             player.Log(logLevel, 42, new Exception(), "the answer");
-           
+            
             string expected = String.Format("the answer|{0}|Exception of type 'System.Exception' was thrown.|42", logLevel.ToNLogLevel());
             Assert.Equal(expected, target.Logs.FirstOrDefault());
         }
@@ -54,8 +54,7 @@ namespace Lucca.Logs.Tests
                     target = BootStrapNLogInMemoryOption(o);
                 });
             });
-            var player = provider.GetRequiredService<DummyLogPlayer>();
-            //MemoryTarget target = GetTarget(provider);
+            var player = provider.GetRequiredService<DummyLogPlayer>(); 
 
             player.Log(logLevel, 42, new Exception(), "the answer");
 
@@ -78,12 +77,5 @@ namespace Lucca.Logs.Tests
             loggerOptions.Nlog = nlogConf;
             return target;
         }
-
-        //private MemoryTarget GetTarget(IServiceProvider provider)
-        //{
-        //    var option = provider.GetRequiredService<IOptions<LuccaLoggerOptions>>();
-        //    var target = option.Value.Nlog.FindTargetByName<MemoryTarget>("inmemory");
-        //    return target;
-        //}
     }
 }

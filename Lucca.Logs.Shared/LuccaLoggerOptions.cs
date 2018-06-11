@@ -6,7 +6,7 @@ using NLog.Targets;
 using StackExchange.Exceptional;
 using StackExchange.Exceptional.Stores;
 
-namespace Lucca.Logs
+namespace Lucca.Logs.Shared
 {
     public class LuccaLoggerOptions
     {

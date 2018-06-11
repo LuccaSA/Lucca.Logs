@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using Microsoft.AspNetCore.Http;
 using NLog.Layouts;
 
-namespace Lucca.Logs
+namespace Lucca.Logs.Shared
 {
     internal static class LuccaDataWrapper
     {
@@ -72,7 +69,7 @@ namespace Lucca.Logs
             return jsonLayout;
         }
 
-        internal static Dictionary<string, string> GatherData(Exception e, HttpRequest httpRequest, bool isError, string appName)
+        internal static Dictionary<string, string> GatherData(Exception e, IHttpContextParser httpRequest, bool isError, string appName)
         {
             Dictionary<string, string> data = GatherData(httpRequest, isError, appName);
             if (LogExtractor.CustomKeys != null)
@@ -85,7 +82,7 @@ namespace Lucca.Logs
             return data;
         }
 
-        internal static Dictionary<string, string> GatherData(HttpRequest httpRequest, bool isError, string appName)
+        internal static Dictionary<string, string> GatherData(IHttpContextParser httpRequest, bool isError, string appName)
         {
             var data = new Dictionary<string, string>();
             if (!String.IsNullOrEmpty(appName))
@@ -98,49 +95,38 @@ namespace Lucca.Logs
                 data.Add(_warning, "HttpContext.Current is null");
                 return data;
             }
-            
-            data.Add(_pageRest, httpRequest.ExtractUrl(UriPart.Path | UriPart.Query));
-            data.Add(_page, httpRequest.ExtractUrl(UriPart.Full));
+
+            data.Add(_pageRest, httpRequest.ExtractUrl(Uripart.Path | Uripart.Query));
+            data.Add(_page, httpRequest.ExtractUrl(Uripart.Full));
             data.Add(_verb, httpRequest.Method);
-            data.Add(_uri, httpRequest.ExtractUrl(UriPart.Path));
-            data.Add(_serverName, httpRequest.ExtractUrl(UriPart.Host));
+            data.Add(_uri, httpRequest.ExtractUrl(Uripart.Path));
+            data.Add(_serverName, httpRequest.ExtractUrl(Uripart.Host));
             // https://stackoverflow.com/a/39139875
             data.Add(_appPool, Environment.GetEnvironmentVariable("APP_POOL_ID", EnvironmentVariableTarget.Process));
 
             // Récupération de l'IP forwardée par HAProxy, et fallback UserHostAddress
             string ip = null;
-            if (httpRequest.Headers.ContainsKey(_luccaForwardedHeader))
+            if (httpRequest.ContainsHeader(_luccaForwardedHeader))
             {
-                ip = httpRequest.Headers[_forwardedHeader];
+                ip = httpRequest.GetHEader(_forwardedHeader);
             }
-            
+
             if (String.IsNullOrEmpty(ip))
             {
-                ip = httpRequest.HttpContext.Connection.RemoteIpAddress?.ToString();
+                ip = httpRequest.Ip;
             }
+
             data.Add(_hostAddress, ip);
 
-            data.Add(_userAgent, httpRequest.Headers["User-Agent"].ToString());
+            data.Add(_userAgent, httpRequest.GetHEader("User-Agent"));
 
-            if (!isError || !httpRequest.Body.CanRead || !httpRequest.Body.CanSeek)
+            if (!isError)
             {
                 return data;
             }
 
-            string documentContents = null;
-            try
-            {
-                using (var stream = new MemoryStream())
-                {
-                    httpRequest.Body.Seek(0, SeekOrigin.Begin);
-                    httpRequest.Body.CopyTo(stream);
-                    documentContents = Encoding.UTF8.GetString(stream.ToArray());
-                }
-            }
-            catch (Exception)
-            {
-            }
-
+            string documentContents = httpRequest.TryGetBodyContent();
+             
             if (!String.IsNullOrEmpty(documentContents))
             {
                 data.Add(_rawPostedData, documentContents);
@@ -149,48 +135,10 @@ namespace Lucca.Logs
             return data;
         }
 
-        public static string ExtractUrl(this HttpRequest httpRequest, UriPart uriPart)
-        {
-            var urlBuilder = new StringBuilder();
-            if ((uriPart & UriPart.Scheme) == UriPart.Scheme && !String.IsNullOrWhiteSpace(httpRequest.Scheme))
-            {
-                urlBuilder.Append(httpRequest.Scheme + "://");
-            }
-            if ((uriPart & UriPart.Host) == UriPart.Host)
-            {
-                urlBuilder.Append(httpRequest.Host.Host);
-            }
-            if ((uriPart & UriPart.Port) == UriPart.Port && httpRequest.Host.Port > 0)
-            {
-                urlBuilder.Append(":" + httpRequest.Host.Port);
-            }
-            if ((uriPart & UriPart.Path) == UriPart.Path)
-            {
-                urlBuilder.Append(httpRequest.PathBase.ToUriComponent());
-                urlBuilder.Append(httpRequest.Path.ToUriComponent());
-            }
-            if ((uriPart & UriPart.Query) == UriPart.Query)
-            {
-                urlBuilder.Append(httpRequest.QueryString.Value);
-            }
-            return urlBuilder.ToString();
-        }
-        
         public static class LogExtractor
         {
             public static Func<Exception, IEnumerable<KeyValuePair<string, string>>> CustomKeys { get; set; }
         }
 
-        [Flags]
-        internal enum UriPart
-        {
-            None = 0,
-            Scheme = 1,
-            Host = 1 << 1,
-            Port = 1 << 2,
-            Path = 1 << 3,
-            Query = 1 << 4,
-            Full = Scheme | Host | Port | Path | Query
-        }
     }
 }

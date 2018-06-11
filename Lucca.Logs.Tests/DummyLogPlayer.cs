@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Lucca.Logs.Tests
 {
@@ -11,15 +10,5 @@ namespace Lucca.Logs.Tests
         {
             Logger = logger;
         }
-    }
-
-    public class InjectOption
-    {
-        public InjectOption(IOptions<LuccaLoggerOptions> options)
-        {
-            Options = options.Value;
-        }
-
-        public LuccaLoggerOptions Options { get; }
     }
 }
