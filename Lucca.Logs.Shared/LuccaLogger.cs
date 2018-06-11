@@ -19,11 +19,11 @@ namespace Lucca.Logs.Shared
         private readonly IHttpContextParser _httpContextWrapper;
         private readonly Logger _nloLogger;
         private readonly LuccaLoggerOptions _options;
-        private readonly IEnumerable<IExceptionalFilter> _filters;
+        private readonly IEnumerable<IExceptionQualifier> _filters;
         private readonly IExceptionalWrapper _exceptionalWrapper;
         private readonly string _appName;
 
-        public LuccaLogger(string categoryName, IHttpContextParser httpContextAccessor, Logger nloLogger, LuccaLoggerOptions options, IEnumerable<IExceptionalFilter> filters, IExceptionalWrapper exceptionalWrapper, string appName)
+        public LuccaLogger(string categoryName, IHttpContextParser httpContextAccessor, Logger nloLogger, LuccaLoggerOptions options, IEnumerable<IExceptionQualifier> filters, IExceptionalWrapper exceptionalWrapper, string appName)
         {
             _categoryName = categoryName;
             _httpContextWrapper = httpContextAccessor;
@@ -54,7 +54,7 @@ namespace Lucca.Logs.Shared
             Dictionary<string, string> customData = LuccaDataWrapper.GatherData(exception, _httpContextWrapper, isError, _appName);
 
             Guid? guid = null;
-            if (_exceptionalWrapper.Enabled && exception != null && _filters.All(ef => !ef.FilterException(exception)))
+            if (_exceptionalWrapper.Enabled && exception != null && (_filters == null || !_filters.Any() || _filters.Any(ef => ef.LogToOpserver(exception))))
             {
                 guid = _httpContextWrapper.ExceptionalLog(exception, customData, _categoryName, _appName);
             }

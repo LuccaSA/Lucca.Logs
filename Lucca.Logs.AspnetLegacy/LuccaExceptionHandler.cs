@@ -12,14 +12,14 @@ namespace Lucca.Logs.AspnetLegacy
     {
         private void Handle(ExceptionHandlerContext context)
         {
-            IExceptionalFilter efilter = context.RequestContext.Configuration.DependencyResolver.GetService(typeof(IExceptionalFilter)) as IExceptionalFilter;
+            IExceptionQualifier efilter = context.RequestContext.Configuration.DependencyResolver.GetService(typeof(IExceptionQualifier)) as IExceptionQualifier;
 
             if (efilter == null)
             {
                 return;
             }
 
-            string message = efilter.IsInternalException(context.Exception) ? efilter.GenericErrorMessage : context.Exception.Message;
+            string message = efilter.DisplayExceptionDetails(context.Exception) ? context.Exception.Message : efilter.GenericErrorMessage;
 
             context.Result = new TextPlainErrorResult
             {

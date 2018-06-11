@@ -31,7 +31,7 @@ namespace Lucca.Logs.Tests
         {
             ServiceProvider provider = TestHelper.Register<DummyLogFactoryPlayer>(loggingBuilder =>
             {
-                Exceptional.Settings.DefaultStore = _memoryStore;
+                //Exceptional.Settings.DefaultStore = _memoryStore;
                 loggingBuilder.AddLuccaLogs(o =>
                 {
                 }, _memoryStore);

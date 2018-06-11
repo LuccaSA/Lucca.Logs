@@ -5,18 +5,17 @@ namespace Lucca.Logs.Shared
     /// <summary>
     /// Filter exceptions for exceptional storage
     /// </summary>
-    public interface IExceptionalFilter
+    public interface IExceptionQualifier
     {
         /// <summary>
-        /// If returns true, the exception will not be propagated to exceptional
+        /// If returns true, the exception will be propagated to OpServer (via exceptional)
         /// </summary>
-        bool FilterException(Exception exception);
+        bool LogToOpserver(Exception exception);
 
         /// <summary>
-        /// Returns true if this is an internal exception.
-        /// Such exceptions details will not be propagated publicly
+        /// Returns true if exceptions details can not be propagated publicly
         /// </summary>
-        bool IsInternalException(Exception exception);
+        bool DisplayExceptionDetails(Exception exception);
 
         /// <summary>
         /// Default error message, aimed to avoid leaking exceptions details
