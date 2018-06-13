@@ -10,11 +10,11 @@ namespace Lucca.Logs.Shared
     {
         private readonly IOptionsMonitor<LuccaLoggerOptions> _options;
         private readonly IHttpContextParser _httpContextAccessor;
-        private readonly IEnumerable<IExceptionQualifier> _filters;
+        private readonly IExceptionQualifier _filters;
         private readonly IExceptionalWrapper _exceptionalWrapper;
         private readonly IDisposable _changeListener;
 
-        public LuccaLogsProvider(IOptionsMonitor<LuccaLoggerOptions> options, IHttpContextParser httpContextAccessor, IEnumerable<IExceptionQualifier> filters, IExceptionalWrapper exceptionalWrapper)
+        public LuccaLogsProvider(IOptionsMonitor<LuccaLoggerOptions> options, IHttpContextParser httpContextAccessor, IExceptionQualifier filters, IExceptionalWrapper exceptionalWrapper)
         {
             _options = options;
             _httpContextAccessor = httpContextAccessor;

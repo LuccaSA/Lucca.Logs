@@ -22,4 +22,6 @@ namespace Lucca.Logs.Shared
         /// </summary>
         string GenericErrorMessage { get; }
     }
+
+    
 }
