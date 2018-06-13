@@ -88,6 +88,7 @@ namespace Lucca.Logs.AspnetCore
         private static void RegisterLuccaLogsProvider(this IServiceCollection services)
         {
 #if NETCOREAPP2_0
+            services.TryAddSingleton<IExceptionQualifier, GenericExceptionQualifier>();
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddSingleton<IHttpContextParser, HttpContextParserCore>();
             services.AddSingleton<ILoggerProvider, LuccaLogsProvider>();
