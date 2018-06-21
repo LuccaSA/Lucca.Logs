@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 
 namespace Lucca.Logs.Shared
 {
@@ -18,10 +19,21 @@ namespace Lucca.Logs.Shared
         bool DisplayExceptionDetails(Exception exception);
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <returns></returns>
+        HttpStatusCode? StatusCode(Exception exception);
+
+        /// <summary>
         /// Default error message, aimed to avoid leaking exceptions details
         /// </summary>
         string GenericErrorMessage { get; }
-    }
 
+        /// <summary>
+        /// Prefered response content type
+        /// </summary>
+        string PreferedResponseType { get; }
+    }
     
 }

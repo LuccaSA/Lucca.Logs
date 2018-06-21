@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Lucca.Logs.Shared;
@@ -14,15 +15,14 @@ namespace Lucca.Logs.AspnetCore
     public class LuccaExceptionHandlerMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IExceptionQualifier _filters;
+        private readonly IExceptionQualifier _filter;
         private readonly ILogger _logger;
         private readonly IOptions<LuccaExceptionHandlerOption> _options;
 
-        public LuccaExceptionHandlerMiddleware(RequestDelegate next, ILoggerFactory loggerFactory,
-            IExceptionQualifier filters, IOptions<LuccaExceptionHandlerOption> options)
+        public LuccaExceptionHandlerMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IExceptionQualifier filters, IOptions<LuccaExceptionHandlerOption> options)
         {
             _next = next;
-            _filters = filters;
+            _filter = filters;
             _options = options;
             _logger = loggerFactory.CreateLogger<LuccaExceptionHandlerMiddleware>();
         }
@@ -44,17 +44,13 @@ namespace Lucca.Logs.AspnetCore
                 PathString originalPath = context.Request.Path;
                 try
                 {
-                    context.Response.Clear();
-                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    context.Response.OnStarting(ClearCacheHeaders, context.Response);
-
                     var info = new LuccaExceptionBuilderInfo(ex,
-                            (HttpStatusCode)context.Response.StatusCode,
-                            _filters?.DisplayExceptionDetails(ex) ?? false,
-                            _filters?.GenericErrorMessage);
+                        _filter?.StatusCode(ex) ?? HttpStatusCode.InternalServerError,
+                        _filter?.DisplayExceptionDetails(ex) ?? false,
+                        _filter?.GenericErrorMessage,
+                        _filter?.PreferedResponseType);
 
-                    await ProcessAnswer(context, info);
-
+                    await GenerateErrorResponseAsync(context, info);
                 }
                 catch (Exception ex2)
                 {
@@ -68,24 +64,66 @@ namespace Lucca.Logs.AspnetCore
             }
         }
 
-        private async Task ProcessAnswer(HttpContext context, LuccaExceptionBuilderInfo info)
+        private async Task GenerateErrorResponseAsync(HttpContext context, LuccaExceptionBuilderInfo info)
         {
-            foreach (var mediaTypeSegmentWithQuality in GetAcceptableMediaTypes(context.Request))
+            // Prepares the response request
+            ClearHttpResponseResponse(context, info.StatusCode);
+
+            // Extracts the Accept header
+            var contentTypes = GetAcceptableMediaTypes(context.Request);
+
+            // If prefered content type (Accept header) match existing error rendering method, we render
+            var prefered = contentTypes.Where(c => c.MediaType.Equals(info.PreferedResponseType)).Select(i => i.MediaType.ToString()).FirstOrDefault();
+            if (prefered != null &&
+                await TryRenderErrorOnContentTypeAsync(prefered, context, info))
             {
-                switch (mediaTypeSegmentWithQuality.MediaType.ToString())
+                return;
+            }
+
+            // If explicit content type (Content-Type header) match, we render
+            if (!string.IsNullOrEmpty(context.Request.ContentType) &&
+                await TryRenderErrorOnContentTypeAsync(context.Request.ContentType, context, info))
+            {
+                return;
+            }
+
+            // Else we try to render on all other Accept header, in requested order
+            foreach (var contentType in contentTypes)
+            {
+                var rendered = await TryRenderErrorOnContentTypeAsync(contentType.MediaType.ToString(), context, info);
+                if (rendered)
+                {
+                    return;
+                }
+            }
+
+            // fallback on generic text/plain error
+            context.Response.ContentType = "text/plain";
+            await context.Response.WriteAsync(info.GenericErrorMessage);
+        }
+
+        private async Task<bool> TryRenderErrorOnContentTypeAsync(string contentType, HttpContext context, LuccaExceptionBuilderInfo info)
+        {
+            try
+            {
+                switch (contentType)
                 {
                     case "text/plain":
                         await TextPlainReport(context, info);
-                        return;
+                        return true;
                     case "application/json":
                         await JsonReport(context, info);
-                        return;
+                        return true;
                     case "text/html":
                         await HtmlReport(context, info);
-                        return;
+                        return true;
                 }
             }
-            await TextPlainReport(context, info);
+            catch (Exception e)
+            {
+                _logger.LogError(0, e, "An exception was thrown attempting to render the error with content type " + contentType);
+            }
+            return false;
         }
 
         private async Task HtmlReport(HttpContext httpContext, LuccaExceptionBuilderInfo info)
@@ -116,7 +154,7 @@ namespace Lucca.Logs.AspnetCore
             result.Sort(QualityComparer);
             return result;
         }
-         
+
         private static int QualityComparer(MediaTypeSegmentWithQuality left, MediaTypeSegmentWithQuality right)
         {
             if (left.Quality > right.Quality)
@@ -126,10 +164,17 @@ namespace Lucca.Logs.AspnetCore
             return 1;
         }
 
-        private static Task ClearCacheHeaders(object state)
+        private static void ClearHttpResponseResponse(HttpContext context, HttpStatusCode statusCode)
+        {
+            context.Response.Clear();
+            context.Response.StatusCode = (int)statusCode;
+            context.Response.OnStarting(ClearCacheHeadersCallbackAsync, context.Response);
+        }
+
+        private static Task ClearCacheHeadersCallbackAsync(object state)
         {
             var response = (HttpResponse)state;
-            response.Headers[HeaderNames.CacheControl] = "no-cache";
+            response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, must-revalidate";
             response.Headers[HeaderNames.Pragma] = "no-cache";
             response.Headers[HeaderNames.Expires] = "-1";
             response.Headers.Remove(HeaderNames.ETag);
