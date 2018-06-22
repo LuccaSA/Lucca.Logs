@@ -31,6 +31,6 @@ namespace Lucca.Logs.AspnetCore
 
         public virtual string GenericErrorMessage => "Oops ! Something went wrong. Please contact your administrator";
 
-        public virtual string PreferedResponseType => "application/json";
+        public virtual string PreferedResponseType(string path) => "application/json";
     }
 }

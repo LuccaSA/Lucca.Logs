@@ -48,7 +48,7 @@ namespace Lucca.Logs.AspnetCore
                         _filter?.StatusCode(ex) ?? HttpStatusCode.InternalServerError,
                         _filter?.DisplayExceptionDetails(ex) ?? false,
                         _filter?.GenericErrorMessage,
-                        _filter?.PreferedResponseType);
+                        _filter?.PreferedResponseType(context.Request.Path));
 
                     await GenerateErrorResponseAsync(context, info);
                 }
@@ -72,12 +72,15 @@ namespace Lucca.Logs.AspnetCore
             // Extracts the Accept header
             var contentTypes = GetAcceptableMediaTypes(context.Request);
 
-            // If prefered content type (Accept header) match existing error rendering method, we render
-            var prefered = contentTypes.Where(c => c.MediaType.Equals(info.PreferedResponseType)).Select(i => i.MediaType.ToString()).FirstOrDefault();
-            if (prefered != null &&
-                await TryRenderErrorOnContentTypeAsync(prefered, context, info))
+            // If prefered content type match the Accept Heade, then we render using it
+            if (!string.IsNullOrWhiteSpace(info.PreferedResponseType))
             {
-                return;
+                var prefered = contentTypes.Where(c => c.MediaType.Equals(info.PreferedResponseType) || c.MediaType.StartsWith("*/*", StringComparison.InvariantCulture)).Select(i => info.PreferedResponseType).FirstOrDefault();
+                if (prefered != null &&
+                    await TryRenderErrorOnContentTypeAsync(prefered, context, info))
+                {
+                    return;
+                }
             }
 
             // If explicit content type (Content-Type header) match, we render

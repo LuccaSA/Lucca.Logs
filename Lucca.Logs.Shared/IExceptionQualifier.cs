@@ -33,7 +33,7 @@ namespace Lucca.Logs.Shared
         /// <summary>
         /// Prefered response content type
         /// </summary>
-        string PreferedResponseType { get; }
+        string PreferedResponseType(string path);
     }
-    
+
 }
