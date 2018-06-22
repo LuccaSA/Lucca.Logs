@@ -14,8 +14,7 @@ namespace Lucca.Logs.AspnetCore
             JsonResponse = i => Task.FromResult(JsonConvert.SerializeObject(new
             {
                 status = i.StatusCode,
-                message = i.Exception.Message,
-                data = i.Exception.Data
+                message = i.Exception.Message
             }));
 
             HtmlResponse = i => throw new NotImplementedException();
@@ -26,9 +25,6 @@ namespace Lucca.Logs.AspnetCore
         public Func<LuccaExceptionBuilderInfo, Task<String>> JsonResponse { get; set; }
 
         public Task<String> DefaultHandler(LuccaExceptionBuilderInfo builderInfo) => Task.FromResult($"Error code: {builderInfo.StatusCode}");
-
-
-
     }
 
     public class LuccaExceptionBuilderInfo
