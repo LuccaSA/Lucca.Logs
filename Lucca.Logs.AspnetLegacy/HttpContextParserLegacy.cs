@@ -26,7 +26,7 @@ namespace Lucca.Logs.AspnetLegacy
                 {
                     request = _httpContextAccessor?.HttpContext?.Request;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                    // ignored
                 }
