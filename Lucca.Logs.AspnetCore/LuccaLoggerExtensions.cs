@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using StackExchange.Exceptional;
 #if NETCOREAPP2_1
 using Microsoft.AspNetCore.Http;
@@ -39,10 +40,14 @@ namespace Lucca.Logs.AspnetCore
                 throw new LogConfigurationException("Missing configuration section");
             }
             services.AddOptions();
-#if NETCOREAPP2_1
-            services.AddExceptional();
-#endif
             services.Configure<LuccaLoggerOptions>(config);
+#if NETCOREAPP2_1
+            services.AddExceptional(e =>
+            {
+                var luccaLogsOption = config.Get<LuccaLoggerOptions>();
+                e.DefaultStore = luccaLogsOption.GenerateExceptionalStore();
+            });
+#endif
             if (configureOptions != null)
             {
                 services.Configure(configureOptions);

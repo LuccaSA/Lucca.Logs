@@ -10,7 +10,10 @@ namespace Lucca.Logs.AspnetCore
         public bool Enabled => Exceptional.IsLoggingEnabled;
         public void Configure(Action<ExceptionalSettingsBase> configSettings)
         {
-            Exceptional.Configure(configSettings);
+            Exceptional.Configure(conf =>
+            {
+                configSettings(conf);
+            });
         }
     }
 }
