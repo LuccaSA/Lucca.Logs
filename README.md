@@ -71,3 +71,15 @@ Logger.DefaultFactory = LoggerBuilder.CreateLuccaLogsFactory(builder =>
 
 - `Services.AddLuccaLogs()` permet de register la lib sur les hooks de MVC5
 - `Logger.DefaultFactory = ...` permet de customiser les types registered, et d'ajouter vos propres implémentations
+
+## Utilisation
+
+Faites vous injecter un `ILogger<T>` dans le constructeur des classes où vous souhaitez logger.
+Utilisez les méthodes standard du framework pour logger ( `_logger.LogError(...)` etc)
+
+Lisez la doc : https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-2.1
+
+
+## Unit tests
+
+Le moyen le plus simple pour mocker un `ILogger<T>` est d'instancier un `NullLogger<T>`.
