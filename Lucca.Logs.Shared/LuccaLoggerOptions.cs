@@ -31,12 +31,6 @@ namespace Lucca.Logs.Shared
         public string LogFilePath { get; set; }
 
         /// <summary>
-        /// Optional network Api URI for direct logging
-        /// </summary>
-        /// <example>""https://api.logmatic.io/v1/input/myLogmaticKey"</example>
-        public string ApiUri { get; set; }
-
-        /// <summary>
         /// Base URI for external link 
         /// </summary>
         /// <example>"http://opserver.lucca.local/exceptions/detail?id="</example>
@@ -62,8 +56,8 @@ namespace Lucca.Logs.Shared
 
         internal ErrorStore ExplicitErrorStore { get; set; }
 
-        private LoggingConfiguration _nlog; 
-         
+        private LoggingConfiguration _nlog;
+
         public ErrorStore GenerateExceptionalStore()
         {
             if (!String.IsNullOrEmpty(ConnectionString))
@@ -83,37 +77,24 @@ namespace Lucca.Logs.Shared
         {
             var nLogConfig = new LoggingConfiguration();
 
-            if (!string.IsNullOrEmpty(ApiUri))
+            // FileTarget : pour stoquer localement les excpetions
+            var fileTarget = new FileTarget("localTarget")
             {
-                // NetworkTarget : pour envoyer sur Logmatic
-                var networkTarget = new NetworkTarget("logmatic")
-                {
-                    Address = ApiUri,
-                    Layout = LuccaDataWrapper.GenerateJsonLayout()
-                };
-                var networkRule = new LoggingRule("*", LogLevel.Trace, networkTarget);
-                nLogConfig.LoggingRules.Add(networkRule);
-            }
-            else
-            {
-
-                // FileTarget : pour stoquer localement les excpetions
-                var fileTarget = new FileTarget("localTarget")
-                {
-                    FileName = LogFilePath ?? "${basedir}/logs/logfile.txt",
-                    Encoding = Encoding.UTF8,
-                    ArchiveEvery = FileArchivePeriod.Day,
-                    ArchiveFileKind = FilePathKind.Relative,
-                    ArchiveNumbering = ArchiveNumberingMode.DateAndSequence,
-                    LineEnding = LineEndingMode.CRLF,
-                    ArchiveAboveSize = 1048576,
-                    MaxArchiveFiles = 100,
-                    Layout = LuccaDataWrapper.GenerateJsonLayout()
-                };
-                // 1Mb file size
-                var fileRule = new LoggingRule("*", LogLevel.Trace, fileTarget);
-                nLogConfig.LoggingRules.Add(fileRule);
-            }
+                FileName = LogFilePath ?? "${basedir}/logs/logfile.txt",
+                Encoding = Encoding.UTF8,
+                ArchiveEvery = FileArchivePeriod.Day,
+                ArchiveFileKind = FilePathKind.Relative,
+                ArchiveNumbering = ArchiveNumberingMode.DateAndSequence,
+                EnableArchiveFileCompression = true,
+                ArchiveOldFileOnStartup = true,
+                LineEnding = LineEndingMode.CRLF,
+                ArchiveAboveSize = 1048576,
+                MaxArchiveFiles = 100,
+                Layout = LuccaDataWrapper.GenerateJsonLayout()
+            };
+            // 1Mb file size
+            var fileRule = new LoggingRule("*", LogLevel.Trace, fileTarget);
+            nLogConfig.LoggingRules.Add(fileRule);
 
             return nLogConfig;
         }
