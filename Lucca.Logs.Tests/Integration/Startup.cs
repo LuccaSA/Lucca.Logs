@@ -14,7 +14,7 @@ namespace Lucca.Logs.Tests.Integration
         public Startup(IConfiguration configuration, ErrorStore memoryErrorStore)
         {
             Configuration = configuration;
-            this._memoryErrorStore = memoryErrorStore;
+            _memoryErrorStore = memoryErrorStore;
         }
 
         public IConfiguration Configuration { get; set; }

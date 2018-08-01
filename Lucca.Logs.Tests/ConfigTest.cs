@@ -15,7 +15,7 @@ namespace Lucca.Logs.Tests
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
-                ServiceProvider provider = TestHelper.Register<DummyLogPlayer>(loggingBuilder =>
+                TestHelper.Register<DummyLogPlayer>(loggingBuilder =>
                 {
                     loggingBuilder.AddLuccaLogs((IConfigurationSection)null);
                 });
