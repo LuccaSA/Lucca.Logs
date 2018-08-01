@@ -162,7 +162,7 @@ namespace Lucca.Logs.AspnetCore
         {
             if (left.Quality > right.Quality)
                 return -1;
-            if (left.Quality == right.Quality)
+            if (Math.Abs(left.Quality - right.Quality) < 0.1)
                 return 0;
             return 1;
         }
