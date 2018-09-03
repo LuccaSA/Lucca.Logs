@@ -59,9 +59,9 @@ after_build:
 
 test_script:
 - echo Starting coverage
-- OpenCover.Console.exe -returntargetcode -oldstyle -register:user -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test /p:DebugType=full -c Debug Lucca.Logs.Tests\Lucca.Logs.Tests.csproj" -filter:"+[Lucca.Logs*]* -[*Tests*]*" -excludebyattribute:"*.ExcludeFromCodeCoverage*" -output:coverage-opencover.xml
+- OpenCover.4.6.519\tools\OpenCover.Console.exe -returntargetcode -oldstyle -register:user -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test /p:DebugType=full -c Debug Lucca.Logs.Tests\Lucca.Logs.Tests.csproj" -filter:"+[Lucca.Logs*]* -[*Tests*]*" -excludebyattribute:"*.ExcludeFromCodeCoverage*" -output:coverage-opencover.xml
 - echo Starting codecov upload
-- codecov -v -f coverage-opencover.xml
+- Codecov.1.0.5\tools\codecov -v -f coverage-opencover.xml
 
 artifacts:
   - path: artifacts\*.nupkg
