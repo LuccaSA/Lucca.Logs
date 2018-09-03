@@ -34,17 +34,17 @@ install:
   - ps: . .\ComputeVersion.ps1
   - ps: $version = Compute "Lucca.Logs\Lucca.Logs.csproj" $env:APPVEYOR_BUILD_NUMBER $env:APPVEYOR_REPO_TAG $env:APPVEYOR_PULL_REQUEST_NUMBER
   - ps: Update-AppveyorBuild -Version $version.Semver
-  - choco install "msbuild-sonarqube-runner" -y
-  - choco install opencover.portable
-  - choco install codecov
+  - dotnet tool install --global dotnet-sonarscanner
+  - nuget install OpenCover -Version 4.6.519 
+  - nuget install Codecov -Version 1.0.5 
 
 before_build:
 - dotnet restore
 - cmd: >-
     IF "%APPVEYOR_PULL_REQUEST_NUMBER%"=="" (
-    C:\ProgramData\chocolatey\lib\sonarscanner-msbuild-net46\tools\SonarScanner.MSBuild.exe begin /k:"Lucca.Logs" /d:"sonar.analysis.mode=publish" /d:"sonar.host.url=https://sonarcloud.io" /d:"sonar.organization=luccaintegration-github" /d:"sonar.login=%SONAR_TOKEN%"
+    dotnet sonarscanner begin /k:"Lucca.Logs" /d:"sonar.analysis.mode=publish" /d:"sonar.host.url=https://sonarcloud.io" /d:"sonar.organization=luccaintegration-github" /d:"sonar.login=%SONAR_TOKEN%"
     ) ELSE (
-    C:\ProgramData\chocolatey\lib\sonarscanner-msbuild-net46\tools\SonarScanner.MSBuild.exe begin /k:"Lucca.Logs" /d:"sonar.analysis.mode=preview" /d:"sonar.host.url=https://sonarcloud.io" /d:"sonar.organization=luccaintegration-github" /d:"sonar.login=%SONAR_TOKEN%" /d:"sonar.github.pullRequest=%APPVEYOR_PULL_REQUEST_NUMBER%" /d:"sonar.github.repository=LuccaSA/Lucca.Logs" /d:"sonar.github.oauth=%GITHUB_ACCESS_TOKEN%"
+    dotnet sonarscanner begin /k:"Lucca.Logs" /d:"sonar.analysis.mode=preview" /d:"sonar.host.url=https://sonarcloud.io" /d:"sonar.organization=luccaintegration-github" /d:"sonar.login=%SONAR_TOKEN%" /d:"sonar.github.pullRequest=%APPVEYOR_PULL_REQUEST_NUMBER%" /d:"sonar.github.repository=LuccaSA/Lucca.Logs" /d:"sonar.github.oauth=%GITHUB_ACCESS_TOKEN%"
     )
 
 build_script:
@@ -52,10 +52,10 @@ build_script:
 
 after_build:
 - cmd: >-
-    "C:\ProgramData\chocolatey\lib\sonarscanner-msbuild-net46\tools\SonarScanner.MSBuild.exe" end /d:"sonar.login=%SONAR_TOKEN%"
-- ps: dotnet pack Lucca.Logs.Shared\Lucca.Logs.Shared.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION -o ..\artifacts
-- ps: dotnet pack Lucca.Logs.AspnetCore\Lucca.Logs.AspnetCore.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION -o ..\artifacts
-- ps: dotnet pack Lucca.Logs.AspnetLegacy\Lucca.Logs.AspnetLegacy.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION -o ..\artifacts
+- dotnet sonarscanner end /d:"sonar.login=%SONAR_TOKEN%"
+- ps: dotnet pack Lucca.Logs.Shared\Lucca.Logs.Shared.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION /p:SourceLinkEnabled=true /p:$("VersionPrefix="+$version.Prefix+";VersionSuffix="+$version.Suffix) -o ..\artifacts
+- ps: dotnet pack Lucca.Logs.AspnetCore\Lucca.Logs.AspnetCore.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION /p:SourceLinkEnabled=true /p:$("VersionPrefix="+$version.Prefix+";VersionSuffix="+$version.Suffix) -o ..\artifacts
+- ps: dotnet pack Lucca.Logs.AspnetLegacy\Lucca.Logs.AspnetLegacy.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION /p:SourceLinkEnabled=true /p:$("VersionPrefix="+$version.Prefix+";VersionSuffix="+$version.Suffix) -o ..\artifacts
 
 test_script:
 - echo Starting coverage
