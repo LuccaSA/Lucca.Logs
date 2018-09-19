@@ -64,6 +64,10 @@ namespace Lucca.Logs.Shared
             }
 
             string message = formatter(state, exception);
+            if(message == "[null]" && exception != null)
+            {
+                message = exception.Message;
+            }
 
             // Log to NLog
             LogEventInfo eventInfo = CreateNlogEventInfo(eventId, exception, nLogLogLevel, message);
