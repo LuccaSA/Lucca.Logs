@@ -70,7 +70,7 @@ namespace Lucca.Logs.AspnetLegacy
             return Request?.Headers.Get(header) != null;
         }
 
-        public string GetHEader(string header) => Request?.Headers.Get(header);
+        public string GetHeader(string header) => Request?.Headers.Get(header);
 
         public string Ip => Request?.UserHostAddress;
 
