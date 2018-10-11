@@ -30,6 +30,7 @@ namespace Lucca.Logs.Shared
 
         private const string _luccaForwardedHeader = "X-Forwarded-By-Lucca";
         private const string _forwardedHeader = "X-Forwarded-For";
+        private const string _correlationId = "X-Correlation-ID";
 
         private static string[] Keys => new[]
         {
@@ -48,7 +49,8 @@ namespace Lucca.Logs.Shared
             _exceptionClassName,
             _exceptionNamespace,
             _httpLikeExceptionStatus,
-            _uri
+            _uri,
+            _correlationId
         };
 
         internal static JsonLayout GenerateJsonLayout()
@@ -109,6 +111,11 @@ namespace Lucca.Logs.Shared
             if (httpRequest.ContainsHeader(_luccaForwardedHeader))
             {
                 ip = httpRequest.GetHEader(_forwardedHeader);
+            }
+
+            if (httpRequest.ContainsHeader(_correlationId))
+            {
+                data.Add(_correlationId, httpRequest.GetHEader(_correlationId));
             }
 
             if (String.IsNullOrEmpty(ip))
