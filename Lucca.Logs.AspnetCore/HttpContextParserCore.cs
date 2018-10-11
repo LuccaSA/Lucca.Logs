@@ -59,7 +59,7 @@ namespace Lucca.Logs.AspnetCore
             return Request.Headers.ContainsKey(header);
         }
 
-        public string GetHEader(string header) => Request?.Headers[header];
+        public string GetHeader(string header) => Request?.Headers[header];
 
         public string Ip => Request?.HttpContext?.Connection?.RemoteIpAddress?.ToString();
 

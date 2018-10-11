@@ -110,12 +110,12 @@ namespace Lucca.Logs.Shared
             string ip = null;
             if (httpRequest.ContainsHeader(_luccaForwardedHeader))
             {
-                ip = httpRequest.GetHEader(_forwardedHeader);
+                ip = httpRequest.GetHeader(_forwardedHeader);
             }
 
             if (httpRequest.ContainsHeader(_correlationId))
             {
-                data.Add(_correlationId, httpRequest.GetHEader(_correlationId));
+                data.Add(_correlationId, httpRequest.GetHeader(_correlationId));
             }
 
             if (String.IsNullOrEmpty(ip))
@@ -125,7 +125,7 @@ namespace Lucca.Logs.Shared
 
             data.Add(_hostAddress, ip);
 
-            data.Add(_userAgent, httpRequest.GetHEader("User-Agent"));
+            data.Add(_userAgent, httpRequest.GetHeader("User-Agent"));
 
             if (!isError)
             {
