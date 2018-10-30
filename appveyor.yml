@@ -44,24 +44,22 @@ before_build:
     IF "%APPVEYOR_PULL_REQUEST_NUMBER%"=="" (
     dotnet sonarscanner begin /k:"Lucca.Logs" /d:"sonar.analysis.mode=publish" /d:"sonar.host.url=https://sonarcloud.io" /d:"sonar.organization=luccaintegration-github" /d:"sonar.login=%SONAR_TOKEN%"
     ) ELSE (
-    dotnet sonarscanner begin /k:"Lucca.Logs" /d:"sonar.analysis.mode=preview" /d:"sonar.host.url=https://sonarcloud.io" /d:"sonar.organization=luccaintegration-github" /d:"sonar.login=%SONAR_TOKEN%" /d:"sonar.github.pullRequest=%APPVEYOR_PULL_REQUEST_NUMBER%" /d:"sonar.github.repository=LuccaSA/Lucca.Logs" /d:"sonar.github.oauth=%GITHUB_ACCESS_TOKEN%"
+    dotnet sonarscanner begin /k:"Lucca.Logs" /d:"sonar.host.url=https://sonarcloud.io" /d:"sonar.organization=luccaintegration-github" /d:"sonar.login=%SONAR_TOKEN%" /d:"sonar.github.oauth=%GITHUB_ACCESS_TOKEN%" /d:"sonar.pullrequest.provider=github" /d:"sonar.pullrequest.branch=%APPVEYOR_REPO_BRANCH%" /d:"sonar.pullrequest.key=%APPVEYOR_PULL_REQUEST_NUMBER%" /d:"sonar.pullrequest.github.repository=LuccaSA/Lucca.Logs" /d:"sonar.pullrequest.github.endpoint=https://api.github.com"
     )
 
 build_script:
-- ps: msbuild "Lucca.Logs.sln" /m /verbosity:minimal /property:$("VersionPrefix="+$version.Prefix+";VersionSuffix="+$version.Suffix) /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+- dotnet restore
+- dotnet build Lucca.Logs.sln -c Debug -v minimal
 
-after_build:
-- cmd: >-
+test_script:
+- OpenCover.4.6.519\tools\OpenCover.Console.exe -returntargetcode -oldstyle -register:user -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test /p:DebugType=full -c Debug Lucca.Logs.Tests\Lucca.Logs.Tests.csproj" -filter:"+[Lucca.Logs*]* -[*Tests*]*" -excludebyattribute:"*.ExcludeFromCodeCoverage*" -output:coverage-opencover.xml
 - dotnet sonarscanner end /d:"sonar.login=%SONAR_TOKEN%"
+- Codecov.1.0.5\tools\codecov -v -f coverage-opencover.xml
+
+after_test:
 - ps: dotnet pack Lucca.Logs.Shared\Lucca.Logs.Shared.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION /p:SourceLinkEnabled=true /p:$("VersionPrefix="+$version.Prefix+";VersionSuffix="+$version.Suffix) -o ..\artifacts
 - ps: dotnet pack Lucca.Logs.AspnetCore\Lucca.Logs.AspnetCore.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION /p:SourceLinkEnabled=true /p:$("VersionPrefix="+$version.Prefix+";VersionSuffix="+$version.Suffix) -o ..\artifacts
 - ps: dotnet pack Lucca.Logs.AspnetLegacy\Lucca.Logs.AspnetLegacy.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION /p:SourceLinkEnabled=true /p:$("VersionPrefix="+$version.Prefix+";VersionSuffix="+$version.Suffix) -o ..\artifacts
-
-test_script:
-- echo Starting coverage
-- OpenCover.4.6.519\tools\OpenCover.Console.exe -returntargetcode -oldstyle -register:user -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test /p:DebugType=full -c Debug Lucca.Logs.Tests\Lucca.Logs.Tests.csproj" -filter:"+[Lucca.Logs*]* -[*Tests*]*" -excludebyattribute:"*.ExcludeFromCodeCoverage*" -output:coverage-opencover.xml
-- echo Starting codecov upload
-- Codecov.1.0.5\tools\codecov -v -f coverage-opencover.xml
 
 artifacts:
   - path: artifacts\*.nupkg
@@ -71,7 +69,7 @@ deploy:
 
 - provider: NuGet
   api_key:
-    secure: +FLtpCBt5VlqKOzXVnPnUnJuWu8u7PVSjcQUAJbksEdH4KCk3QTgM63DNj/29XBb
+    secure: 8iIHDpACXa5QibvCePstSCuzCzxypMpCUwCTQJHFj5ILyXeC687Oy2bDMEJkJmJg
   skip_symbols: true
   artifact: /.*\.nupkg/
   on:
