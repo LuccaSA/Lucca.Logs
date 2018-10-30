@@ -17,7 +17,7 @@ namespace Lucca.Logs.Tests.Integration
         }
 
         [HttpGet]
-        public IEnumerable<string> Get()
+        public ActionResult<IEnumerable<string>> Get()
         {
             try
             {
@@ -27,7 +27,7 @@ namespace Lucca.Logs.Tests.Integration
             {
                 _loggerFactory.CreateLogger<DirectExceptionController>().LogError(e, "DirectExceptionController");
             }
-            return Enumerable.Empty<string>();
+            return Ok(Enumerable.Empty<string>());
         }
 
         [HttpPost]
