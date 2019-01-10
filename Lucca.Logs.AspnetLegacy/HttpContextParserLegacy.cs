@@ -76,13 +76,14 @@ namespace Lucca.Logs.AspnetLegacy
 
         public string TryGetBodyContent()
         {
-            if (Request == null || Request.InputStream.Length == 0)
-            {
-                return null;
-            }
             string documentContents = null;
             try
             {
+                if (Request == null || Request.InputStream.Length == 0)
+                {
+                    return null;
+                }
+
                 using (var stream = new MemoryStream())
                 {
                     Request.InputStream.Seek(0, SeekOrigin.Begin);
