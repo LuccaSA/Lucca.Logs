@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lucca.Logs.AspnetCore;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StackExchange.Exceptional;
@@ -32,7 +33,7 @@ namespace Lucca.Logs.Tests
             ServiceProvider provider = TestHelper.Register<DummyLogFactoryPlayer>(loggingBuilder =>
             {
                 //Exceptional.Settings.DefaultStore = _memoryStore;
-                loggingBuilder.AddLuccaLogs(o =>
+                loggingBuilder.AddLuccaLogs(new HostingEnvironment(),o =>
                 {
                 }, _memoryStore);
             });

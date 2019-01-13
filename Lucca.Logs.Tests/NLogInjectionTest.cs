@@ -2,6 +2,7 @@
 using System.Linq;
 using Lucca.Logs.AspnetCore;
 using Lucca.Logs.Shared;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using NLog.Config;
 using NLog.Targets;
@@ -21,18 +22,18 @@ namespace Lucca.Logs.Tests
         [InlineData(LogLevel.Warning)]
         public void FactoryTest(LogLevel logLevel)
         {
-            MemoryTarget target = null; 
+            MemoryTarget target = null;
             ServiceProvider provider = TestHelper.Register<DummyLogFactoryPlayer>(loggingBuilder =>
             {
-                loggingBuilder.AddLuccaLogs(o =>
-                {
-                    target = BootStrapNLogInMemoryOption(o);
-                });
+                loggingBuilder.AddLuccaLogs(new HostingEnvironment(), o =>
+                 {
+                     target = BootStrapNLogInMemoryOption(o);
+                 });
             });
             var player = provider.GetRequiredService<DummyLogFactoryPlayer>();
 
             player.Log(logLevel, 42, new Exception(), "the answer");
-            
+
             string expected = String.Format("the answer|{0}|Exception of type 'System.Exception' was thrown.|42", logLevel.ToNLogLevel());
             Assert.Equal(expected, target.Logs.FirstOrDefault());
         }
@@ -49,12 +50,12 @@ namespace Lucca.Logs.Tests
             MemoryTarget target = null;
             ServiceProvider provider = TestHelper.Register<DummyLogPlayer>(loggingBuilder =>
             {
-                loggingBuilder.AddLuccaLogs(o =>
+                loggingBuilder.AddLuccaLogs(new HostingEnvironment(), o =>
                 {
                     target = BootStrapNLogInMemoryOption(o);
                 });
             });
-            var player = provider.GetRequiredService<DummyLogPlayer>(); 
+            var player = provider.GetRequiredService<DummyLogPlayer>();
 
             player.Log(logLevel, 42, new Exception(), "the answer");
 
@@ -68,7 +69,7 @@ namespace Lucca.Logs.Tests
             {
                 Name = "inmemory",
                 Layout = "${message}|${level}|${exception}|${event-properties:EventId}"
-            }; 
+            };
             var nlogConf = new LoggingConfiguration();
             nlogConf.AddTarget(target);
             var networkRule = new LoggingRule("*", NLog.LogLevel.Trace, target);

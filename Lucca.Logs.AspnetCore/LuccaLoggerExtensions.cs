@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using StackExchange.Exceptional;
 #if NETCOREAPP2_1
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 #else
 using Lucca.Logs.AspnetLegacy;
@@ -15,6 +16,35 @@ namespace Lucca.Logs.AspnetCore
 {
     public static class LuccaLoggerExtensions
     {
+#if NETCOREAPP2_1
+        public static ILoggingBuilder AddLuccaLogs(this ILoggingBuilder loggingBuilder, IHostingEnvironment hostingEnvironment, IConfigurationSection config, Action<LuccaLoggerOptions> configureOptions = null)
+        {
+            if (hostingEnvironment == null)
+            {
+                throw new ArgumentNullException(nameof(hostingEnvironment));
+            }
+            if (hostingEnvironment.IsProduction())
+            {
+                loggingBuilder.ClearProviders();
+            }
+            loggingBuilder.Services.AddLuccaLogs(config, configureOptions);
+            return loggingBuilder;
+        }
+
+        public static ILoggingBuilder AddLuccaLogs(this ILoggingBuilder loggingBuilder, IHostingEnvironment hostingEnvironment, Action<LuccaLoggerOptions> configureOptions, ErrorStore errorStore = null)
+        {
+            if (hostingEnvironment == null)
+            {
+                throw new ArgumentNullException(nameof(hostingEnvironment));
+            }
+            if (hostingEnvironment.IsProduction())
+            {
+                loggingBuilder.ClearProviders();
+            }
+            loggingBuilder.Services.AddLuccaLogs(configureOptions, errorStore);
+            return loggingBuilder;
+        }
+#else
         public static ILoggingBuilder AddLuccaLogs(this ILoggingBuilder loggingBuilder, IConfigurationSection config, Action<LuccaLoggerOptions> configureOptions = null)
         {
             loggingBuilder.Services.AddLuccaLogs(config, configureOptions);
@@ -26,6 +56,7 @@ namespace Lucca.Logs.AspnetCore
             loggingBuilder.Services.AddLuccaLogs(configureOptions, errorStore);
             return loggingBuilder;
         }
+#endif
 
         private static IServiceCollection AddLuccaLogs(this IServiceCollection services, IConfigurationSection config, Action<LuccaLoggerOptions> configureOptions = null)
         {

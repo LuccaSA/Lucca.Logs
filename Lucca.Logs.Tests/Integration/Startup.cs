@@ -10,11 +10,13 @@ namespace Lucca.Logs.Tests.Integration
     public class Startup
     {
         private readonly ErrorStore _memoryErrorStore;
+        private readonly IHostingEnvironment _hostingEnvironment;
 
-        public Startup(IConfiguration configuration, ErrorStore memoryErrorStore)
+        public Startup(IConfiguration configuration, ErrorStore memoryErrorStore, IHostingEnvironment hostingEnvironment)
         {
             Configuration = configuration;
             _memoryErrorStore = memoryErrorStore;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         public IConfiguration Configuration { get; set; }
@@ -26,7 +28,7 @@ namespace Lucca.Logs.Tests.Integration
 
             services.AddLogging(l =>
             {
-                l.AddLuccaLogs(o =>
+                l.AddLuccaLogs(_hostingEnvironment,o =>
                 {
 
                 }, _memoryErrorStore);
