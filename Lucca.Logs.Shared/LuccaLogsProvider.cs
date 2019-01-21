@@ -35,6 +35,12 @@ namespace Lucca.Logs.Shared
             _exceptionalWrapper.Configure(exceptionalSetting =>
             {
                 exceptionalSetting.DefaultStore = options.GenerateExceptionalStore();
+              
+                exceptionalSetting.LogFilters.Cookie["password"] = "***";
+                exceptionalSetting.LogFilters.Header["password"] = "***";
+                exceptionalSetting.LogFilters.Form["password"] = "***";
+                exceptionalSetting.LogFilters.Header["password"] = "***";
+                exceptionalSetting.LogFilters.QueryString["password"] = "***";
             });
         }
 
