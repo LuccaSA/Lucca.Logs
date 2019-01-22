@@ -45,12 +45,10 @@ namespace Lucca.Logs.Shared
 
                 exceptionalSetting.OnBeforeLog += (o, eb) =>
                 {
-                    foreach (var sv in eb.Error.ServerVariablesSerializable)
+                    var querystring = eb.Error.ServerVariables.Get("QUERY_STRING");
+                    if (querystring != null)
                     {
-                        if (sv.Name.Equals("QUERY_STRING", StringComparison.OrdinalIgnoreCase))
-                        {
-                            sv.Value = sv.Value.ClearQueryStringPassword();
-                        }
+                        eb.Error.ServerVariables.Set("QUERY_STRING", querystring.ClearQueryStringPassword());
                     }
                 };
             });
