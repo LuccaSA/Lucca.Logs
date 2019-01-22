@@ -80,7 +80,7 @@ namespace Lucca.Logs.Shared
                 return null;
             }
 
-            if (source.IndexOf("password", StringComparison.OrdinalIgnoreCase) > 0)
+            if (source.IndexOf("password", StringComparison.OrdinalIgnoreCase) > -1)
             {
                return  _passwordClean.Replace(source, "***");
             }
