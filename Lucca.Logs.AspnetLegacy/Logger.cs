@@ -52,5 +52,20 @@ namespace Lucca.Logs.AspnetLegacy
         {
             _defaultLogger.Value.CreateLogger(appName).LogInformation(message);
         }
+
+        public static void LogDebug(string message, string appName)
+        {
+            _defaultLogger.Value.CreateLogger(appName).LogDebug(message);
+        }
+
+        public static void LogWarning(string message, string appName)
+        {
+            _defaultLogger.Value.CreateLogger(appName).LogWarning(message);
+        }
+
+        public static void LogCritical(string message, string appName)
+        {
+            _defaultLogger.Value.CreateLogger(appName).LogCritical(message);
+        }
     }
 }
