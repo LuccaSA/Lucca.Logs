@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NLog;
@@ -35,9 +36,25 @@ namespace Lucca.Logs.Shared
             _exceptionalWrapper.Configure(exceptionalSetting =>
             {
                 exceptionalSetting.DefaultStore = options.GenerateExceptionalStore();
+
+                exceptionalSetting.LogFilters.Cookie["password"] = "***";
+                exceptionalSetting.LogFilters.Header["password"] = "***";
+                exceptionalSetting.LogFilters.Form["password"] = "***";
+                exceptionalSetting.LogFilters.Header["password"] = "***";
+                exceptionalSetting.LogFilters.QueryString["password"] = "***";
+
+                exceptionalSetting.OnBeforeLog += (o, eb) =>
+                {
+                    var querystring = eb.Error.ServerVariables.Get("QUERY_STRING");
+                    if (querystring != null)
+                    {
+                        eb.Error.ServerVariables.Set("QUERY_STRING", querystring.ClearQueryStringPassword());
+                    }
+                };
             });
         }
 
+        
         public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName)
         {
             LuccaLoggerOptions opt = _options.CurrentValue;
@@ -47,6 +64,26 @@ namespace Lucca.Logs.Shared
         public void Dispose()
         {
             _changeListener?.Dispose();
+        }
+    }
+
+    internal static class CleanExtension
+    {
+        private static readonly Regex _passwordClean = new Regex("(?<=[?&]" + Regex.Escape("password") + "=)[^&]*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        public static string ClearQueryStringPassword(this string source)
+        {
+            if (source == null)
+            {
+                return null;
+            }
+
+            if (source.IndexOf("password", StringComparison.OrdinalIgnoreCase) > -1)
+            {
+               return  _passwordClean.Replace(source, "***");
+            }
+
+            return source;
         }
     }
 }
