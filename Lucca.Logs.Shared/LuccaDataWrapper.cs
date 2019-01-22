@@ -11,6 +11,7 @@ namespace Lucca.Logs.Shared
 
         private const string _warning = "WARNING";
         private const string _pageRest = "Page REST";
+        private const string _pageRest2 = "PageREST";
         private const string _page = "Page";
         private const string _verb = "method";
         private const string _hostAddress = "ipAddress";
@@ -99,6 +100,7 @@ namespace Lucca.Logs.Shared
             }
 
             data.Add(_pageRest, httpRequest.ExtractUrl(Uripart.Path | Uripart.Query));
+            data.Add(_pageRest2, httpRequest.ExtractUrl(Uripart.Path | Uripart.Query));
             data.Add(_page, httpRequest.ExtractUrl(Uripart.Full));
             data.Add(_verb, httpRequest.Method);
             data.Add(_uri, httpRequest.ExtractUrl(Uripart.Path));
