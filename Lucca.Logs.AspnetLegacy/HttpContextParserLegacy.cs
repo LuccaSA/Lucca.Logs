@@ -58,7 +58,7 @@ namespace Lucca.Logs.AspnetLegacy
             }
             if ((uriPart & Uripart.Query) == Uripart.Query)
             {
-                urlBuilder.Append(Request.Url.Query);
+                urlBuilder.Append(Request.Url.Query.ClearQueryStringPassword());
             }
             return urlBuilder.ToString();
         }
