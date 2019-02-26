@@ -36,7 +36,6 @@ namespace Lucca.Logs.Tests.Integration
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseMvc();
-            app.UseLuccaLogs();
         }
     }
 }
