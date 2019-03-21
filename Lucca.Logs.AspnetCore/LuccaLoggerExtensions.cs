@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using StackExchange.Exceptional;
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 using Microsoft.AspNetCore.Http;
 #else
 using Lucca.Logs.AspnetLegacy;
@@ -40,7 +40,7 @@ namespace Lucca.Logs.AspnetCore
             }
             services.AddOptions();
             services.Configure<LuccaLoggerOptions>(config);
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
             services.AddExceptional(e =>
             {
                 var luccaLogsOption = config.Get<LuccaLoggerOptions>();
@@ -70,7 +70,7 @@ namespace Lucca.Logs.AspnetCore
 
             if (errorStore != null)
             {
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
                 services.AddExceptional(o =>
                 {
                     o.Store.Type = errorStore.GetType().ToString();
@@ -91,7 +91,7 @@ namespace Lucca.Logs.AspnetCore
 
         private static void RegisterLuccaLogsProvider(this IServiceCollection services)
         {
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
             services.TryAddSingleton<IExceptionQualifier, GenericExceptionQualifier>();
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddSingleton<IHttpContextParser, HttpContextParserCore>();
