@@ -10,9 +10,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <VersionPrefix>0.4.0</VersionPrefix>
+    <VersionPrefix>0.6.0</VersionPrefix>
     <VersionSuffix>alpha</VersionSuffix>
-    <PackageVersion>0.4.0</PackageVersion>
+    <PackageVersion>0.6.0</PackageVersion>
     <Authors>Lucca team</Authors>
     <Description>Lucca.Logs</Description>
     <PackageProjectUrl>https://github.com/LuccaSA/Lucca.Logs/</PackageProjectUrl>
