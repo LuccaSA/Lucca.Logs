@@ -58,7 +58,7 @@ namespace Lucca.Logs.Shared
         public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName)
         {
             LuccaLoggerOptions opt = _options.CurrentValue;
-            return new LuccaLogger(categoryName, _httpContextAccessor, LogManager.GetLogger(categoryName), opt, _filters, _exceptionalWrapper, categoryName);
+            return new LuccaLogger(categoryName, _httpContextAccessor, LogManager.GetLogger(categoryName), opt, _filters, _exceptionalWrapper, _options.CurrentValue.ApplicationName);
         }
 
         public void Dispose()
