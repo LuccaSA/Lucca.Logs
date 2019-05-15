@@ -34,7 +34,7 @@ namespace Lucca.Logs.Tests
                 //Exceptional.Settings.DefaultStore = _memoryStore;
                 loggingBuilder.AddLuccaLogs(o =>
                 {
-                }, _memoryStore);
+                }, "myLogger",_memoryStore);
             });
 
             var player = provider.GetRequiredService<DummyLogFactoryPlayer>();

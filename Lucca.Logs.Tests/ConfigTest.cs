@@ -17,7 +17,7 @@ namespace Lucca.Logs.Tests
             {
                 TestHelper.Register<DummyLogPlayer>(loggingBuilder =>
                 {
-                    loggingBuilder.AddLuccaLogs((IConfigurationSection)null);
+                    loggingBuilder.AddLuccaLogs((IConfigurationSection)null,"myLogger");
                 });
             });
         }
@@ -30,7 +30,7 @@ namespace Lucca.Logs.Tests
             {
                 ServiceProvider provider = TestHelper.Register<DummyLogPlayer>(loggingBuilder =>
                 {
-                    loggingBuilder.AddLuccaLogs(config.GetSection("LuccaLoggerOptions"));
+                    loggingBuilder.AddLuccaLogs(config.GetSection("LuccaLoggerOptions"), "myLogger");
                 });
                 provider.GetRequiredService<DummyLogPlayer>();
             });
@@ -45,7 +45,7 @@ namespace Lucca.Logs.Tests
                 loggingBuilder.AddLuccaLogs(conf =>
                 {
 
-                });
+                }, "myLogger");
             });
             provider.GetRequiredService<DummyLogPlayer>();
         }
@@ -57,7 +57,7 @@ namespace Lucca.Logs.Tests
 
             ServiceProvider provider = TestHelper.Register<InjectOption>(loggingBuilder =>
             {
-                loggingBuilder.AddLuccaLogs(config.GetSection("LuccaLogs"));
+                loggingBuilder.AddLuccaLogs(config.GetSection("LuccaLogs"), "myLogger");
             });
             var injected = provider.GetRequiredService<InjectOption>();
 
@@ -71,7 +71,7 @@ namespace Lucca.Logs.Tests
 
             ServiceProvider provider = TestHelper.Register<InjectOption>(loggingBuilder =>
             {
-                loggingBuilder.AddLuccaLogs(config.GetSection("LuccaLogs"));
+                loggingBuilder.AddLuccaLogs(config.GetSection("LuccaLogs"), "myLogger");
             });
             var injected = provider.GetRequiredService<InjectOption>();
 

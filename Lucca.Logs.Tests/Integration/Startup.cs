@@ -29,7 +29,7 @@ namespace Lucca.Logs.Tests.Integration
                 l.AddLuccaLogs(o =>
                 {
 
-                }, _memoryErrorStore);
+                },"IntegrationTest", _memoryErrorStore);
             });
         }
 
