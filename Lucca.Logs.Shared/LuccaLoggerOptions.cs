@@ -34,7 +34,7 @@ namespace Lucca.Logs.Shared
         /// Base URI for external link 
         /// </summary>
         /// <example>"http://opserver.lucca.local/exceptions/detail?id="</example>
-        public string GuidLink { get; set; }
+        public string GuidLink { get; set; } = "http://opserver.lucca.local/exceptions/detail?id=";
 
         /// <summary>
         /// Separator between for EventId.Id and EventId.Name. Default to .

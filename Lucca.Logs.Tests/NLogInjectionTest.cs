@@ -27,7 +27,7 @@ namespace Lucca.Logs.Tests
                 loggingBuilder.AddLuccaLogs(o =>
                 {
                     target = BootStrapNLogInMemoryOption(o);
-                });
+                }, "myLogger");
             });
             var player = provider.GetRequiredService<DummyLogFactoryPlayer>();
 
@@ -52,7 +52,7 @@ namespace Lucca.Logs.Tests
                 loggingBuilder.AddLuccaLogs(o =>
                 {
                     target = BootStrapNLogInMemoryOption(o);
-                });
+                }, "myLogger");
             });
             var player = provider.GetRequiredService<DummyLogPlayer>(); 
 

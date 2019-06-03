@@ -40,6 +40,8 @@ namespace Lucca.Logs.Tests.Integration
             response.EnsureSuccessStatusCode();
              
             Assert.Single(found);
+
+            Assert.Equal("IntegrationTest", found.First().ApplicationName);
         }
 
         [Fact]
