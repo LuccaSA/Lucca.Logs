@@ -50,12 +50,11 @@ namespace Lucca.Logs.Shared
 
             bool isError = logLevel == LogLevel.Error || logLevel == LogLevel.Critical;
 
-            Dictionary<string, string> customData = LuccaDataWrapper.GatherData(exception, _httpContextWrapper, isError, _appName);
-
             Guid? guid = null;
             if (_exceptionalWrapper.Enabled && exception != null && (_filters == null || _filters.LogToOpserver(exception)))
             {
-                guid = _httpContextWrapper.ExceptionalLog(exception, customData, _categoryName, _appName);
+                Dictionary<string, string> opServerData = LuccaDataWrapper.GatherData(exception, _httpContextWrapper, isError, _appName, false);
+                guid = _httpContextWrapper.ExceptionalLog(exception, opServerData, _categoryName, _appName);
             }
 
             if (!isLogging)
@@ -64,7 +63,7 @@ namespace Lucca.Logs.Shared
             }
 
             string message = formatter(state, exception);
-            if(message == "[null]" && exception != null)
+            if (message == "[null]" && exception != null)
             {
                 message = exception.Message;
             }
@@ -72,8 +71,8 @@ namespace Lucca.Logs.Shared
             // Log to NLog
             LogEventInfo eventInfo = CreateNlogEventInfo(eventId, exception, nLogLogLevel, message);
 
-            // Get cutom data and inject
-            AppendLuccaData(guid, eventInfo, _options, customData);
+            // Get full custom data and inject
+            AppendLuccaData(guid, eventInfo, _options, LuccaDataWrapper.GatherData(exception, _httpContextWrapper, isError, _appName, true));
 
             _nloLogger.Log(eventInfo);
         }

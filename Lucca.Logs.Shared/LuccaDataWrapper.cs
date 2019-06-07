@@ -72,9 +72,9 @@ namespace Lucca.Logs.Shared
             return jsonLayout;
         }
 
-        internal static Dictionary<string, string> GatherData(Exception e, IHttpContextParser httpRequest, bool isError, string appName)
+        internal static Dictionary<string, string> GatherData(Exception e, IHttpContextParser httpRequest, bool isError, string appName, bool fullDetail)
         {
-            Dictionary<string, string> data = GatherData(httpRequest, isError, appName);
+            Dictionary<string, string> data = GatherData(httpRequest, isError, appName, fullDetail);
             if (LogExtractor.CustomKeys != null)
             {
                 foreach (KeyValuePair<string, string> kv in LogExtractor.CustomKeys(e))
@@ -85,13 +85,14 @@ namespace Lucca.Logs.Shared
             return data;
         }
 
-        internal static Dictionary<string, string> GatherData(IHttpContextParser httpRequest, bool isError, string appName)
+        internal static Dictionary<string, string> GatherData(IHttpContextParser httpRequest, bool isError, string appName, bool fullDetail)
         {
-            var data = new Dictionary<string, string>(16);
-            if (!String.IsNullOrEmpty(appName))
+            //Cannot set capacity because of LogExtractor.CustomKeys
+            var data = new Dictionary<string, string> 
             {
-                data.Add(_appName, appName);
-            }
+                { _appName, appName },
+                { _appPool, Environment.GetEnvironmentVariable("APP_POOL_ID", EnvironmentVariableTarget.Process) }
+            };
 
             if (httpRequest == null)
             {
@@ -99,35 +100,36 @@ namespace Lucca.Logs.Shared
                 return data;
             }
 
-            data.Add(_pageRest, httpRequest.ExtractUrl(Uripart.Path | Uripart.Query));
-            data.Add(_pageRest2, httpRequest.ExtractUrl(Uripart.Path | Uripart.Query));
-            data.Add(_page, httpRequest.ExtractUrl(Uripart.Full));
-            data.Add(_verb, httpRequest.Method);
-            data.Add(_uri, httpRequest.ExtractUrl(Uripart.Path));
-            data.Add(_serverName, httpRequest.ExtractUrl(Uripart.Host));
-            // https://stackoverflow.com/a/39139875
-            data.Add(_appPool, Environment.GetEnvironmentVariable("APP_POOL_ID", EnvironmentVariableTarget.Process));
-
-            // Récupération de l'IP forwardée par HAProxy, et fallback UserHostAddress
-            string ip = null;
-            if (httpRequest.ContainsHeader(_luccaForwardedHeader))
+            if (fullDetail)
             {
-                ip = httpRequest.GetHeader(_forwardedHeader);
+                data.Add(_pageRest, httpRequest.ExtractUrl(Uripart.Path | Uripart.Query));
+                data.Add(_pageRest2, httpRequest.ExtractUrl(Uripart.Path | Uripart.Query));
+                data.Add(_page, httpRequest.ExtractUrl(Uripart.Full));
+                data.Add(_verb, httpRequest.Method);
+                data.Add(_uri, httpRequest.ExtractUrl(Uripart.Path));
+                data.Add(_serverName, httpRequest.ExtractUrl(Uripart.Host));
+
+                // Récupération de l'IP forwardée par HAProxy, et fallback UserHostAddress
+                string ip = null;
+                if (httpRequest.ContainsHeader(_luccaForwardedHeader))
+                {
+                    ip = httpRequest.GetHeader(_forwardedHeader);
+                }
+
+                if (httpRequest.ContainsHeader(_correlationId))
+                {
+                    data.Add(_correlationId, httpRequest.GetHeader(_correlationId));
+                }
+
+                if (string.IsNullOrEmpty(ip))
+                {
+                    ip = httpRequest.Ip;
+                }
+
+                data.Add(_hostAddress, ip);
+
+                data.Add(_userAgent, httpRequest.GetHeader("User-Agent"));
             }
-
-            if (httpRequest.ContainsHeader(_correlationId))
-            {
-                data.Add(_correlationId, httpRequest.GetHeader(_correlationId));
-            }
-
-            if (String.IsNullOrEmpty(ip))
-            {
-                ip = httpRequest.Ip;
-            }
-
-            data.Add(_hostAddress, ip);
-
-            data.Add(_userAgent, httpRequest.GetHeader("User-Agent"));
 
             if (!isError)
             {
@@ -135,8 +137,7 @@ namespace Lucca.Logs.Shared
             }
 
             string documentContents = httpRequest.TryGetBodyContent();
-             
-            if (!String.IsNullOrEmpty(documentContents))
+            if (!string.IsNullOrEmpty(documentContents))
             {
                 data.Add(_rawPostedData, documentContents);
             }
