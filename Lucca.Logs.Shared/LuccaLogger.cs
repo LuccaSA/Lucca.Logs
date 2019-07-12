@@ -64,7 +64,7 @@ namespace Lucca.Logs.Shared
             }
 
             string message = formatter(state, exception);
-            if(message == "[null]" && exception != null)
+            if (message == "[null]" && exception != null)
             {
                 message = exception.Message;
             }
@@ -85,7 +85,16 @@ namespace Lucca.Logs.Shared
                 eventInfo.Properties[kv.Key] = kv.Value;
             }
 
-            if (guid.HasValue)
+            if (!guid.HasValue)
+            {
+                return;
+            }
+
+            if (options.GuidWithPlaceHolder)
+            {
+                eventInfo.Properties[LuccaDataWrapper.Link] = String.Format(options.GuidLink, guid.Value.ToString("N"));
+            }
+            else
             {
                 eventInfo.Properties[LuccaDataWrapper.Link] = options.GuidLink + guid.Value.ToString("N");
             }

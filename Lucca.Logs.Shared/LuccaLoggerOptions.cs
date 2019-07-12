@@ -33,8 +33,20 @@ namespace Lucca.Logs.Shared
         /// <summary>
         /// Base URI for external link 
         /// </summary>
-        /// <example>"http://opserver.lucca.local/exceptions/detail?id="</example>
-        public string GuidLink { get; set; } = "http://opserver.lucca.local/exceptions/detail?id=";
+        /// <example>"http://opserver.lucca.local/exceptions/detail?id={0}"</example>
+        public string GuidLink { get; set; } = "http://opserver.lucca.local/exceptions/detail?id={0}";
+
+        public bool GuidWithPlaceHolder
+        {
+            get
+            {
+                if (!_guidWithPlaceHolder.HasValue)
+                {
+                    _guidWithPlaceHolder = GuidLink.Contains("{0}");
+                }
+                return _guidWithPlaceHolder.Value;
+            }
+        }
 
         /// <summary>
         /// Separator between for EventId.Id and EventId.Name. Default to .
@@ -57,6 +69,7 @@ namespace Lucca.Logs.Shared
         internal ErrorStore ExplicitErrorStore { get; set; }
 
         private LoggingConfiguration _nlog;
+        private bool? _guidWithPlaceHolder;
 
         public ErrorStore GenerateExceptionalStore()
         {
