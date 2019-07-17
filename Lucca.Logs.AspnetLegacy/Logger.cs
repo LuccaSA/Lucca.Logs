@@ -22,7 +22,7 @@ namespace Lucca.Logs.AspnetLegacy
         /// <param name="appName">The current application name</param>
         public static void LogException(Exception ex, string appName, string message = null)
         {
-            _defaultLogger.Value.CreateLogger(appName).LogError(ex, message);
+            GetFactory.CreateLogger(appName).LogError(ex, message);
         }
 
         public static void LogInfo(object objectToSerializeAsMessage, string appName)
@@ -35,22 +35,22 @@ namespace Lucca.Logs.AspnetLegacy
         /// </summary> 
         public static void LogInfo(string message, string appName)
         {
-            _defaultLogger.Value.CreateLogger(appName).LogInformation(message);
+            GetFactory.CreateLogger(appName).LogInformation(message);
         }
 
         public static void LogDebug(string message, string appName)
         {
-            _defaultLogger.Value.CreateLogger(appName).LogDebug(message);
+            GetFactory.CreateLogger(appName).LogDebug(message);
         }
 
         public static void LogWarning(string message, string appName)
         {
-            _defaultLogger.Value.CreateLogger(appName).LogWarning(message);
+            GetFactory.CreateLogger(appName).LogWarning(message);
         }
 
         public static void LogCritical(string message, string appName)
         {
-            _defaultLogger.Value.CreateLogger(appName).LogCritical(message);
+            GetFactory.CreateLogger(appName).LogCritical(message);
         }
     }
 }
