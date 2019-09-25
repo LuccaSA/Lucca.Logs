@@ -1,6 +1,5 @@
 ﻿using Lucca.Logs.AspnetCore;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Exceptional;
@@ -24,19 +23,14 @@ namespace Lucca.Logs.Tests.Integration
             services.AddMvc()
                 .AddApplicationPart(typeof(DirectExceptionController).Assembly);
 
-            services.AddLogging(l =>
-            {
-                l.AddLuccaLogs(o =>
-                {
-
-                },"IntegrationTest", _memoryErrorStore);
-            });
+            services.AddLogging(l => l.AddLuccaLogs(o => { }, "IntegrationTest", _memoryErrorStore));
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc();
             app.UseLuccaLogs();
+            app.UseRouting();
+            app.UseEndpoints(endpoints => endpoints.MapControllers());
         }
     }
 }

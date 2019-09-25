@@ -5,7 +5,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Lucca.Logs.Shared;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Formatters.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -150,21 +149,10 @@ namespace Lucca.Logs.AspnetCore
             await httpContext.Response.WriteAsync(data);
         }
 
-        private List<MediaTypeSegmentWithQuality> GetAcceptableMediaTypes(HttpRequest request)
+        private List<MediaTypeHeaderValue> GetAcceptableMediaTypes(HttpRequest request)
         {
-            var result = new List<MediaTypeSegmentWithQuality>();
-            AcceptHeaderParser.ParseAcceptHeader(request.Headers[HeaderNames.Accept], result);
-            result.Sort(QualityComparer);
-            return result;
-        }
-
-        private static int QualityComparer(MediaTypeSegmentWithQuality left, MediaTypeSegmentWithQuality right)
-        {
-            if (left.Quality > right.Quality)
-                return -1;
-            if (Math.Abs(left.Quality - right.Quality) < 0.1)
-                return 0;
-            return 1;
+            //https://developer.mozilla.org/en-US/docs/Glossary/Quality_values
+            return request.GetTypedHeaders().Accept.OrderByDescending(h => h.Quality ?? 1).ToList();
         }
 
         private static void ClearHttpResponseResponse(HttpContext context, HttpStatusCode statusCode)
