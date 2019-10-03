@@ -36,8 +36,8 @@ install:
   - ps: Update-AppveyorBuild -Version $version.Semver
   - choco install dotnetcore-sdk -y
   - dotnet tool install --global dotnet-sonarscanner
-  - nuget install OpenCover -Version 4.6.519 
-  - nuget install Codecov -Version 1.0.5 
+  - nuget install OpenCover -Version 4.7.922
+  - nuget install Codecov -Version 1.7.2
 
 before_build:
 - dotnet restore
