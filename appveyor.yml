@@ -53,9 +53,9 @@ build_script:
 - dotnet build Lucca.Logs.sln -c Debug -v minimal
 
 test_script:
-- OpenCover.4.6.519\tools\OpenCover.Console.exe -returntargetcode -oldstyle -register:user -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test /p:DebugType=full -c Debug Lucca.Logs.Tests\Lucca.Logs.Tests.csproj" -filter:"+[Lucca.Logs*]* -[*Tests*]*" -excludebyattribute:"*.ExcludeFromCodeCoverage*" -output:coverage-opencover.xml
+- OpenCover.4.7.922\tools\OpenCover.Console.exe -returntargetcode -oldstyle -register:user -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test /p:DebugType=full -c Debug Lucca.Logs.Tests\Lucca.Logs.Tests.csproj" -filter:"+[Lucca.Logs*]* -[*Tests*]*" -excludebyattribute:"*.ExcludeFromCodeCoverage*" -output:coverage-opencover.xml
 - dotnet sonarscanner end /d:"sonar.login=%SONAR_TOKEN%"
-- Codecov.1.0.5\tools\codecov -v -f coverage-opencover.xml
+- Codecov.1.7.2\tools\codecov -v -f coverage-opencover.xml
 
 after_test:
 - ps: dotnet pack Lucca.Logs.Shared\Lucca.Logs.Shared.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION /p:SourceLinkEnabled=true /p:$("VersionPrefix="+$version.Prefix+";VersionSuffix="+$version.Suffix) -o ..\artifacts
