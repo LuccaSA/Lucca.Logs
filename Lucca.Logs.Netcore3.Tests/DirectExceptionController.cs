@@ -30,17 +30,10 @@ namespace Lucca.Logs.Netcore3.Tests
             return Ok(Enumerable.Empty<string>());
         }
 
-        [HttpPost]
-        public void Post([FromBody] TestDto dto)
+        [HttpGet("direct")]
+        public ActionResult<IEnumerable<string>> GetDirect()
         {
-            try
-            {
-                throw new NotImplementedException("post");
-            }
-            catch (Exception e)
-            {
-                _loggerFactory.CreateLogger<DirectExceptionController>().LogError(e, "DirectExceptionController");
-            }
+            throw new NotImplementedException("get");
         }
     }
 }

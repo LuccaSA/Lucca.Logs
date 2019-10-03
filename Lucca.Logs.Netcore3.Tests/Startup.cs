@@ -35,14 +35,14 @@ namespace Lucca.Logs.Netcore3.Tests
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseLuccaLogs();
+
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
-
-            app.UseLuccaLogs();
         }
     }
 }

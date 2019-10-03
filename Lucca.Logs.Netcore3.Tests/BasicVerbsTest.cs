@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -36,6 +37,24 @@ namespace Lucca.Logs.Netcore3.Tests
             List<Error> found = await _memoryStore.GetAllAsync();
 
             response.EnsureSuccessStatusCode();
+
+            Assert.Single(found);
+
+            Assert.Equal("IntegrationTest", found.First().ApplicationName);
+        }
+
+        [Fact]
+        public async Task ExOnGetDirect()
+        {
+            try
+            {
+                await _client.GetAsync("/api/directException/direct");
+            }
+            catch (Exception)
+            {
+                //
+            }
+            List<Error> found = await _memoryStore.GetAllAsync();
 
             Assert.Single(found);
 
