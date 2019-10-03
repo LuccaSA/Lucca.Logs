@@ -64,7 +64,7 @@ after_test:
 - ps: dotnet pack Lucca.Logs.AspnetLegacy\Lucca.Logs.AspnetLegacy.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION /p:SourceLinkEnabled=true /p:$("VersionPrefix="+$version.Prefix+";VersionSuffix="+$version.Suffix) -o ..\artifacts
 
 artifacts:
-  - path: artifacts\*.nupkg
+  - path: **\*.nupkg
     name: lib
 
 deploy:
