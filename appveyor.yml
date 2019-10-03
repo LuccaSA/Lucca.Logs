@@ -59,12 +59,12 @@ test_script:
 - Codecov.1.7.2\tools\codecov -v -f coverage-opencover.xml
 
 after_test:
-- ps: dotnet pack Lucca.Logs.Shared\Lucca.Logs.Shared.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION /p:SourceLinkEnabled=true /p:$("VersionPrefix="+$version.Prefix+";VersionSuffix="+$version.Suffix) -o ..\artifacts
-- ps: dotnet pack Lucca.Logs.AspnetCore\Lucca.Logs.AspnetCore.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION /p:SourceLinkEnabled=true /p:$("VersionPrefix="+$version.Prefix+";VersionSuffix="+$version.Suffix) -o ..\artifacts
-- ps: dotnet pack Lucca.Logs.AspnetLegacy\Lucca.Logs.AspnetLegacy.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION /p:SourceLinkEnabled=true /p:$("VersionPrefix="+$version.Prefix+";VersionSuffix="+$version.Suffix) -o ..\artifacts
+- ps: dotnet pack Lucca.Logs.Shared\Lucca.Logs.Shared.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION /p:SourceLinkEnabled=true /p:$("VersionPrefix="+$version.Prefix+";VersionSuffix="+$version.Suffix) -o artifacts
+- ps: dotnet pack Lucca.Logs.AspnetCore\Lucca.Logs.AspnetCore.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION /p:SourceLinkEnabled=true /p:$("VersionPrefix="+$version.Prefix+";VersionSuffix="+$version.Suffix) -o artifacts
+- ps: dotnet pack Lucca.Logs.AspnetLegacy\Lucca.Logs.AspnetLegacy.csproj --configuration $env:CONFIGURATION /p:PackageVersion=$env:APPVEYOR_BUILD_VERSION /p:SourceLinkEnabled=true /p:$("VersionPrefix="+$version.Prefix+";VersionSuffix="+$version.Suffix) -o artifacts
 
 artifacts:
-  - path: '**\*.nupkg'
+  - path: 'artifacts\*.nupkg'
     name: lib
 
 deploy:
