@@ -53,8 +53,8 @@ build_script:
 - dotnet build Lucca.Logs.sln -c Debug -v minimal
 
 test_script:
-- OpenCover.4.7.922\tools\OpenCover.Console.exe -returntargetcode -oldstyle -register:user -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test /p:DebugType=full -c Debug Lucca.Logs.Tests\Lucca.Logs.Tests.csproj" -filter:"+[Lucca.Logs*]* -[*Tests*]*" -excludebyattribute:"*.ExcludeFromCodeCoverage*" -output:coverage-opencover.xml
-- OpenCover.4.7.922\tools\OpenCover.Console.exe -returntargetcode -oldstyle -register:user -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test /p:DebugType=full -c Debug Lucca.Logs.Netcore3.Tests\Lucca.Logs.Netcore3.Tests.csproj" -filter:"+[Lucca.Logs*]* -[*Tests*]*" -excludebyattribute:"*.ExcludeFromCodeCoverage*" -output:coverage-opencover.xml -mergeoutput
+- OpenCover.4.7.922\tools\OpenCover.Console.exe -returntargetcode -oldstyle -register:user -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test /p:DebugType=full -c Debug Lucca.Logs.Tests\Lucca.Logs.Tests.csproj" -filter:"+[*]* -[*Tests*]*" -output:coverage-opencover.xml
+- OpenCover.4.7.922\tools\OpenCover.Console.exe -returntargetcode -oldstyle -register:user -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test /p:DebugType=full -c Debug Lucca.Logs.Netcore3.Tests\Lucca.Logs.Netcore3.Tests.csproj" -filter:"+[*]* -[*Tests*]*" -output:coverage-opencover.xml -mergeoutput
 - dotnet sonarscanner end /d:"sonar.login=%SONAR_TOKEN%"
 - Codecov.1.7.2\tools\codecov -v -f coverage-opencover.xml
 
