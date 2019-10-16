@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+#if NETCOREAPP2_1
 using Microsoft.AspNetCore.Http.Internal;
+#endif
 
 namespace Lucca.Logs.AspnetCore
 {
@@ -18,7 +20,11 @@ namespace Lucca.Logs.AspnetCore
 
         public async Task Invoke(HttpContext context)
         {
+#if NETCOREAPP2_1
             context.Request.EnableRewind();
+#else
+            context.Request.EnableBuffering();
+#endif
             await _next(context);
         }
     }
