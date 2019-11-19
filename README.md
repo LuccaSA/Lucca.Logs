@@ -83,3 +83,22 @@ Lisez la doc : https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging
 ## Unit tests
 
 Le moyen le plus simple pour mocker un `ILogger<T>` est d'instancier un `NullLogger<T>`.
+
+## Envoyer des logs sur OpServer en local
+
+Il est possible d'envoyer les erreurs sur OpServer pour les voir [à cette addresse](http://opserver.lucca.local/exceptions?store=Dev).
+
+Pour celà, il faut modifier le fichier `appSettings.json` du projet concerné avec :
+
+```json
+ {
+    "LuccaLoggerOptions": {
+        "ApplicationName": "MY_BEAUTIFUL_APP Local",
+        "ConnectionString": "Data Source=exceptions.lucca.local;Initial Catalog=Dev.Exceptions;User Id=opdev;Password=###############;",
+        "LogFilePath": "C:\\Sites\\_logs\\lucca.MY_BEAUTIFUL_APP.logs",
+        "IgnoreEmptyEventId": "false"
+     }
+}
+```
+
+> Demandez le mot de passe à l'équipe plateforme.
