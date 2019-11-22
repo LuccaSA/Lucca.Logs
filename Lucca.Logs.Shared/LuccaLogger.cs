@@ -50,7 +50,7 @@ namespace Lucca.Logs.Shared
 
             bool isError = logLevel == LogLevel.Error || logLevel == LogLevel.Critical;
 
-            Dictionary<string, string> customData = LuccaDataWrapper.GatherData(exception, _httpContextWrapper, isError, _appName);
+            Dictionary<string, string> customData = LuccaDataWrapper.GatherData(_httpContextWrapper, isError, _appName);
 
             Guid? guid = null;
             if (_exceptionalWrapper.Enabled && exception != null && (_filters == null || _filters.LogToOpserver(exception)))

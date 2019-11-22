@@ -72,23 +72,10 @@ namespace Lucca.Logs.Shared
             return jsonLayout;
         }
 
-        internal static Dictionary<string, string> GatherData(Exception e, IHttpContextParser httpRequest, bool isError, string appName)
-        {
-            Dictionary<string, string> data = GatherData(httpRequest, isError, appName);
-            if (LogExtractor.CustomKeys != null)
-            {
-                foreach (KeyValuePair<string, string> kv in LogExtractor.CustomKeys(e))
-                {
-                    data.Add(kv.Key, kv.Value);
-                }
-            }
-            return data;
-        }
-
         internal static Dictionary<string, string> GatherData(IHttpContextParser httpRequest, bool isError, string appName)
         {
             var data = new Dictionary<string, string>(16);
-            if (!String.IsNullOrEmpty(appName))
+            if (!string.IsNullOrEmpty(appName))
             {
                 data.Add(_appName, appName);
             }
@@ -120,7 +107,7 @@ namespace Lucca.Logs.Shared
                 data.Add(_correlationId, httpRequest.GetHeader(_correlationId));
             }
 
-            if (String.IsNullOrEmpty(ip))
+            if (string.IsNullOrEmpty(ip))
             {
                 ip = httpRequest.Ip;
             }
@@ -135,18 +122,13 @@ namespace Lucca.Logs.Shared
             }
 
             string documentContents = httpRequest.TryGetBodyContent();
-             
-            if (!String.IsNullOrEmpty(documentContents))
+
+            if (!string.IsNullOrEmpty(documentContents))
             {
                 data.Add(_rawPostedData, documentContents);
             }
 
             return data;
-        }
-
-        public static class LogExtractor
-        {
-            public static Func<Exception, IEnumerable<KeyValuePair<string, string>>> CustomKeys { get; set; }
         }
     }
 }
