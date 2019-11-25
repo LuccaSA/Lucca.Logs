@@ -71,31 +71,35 @@ namespace Lucca.Logs.AspnetCore
             // Extracts the Accept header
             var contentTypes = GetAcceptableMediaTypes(context.Request);
 
-            // If prefered content type match the Accept Heade, then we render using it
+            // If preferred content type match the Accept Header, then we render using it
             if (!string.IsNullOrWhiteSpace(info.PreferedResponseType))
             {
-                var prefered = contentTypes.Where(c => c.MediaType.Equals(info.PreferedResponseType) || c.MediaType.StartsWith("*/*", StringComparison.InvariantCulture)).Select(i => info.PreferedResponseType).FirstOrDefault();
-                if (prefered != null &&
-                    await TryRenderErrorOnContentTypeAsync(prefered, context, info))
+                var prefered = contentTypes?
+                    .Where(c => c.MediaType.Equals(info.PreferedResponseType) || c.MediaType.StartsWith("*/*", StringComparison.InvariantCulture))
+                    .Select(i => info.PreferedResponseType)
+                    .FirstOrDefault();
+
+                if (prefered != null && await TryRenderErrorOnContentTypeAsync(prefered, context, info))
                 {
                     return;
                 }
             }
 
             // If explicit content type (Content-Type header) match, we render
-            if (!string.IsNullOrEmpty(context.Request.ContentType) &&
-                await TryRenderErrorOnContentTypeAsync(context.Request.ContentType, context, info))
+            if (!string.IsNullOrEmpty(context.Request.ContentType) && await TryRenderErrorOnContentTypeAsync(context.Request.ContentType, context, info))
             {
                 return;
             }
 
-            // Else we try to render on all other Accept header, in requested order
-            foreach (var contentType in contentTypes)
+            if (contentTypes != null)
             {
-                var rendered = await TryRenderErrorOnContentTypeAsync(contentType.MediaType.ToString(), context, info);
-                if (rendered)
+                // Else we try to render on all other Accept header, in requested order
+                foreach (var contentType in contentTypes)
                 {
-                    return;
+                    if (await TryRenderErrorOnContentTypeAsync(contentType.MediaType.ToString(), context, info))
+                    {
+                        return;
+                    }
                 }
             }
 
@@ -152,7 +156,7 @@ namespace Lucca.Logs.AspnetCore
         private List<MediaTypeHeaderValue> GetAcceptableMediaTypes(HttpRequest request)
         {
             //https://developer.mozilla.org/en-US/docs/Glossary/Quality_values
-            return request.GetTypedHeaders().Accept.OrderByDescending(h => h.Quality ?? 1).ToList();
+            return request.GetTypedHeaders()?.Accept?.OrderByDescending(h => h.Quality ?? 1).ToList();
         }
 
         private static void ClearHttpResponseResponse(HttpContext context, HttpStatusCode statusCode)
