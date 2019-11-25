@@ -42,5 +42,11 @@ namespace Lucca.Logs.Tests.Integration
                 _loggerFactory.CreateLogger<DirectExceptionController>().LogError(e, "DirectExceptionController");
             }
         }
+
+        [HttpGet("direct")]
+        public ActionResult<IEnumerable<string>> GetDirect()
+        {
+            throw new NotImplementedException("get");
+        }
     }
 }

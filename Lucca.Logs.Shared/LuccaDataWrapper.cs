@@ -16,7 +16,7 @@ namespace Lucca.Logs.Shared
         private const string _verb = "method";
         private const string _hostAddress = "ipAddress";
         private const string _userAgent = "userAgent";
-        private const string _rawPostedData = "RawPostedData";
+        public const string RawPostedData = "RawPostedData";
 
         private const string _appName = "AppName";
         private const string _serverName = "servername";
@@ -41,7 +41,7 @@ namespace Lucca.Logs.Shared
             _verb,
             _hostAddress,
             _userAgent,
-            _rawPostedData,
+            RawPostedData,
             _principal,
             _appName,
             _serverName,
@@ -125,7 +125,7 @@ namespace Lucca.Logs.Shared
 
             if (!string.IsNullOrEmpty(documentContents))
             {
-                data.Add(_rawPostedData, documentContents);
+                data.Add(RawPostedData, documentContents);
             }
 
             return data;
