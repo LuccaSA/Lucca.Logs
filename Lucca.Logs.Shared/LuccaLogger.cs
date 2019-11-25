@@ -82,7 +82,10 @@ namespace Lucca.Logs.Shared
         {
             foreach (KeyValuePair<string, string> kv in customData)
             {
-                eventInfo.Properties[kv.Key] = kv.Value;
+                if (kv.Key != LuccaDataWrapper.RawPostedData)
+                {
+                    eventInfo.Properties[kv.Key] = kv.Value;
+                }
             }
 
             if (!guid.HasValue)

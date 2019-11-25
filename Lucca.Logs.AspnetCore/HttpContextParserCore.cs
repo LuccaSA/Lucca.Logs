@@ -65,7 +65,7 @@ namespace Lucca.Logs.AspnetCore
 
         public string TryGetBodyContent()
         {
-            if (Request == null || !Request.Body.CanRead || !Request.Body.CanSeek)
+            if (Request == null || !Request.Body.CanRead || !Request.Body.CanSeek || Request.Body.Length == 0)
             {
                 return null;
             }
