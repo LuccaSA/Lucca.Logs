@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using NLog;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -15,17 +16,17 @@ namespace Lucca.Logs.Shared
         private Tuple<string, string, string> _eventIdPropertyNames;
 
         private readonly string _categoryName;
-        private readonly IHttpContextParser _httpContextWrapper;
+        private readonly IEnumerable<IContextParser> _contextParsers;
         private readonly Logger _nloLogger;
         private readonly LuccaLoggerOptions _options;
         private readonly IExceptionQualifier _filters;
         private readonly IExceptionalWrapper _exceptionalWrapper;
         private readonly string _appName;
 
-        public LuccaLogger(string categoryName, IHttpContextParser httpContextAccessor, Logger nloLogger, LuccaLoggerOptions options, IExceptionQualifier filters, IExceptionalWrapper exceptionalWrapper, string appName)
+        public LuccaLogger(string categoryName, IEnumerable<IContextParser> contextParsers, Logger nloLogger, LuccaLoggerOptions options, IExceptionQualifier filters, IExceptionalWrapper exceptionalWrapper, string appName)
         {
             _categoryName = categoryName;
-            _httpContextWrapper = httpContextAccessor;
+            _contextParsers = contextParsers;
             _nloLogger = nloLogger;
             _options = options;
             _filters = filters;
@@ -50,12 +51,18 @@ namespace Lucca.Logs.Shared
 
             bool isError = logLevel == LogLevel.Error || logLevel == LogLevel.Critical;
 
-            Dictionary<string, string> customData = LuccaDataWrapper.GatherData(_httpContextWrapper, isError, _appName);
+            IContextParser contextParser = _contextParsers.Where(ctx => ctx.CanRead()).FirstOrDefault();
+            if (contextParser == null)
+            {
+                contextParser = new EmptyContextParser();
+            }
+
+            Dictionary<string, string> customData = LuccaDataWrapper.GatherData(contextParser, isError, _appName);
 
             Guid? guid = null;
             if (_exceptionalWrapper.Enabled && exception != null && (_filters == null || _filters.LogToOpserver(exception)))
             {
-                guid = _httpContextWrapper.ExceptionalLog(exception, customData, _categoryName, _appName);
+                guid = contextParser.ExceptionalLog(exception, customData, _categoryName, _appName);
             }
 
             if (!isLogging)

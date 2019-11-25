@@ -8,7 +8,7 @@ using StackExchange.Exceptional;
 
 namespace Lucca.Logs.AspnetCore
 {
-    public sealed class HttpContextParserCore : IHttpContextParser
+    public sealed class HttpContextParserCore : HttpContextParserBase
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
@@ -19,7 +19,7 @@ namespace Lucca.Logs.AspnetCore
 
         private HttpRequest Request => _httpContextAccessor?.HttpContext?.Request;
 
-        public string ExtractUrl(Uripart uriPart)
+        public override string ExtractUrl(Uripart uriPart)
         {
             if (Request == null)
                 return null;
@@ -49,9 +49,9 @@ namespace Lucca.Logs.AspnetCore
             return urlBuilder.ToString();
         }
 
-        public string Method => Request?.Method;
+        public override string GetMethod() => Request?.Method;
 
-        public bool ContainsHeader(string header)
+        public override bool ContainsHeader(string header)
         {
             if (Request == null)
                 return false;
@@ -59,11 +59,11 @@ namespace Lucca.Logs.AspnetCore
             return Request.Headers.ContainsKey(header);
         }
 
-        public string GetHeader(string header) => Request?.Headers[header];
+        public override string GetHeader(string header) => Request?.Headers[header];
 
-        public string Ip => Request?.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+        public override string Ip => Request?.HttpContext?.Connection?.RemoteIpAddress?.ToString();
 
-        public string TryGetBodyContent()
+        public override string TryGetPayload()
         {
             if (Request == null || !Request.Body.CanRead || !Request.Body.CanSeek || Request.Body.Length == 0)
             {
@@ -86,7 +86,7 @@ namespace Lucca.Logs.AspnetCore
             return documentContents;
         }
 
-        public Guid? ExceptionalLog(Exception exception, Dictionary<string, string> customData, string categoryName, string appName)
+        public override Guid? ExceptionalLog(Exception exception, Dictionary<string, string> customData, string categoryName, string appName)
         {
             if (exception == null)
             {
@@ -107,5 +107,9 @@ namespace Lucca.Logs.AspnetCore
             return error?.GUID;
         }
 
+        public override bool CanRead()
+        {
+            return _httpContextAccessor.HttpContext != null;
+        }
     }
 }

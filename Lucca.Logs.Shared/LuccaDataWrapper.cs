@@ -7,31 +7,31 @@ namespace Lucca.Logs.Shared
     internal static class LuccaDataWrapper
     {
         internal const string Link = "OpserverLink";
-        private const string _exceptionDetails = "ExceptionDetails";
+        internal const string _exceptionDetails = "ExceptionDetails";
 
-        private const string _warning = "WARNING";
-        private const string _pageRest = "Page REST";
-        private const string _pageRest2 = "PageREST";
-        private const string _page = "Page";
-        private const string _verb = "method";
-        private const string _hostAddress = "ipAddress";
-        private const string _userAgent = "userAgent";
+        internal const string _warning = "WARNING";
+        internal const string _pageRest = "Page REST";
+        internal const string _pageRest2 = "PageREST";
+        internal const string _page = "Page";
+        internal const string _verb = "method";
+        internal const string _hostAddress = "ipAddress";
+        internal const string _userAgent = "userAgent";
         public const string RawPostedData = "RawPostedData";
 
-        private const string _appName = "AppName";
-        private const string _serverName = "servername";
-        private const string _appPool = "AppPool";
-        private const string _uri = "Uri";
+        internal const string _appName = "AppName";
+        internal const string _serverName = "servername";
+        internal const string _appPool = "AppPool";
+        internal const string _uri = "Uri";
 
-        private const string _principal = "Principal";
-        private const string _exceptionMethodName = "ExceptionMethodName";
-        private const string _exceptionClassName = "ExceptionClassName";
-        private const string _exceptionNamespace = "ExceptionNamespace";
-        private const string _httpLikeExceptionStatus = "HttpLikeExceptionStatus";
+        internal const string _principal = "Principal";
+        internal const string _exceptionMethodName = "ExceptionMethodName";
+        internal const string _exceptionClassName = "ExceptionClassName";
+        internal const string _exceptionNamespace = "ExceptionNamespace";
+        internal const string _httpLikeExceptionStatus = "HttpLikeExceptionStatus";
 
-        private const string _luccaForwardedHeader = "X-Forwarded-By-Lucca";
-        private const string _forwardedHeader = "X-Forwarded-For";
-        private const string _correlationId = "X-Correlation-ID";
+        internal const string _luccaForwardedHeader = "X-Forwarded-By-Lucca";
+        internal const string _forwardedHeader = "X-Forwarded-For";
+        internal const string _correlationId = "X-Correlation-ID";
 
         private static string[] Keys => new[]
         {
@@ -72,7 +72,7 @@ namespace Lucca.Logs.Shared
             return jsonLayout;
         }
 
-        internal static Dictionary<string, string> GatherData(IHttpContextParser httpRequest, bool isError, string appName)
+        internal static Dictionary<string, string> GatherData(IContextParser contextParser, bool isError, string appName)
         {
             var data = new Dictionary<string, string>(16);
             if (!string.IsNullOrEmpty(appName))
@@ -80,48 +80,32 @@ namespace Lucca.Logs.Shared
                 data.Add(_appName, appName);
             }
 
-            if (httpRequest == null)
+            if (contextParser == null)
             {
                 data.Add(_warning, "HttpContext.Current is null");
                 return data;
             }
 
-            data.Add(_pageRest, httpRequest.ExtractUrl(Uripart.Path | Uripart.Query));
-            data.Add(_pageRest2, httpRequest.ExtractUrl(Uripart.Path | Uripart.Query));
-            data.Add(_page, httpRequest.ExtractUrl(Uripart.Full));
-            data.Add(_verb, httpRequest.Method);
-            data.Add(_uri, httpRequest.ExtractUrl(Uripart.Path));
-            data.Add(_serverName, httpRequest.ExtractUrl(Uripart.Host));
+            data.Add(_pageRest, contextParser.GetPageRest());
+            data.Add(_pageRest2, contextParser.GetPageRest2());
+            data.Add(_page, contextParser.GetPage());
+            data.Add(_verb, contextParser.GetMethod());
+            data.Add(_uri, contextParser.GetUri());
+            data.Add(_serverName, contextParser.GetServerName());
             // https://stackoverflow.com/a/39139875
             data.Add(_appPool, Environment.GetEnvironmentVariable("APP_POOL_ID", EnvironmentVariableTarget.Process));
 
-            // Récupération de l'IP forwardée par HAProxy, et fallback UserHostAddress
-            string ip = null;
-            if (httpRequest.ContainsHeader(_luccaForwardedHeader))
-            {
-                ip = httpRequest.GetHeader(_forwardedHeader);
-            }
+            data.Add(_correlationId, contextParser.GetCorrelationId());
+            data.Add(_hostAddress, contextParser.GetClientIp());
 
-            if (httpRequest.ContainsHeader(_correlationId))
-            {
-                data.Add(_correlationId, httpRequest.GetHeader(_correlationId));
-            }
-
-            if (string.IsNullOrEmpty(ip))
-            {
-                ip = httpRequest.Ip;
-            }
-
-            data.Add(_hostAddress, ip);
-
-            data.Add(_userAgent, httpRequest.GetHeader("User-Agent"));
+            data.Add(_userAgent, contextParser.GetUserAgent());
 
             if (!isError)
             {
                 return data;
             }
 
-            string documentContents = httpRequest.TryGetBodyContent();
+            string documentContents = contextParser.TryGetPayload();
 
             if (!string.IsNullOrEmpty(documentContents))
             {

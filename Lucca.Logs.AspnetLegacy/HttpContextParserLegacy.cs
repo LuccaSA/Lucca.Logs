@@ -8,7 +8,7 @@ using StackExchange.Exceptional;
 
 namespace Lucca.Logs.AspnetLegacy
 {
-    public sealed class HttpContextParserLegacy : IHttpContextParser
+    public sealed class HttpContextParserLegacy : HttpContextParserBase
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
@@ -34,7 +34,7 @@ namespace Lucca.Logs.AspnetLegacy
             }
         }
 
-        public string ExtractUrl(Uripart uriPart)
+        public override string ExtractUrl(Uripart uriPart)
         {
             if (Request == null)
                 return null;
@@ -63,18 +63,18 @@ namespace Lucca.Logs.AspnetLegacy
             return urlBuilder.ToString();
         }
 
-        public string Method => Request?.HttpMethod;
+        public override  string GetMethod() => Request?.HttpMethod;
 
-        public bool ContainsHeader(string header)
+        public override bool ContainsHeader(string header)
         {
             return Request?.Headers.Get(header) != null;
         }
 
-        public string GetHeader(string header) => Request?.Headers.Get(header);
+        public override string GetHeader(string header) => Request?.Headers.Get(header);
 
-        public string Ip => Request?.UserHostAddress;
+        public override string Ip => Request?.UserHostAddress;
 
-        public string TryGetBodyContent()
+        public override string TryGetPayload()
         {
             string documentContents = null;
             try
@@ -97,7 +97,7 @@ namespace Lucca.Logs.AspnetLegacy
             return documentContents;
         }
 
-        public Guid? ExceptionalLog(Exception exception, Dictionary<string, string> customData, string categoryName, string appName)
+        public override Guid? ExceptionalLog(Exception exception, Dictionary<string, string> customData, string categoryName, string appName)
         {
             if (exception == null)
             {
@@ -116,6 +116,11 @@ namespace Lucca.Logs.AspnetLegacy
             }
 
             return error?.GUID;
+        }
+
+        public override bool CanRead()
+        {
+            return _httpContextAccessor.HttpContext != null;
         }
     }
 }

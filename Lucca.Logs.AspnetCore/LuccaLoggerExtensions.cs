@@ -121,12 +121,12 @@ namespace Lucca.Logs.AspnetCore
 #if NETCOREAPP2_1 || NETCOREAPP3_0
             services.TryAddSingleton<IExceptionQualifier, GenericExceptionQualifier>();
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.TryAddSingleton<IHttpContextParser, HttpContextParserCore>();
+            services.TryAddSingleton<IContextParser, HttpContextParserCore>();
             services.AddSingleton<ILoggerProvider, LuccaLogsProvider>();
             services.AddSingleton<IExceptionalWrapper, ExceptionalWrapperCore>();
 #else
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessorLegacy>();
-            services.TryAddSingleton<IHttpContextParser, HttpContextParserLegacy>();
+            services.TryAddSingleton<IContextParser, HttpContextParserLegacy>();
             services.AddSingleton<ILoggerProvider, LuccaLogsProvider>();
             services.AddSingleton<IExceptionalWrapper, ExceptionalWrapperLegacy>();
 #endif

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lucca.Logs.AspnetCore;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Moq;
 using StackExchange.Exceptional;
 using StackExchange.Exceptional.Stores;
 using Xunit;
@@ -36,6 +38,9 @@ namespace Lucca.Logs.Tests
                 {
                 }, "myLogger",_memoryStore);
             });
+
+            var httpContext = provider.GetRequiredService<IHttpContextAccessor>();
+            httpContext.HttpContext = new Mock<HttpContext>().Object;
 
             var player = provider.GetRequiredService<DummyLogFactoryPlayer>();
             //Assert.Equal(_memoryStore, Exceptional.Settings.DefaultStore);

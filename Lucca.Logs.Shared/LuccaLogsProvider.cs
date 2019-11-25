@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -9,15 +10,15 @@ namespace Lucca.Logs.Shared
     public sealed class LuccaLogsProvider : ILoggerProvider
     {
         private readonly IOptionsMonitor<LuccaLoggerOptions> _options;
-        private readonly IHttpContextParser _httpContextAccessor;
+        private readonly IEnumerable<IContextParser> _contextParsers;
         private readonly IExceptionQualifier _filters;
         private readonly IExceptionalWrapper _exceptionalWrapper;
         private readonly IDisposable _changeListener;
 
-        public LuccaLogsProvider(IOptionsMonitor<LuccaLoggerOptions> options, IHttpContextParser httpContextAccessor, IExceptionQualifier filters, IExceptionalWrapper exceptionalWrapper)
+        public LuccaLogsProvider(IOptionsMonitor<LuccaLoggerOptions> options, IEnumerable<IContextParser> contextParsers, IExceptionQualifier filters, IExceptionalWrapper exceptionalWrapper)
         {
             _options = options;
-            _httpContextAccessor = httpContextAccessor;
+            _contextParsers = contextParsers;
             _filters = filters;
             _exceptionalWrapper = exceptionalWrapper;
 
@@ -54,11 +55,11 @@ namespace Lucca.Logs.Shared
             });
         }
 
-        
+
         public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName)
         {
             LuccaLoggerOptions opt = _options.CurrentValue;
-            return new LuccaLogger(categoryName, _httpContextAccessor, LogManager.GetLogger(categoryName), opt, _filters, _exceptionalWrapper, _options.CurrentValue.ApplicationName);
+            return new LuccaLogger(categoryName, _contextParsers, LogManager.GetLogger(categoryName), opt, _filters, _exceptionalWrapper, _options.CurrentValue.ApplicationName);
         }
 
         public void Dispose()
