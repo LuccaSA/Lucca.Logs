@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -58,6 +59,23 @@ namespace Lucca.Logs.Tests.Integration
             Assert.Single(found);
             Assert.Contains("RawPostedData", found.First().CustomData.Keys);
             Assert.Equal(@"{""Data"":""hey !""}", found.First().CustomData["RawPostedData"]);
+        }
+
+        [Fact]
+        public async Task ExOnGetDirectWithAccept()
+        {
+            var client = _client;
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+            HttpResponseMessage response = await _client.GetAsync("/api/directException/direct");
+
+            var data = await response.Content.ReadAsStringAsync();
+
+            List<Error> found = await _memoryStore.GetAllAsync();
+
+            Assert.Single(found);
+            Assert.StartsWith("{\"status\":500,\"message\":\"get\"}", data);
+
+            Assert.Equal("IntegrationTest", found.First().ApplicationName);
         }
     }
 }

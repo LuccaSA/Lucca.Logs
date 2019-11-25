@@ -33,7 +33,7 @@ namespace Lucca.Logs.Netcore3.Tests
         [HttpGet("direct")]
         public ActionResult<IEnumerable<string>> GetDirect()
         {
-            throw new NotImplementedException("get");
+            throw new NotImplementedException("exception message");
         }
     }
 }

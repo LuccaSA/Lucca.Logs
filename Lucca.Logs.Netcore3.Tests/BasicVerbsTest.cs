@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -43,20 +44,45 @@ namespace Lucca.Logs.Netcore3.Tests
             Assert.Equal("IntegrationTest", found.First().ApplicationName);
         }
 
-        [Fact]
-        public async Task ExOnGetDirect()
+        [Theory]
+        [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3", true)]
+        [InlineData(null, true)]
+        [InlineData("*/*", true)]
+        [InlineData("application/json", true)]
+        public async Task ExOnGetDirectWithAccept(string accept, bool jsonMode)
         {
-            try
+            var client = _client;
+            if (accept != null)
             {
-                await _client.GetAsync("/api/directException/direct");
+                foreach (var v in accept.Split(","))
+                {
+                    if (MediaTypeWithQualityHeaderValue.TryParse(v, out var media))
+                    {
+                        client.DefaultRequestHeaders.Accept.Add(media);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
             }
-            catch (Exception)
-            {
-                //
-            }
+
+            HttpResponseMessage response = await _client.GetAsync("/api/directException/direct");
+
+            var data = await response.Content.ReadAsStringAsync();
+
             List<Error> found = await _memoryStore.GetAllAsync();
 
-            Assert.Single(found);
+            Assert.NotEmpty(found);
+
+            if (jsonMode)
+            {
+                Assert.StartsWith("{\"status\":500,\"message\":\"exception message\"}", data);
+            }
+            else
+            {
+                Assert.StartsWith("Oops ! ", data);
+            }
 
             Assert.Equal("IntegrationTest", found.First().ApplicationName);
         }
