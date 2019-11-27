@@ -106,8 +106,16 @@ namespace Lucca.Logs.AspnetCore
 
         private string GetFirstAcceptableMatch(IEnumerable<MediaTypeHeaderValue> contentTypes)
         {
+            if (contentTypes == null)
+            {
+                return null;
+            }
             foreach (var contentType in contentTypes)
             {
+                if (!contentType.MediaType.HasValue)
+                {
+                    continue;
+                }
                 if (contentType.MediaType.Value == _textPlain 
                     || contentType.MediaType.Value == _appJson 
                     || contentType.MediaType.Value == _textHtml)
