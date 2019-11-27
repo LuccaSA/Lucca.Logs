@@ -73,9 +73,8 @@ namespace Lucca.Logs.AspnetCore
             ClearHttpResponseResponse(context, info.StatusCode);
 
             // Extracts the Accept header
-            var contentTypes = GetAcceptableMediaTypes(context.Request);
+            string acceptable = NegociateAcceptableContentType(context.Request);
 
-            var acceptable = GetFirstAcceptableMatch(contentTypes);
             if (acceptable != null)
             {
                 if (await TryRenderErrorOnContentTypeAsync(acceptable, context, info))
@@ -98,20 +97,37 @@ namespace Lucca.Logs.AspnetCore
                     return;
                 }
             }
-            
+
             // fallback on generic text/plain error
             context.Response.ContentType = _textPlain;
             await context.Response.WriteAsync(info.GenericErrorMessage);
         }
 
-        private string GetFirstAcceptableMatch(IEnumerable<MediaTypeHeaderValue> contentTypes)
+        internal static string NegociateAcceptableContentType(HttpRequest httpRequest)
         {
-            foreach (var contentType in contentTypes)
+            var contentTypes = GetAcceptableMediaTypes(httpRequest);
+            var acceptable = GetFirstAcceptableMatch(contentTypes);
+            return acceptable;
+        }
+
+        private static string GetFirstAcceptableMatch(IEnumerable<MediaTypeHeaderValue> contentTypes)
+        {
+            if (contentTypes == null)
             {
-                if (contentType.MediaType.Value == _textPlain 
-                    || contentType.MediaType.Value == _appJson 
-                    || contentType.MediaType.Value == _textHtml)
+                return null;
+            }
+            foreach (MediaTypeHeaderValue contentType in contentTypes)
+            {
+                if (!contentType.MediaType.HasValue)
+                {
+                    continue;
+                }
+                if (contentType.MediaType.Value.StartsWith(_textPlain)
+                    || contentType.MediaType.Value.StartsWith(_appJson)
+                    || contentType.MediaType.Value.StartsWith(_textHtml))
+                {
                     return contentType.MediaType.Value;
+                }
             }
             return null;
         }
@@ -161,7 +177,7 @@ namespace Lucca.Logs.AspnetCore
             await httpContext.Response.WriteAsync(data);
         }
 
-        private List<MediaTypeHeaderValue> GetAcceptableMediaTypes(HttpRequest request)
+        private static List<MediaTypeHeaderValue> GetAcceptableMediaTypes(HttpRequest request)
         {
             //https://developer.mozilla.org/en-US/docs/Glossary/Quality_values
             return request.GetTypedHeaders()?.Accept?.OrderByDescending(h => h.Quality ?? 1).ToList();

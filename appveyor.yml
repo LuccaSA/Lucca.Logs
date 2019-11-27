@@ -1,4 +1,4 @@
-image: Visual Studio 2017
+image: Visual Studio 2019
 
 version: 0.1.{build}
 
@@ -34,7 +34,6 @@ install:
   - ps: . .\ComputeVersion.ps1
   - ps: $version = Compute "Lucca.Logs\Lucca.Logs.csproj" $env:APPVEYOR_BUILD_NUMBER $env:APPVEYOR_REPO_TAG $env:APPVEYOR_PULL_REQUEST_NUMBER
   - ps: Update-AppveyorBuild -Version $version.Semver
-  - choco install dotnetcore-sdk -y
   - dotnet tool install --global dotnet-sonarscanner
   - nuget install OpenCover -Version 4.7.922
   - nuget install Codecov -Version 1.7.2
