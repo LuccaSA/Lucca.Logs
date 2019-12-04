@@ -65,25 +65,25 @@ namespace Lucca.Logs.AspnetCore
 
         public string TryGetBodyContent()
         {
-            if (Request == null || !Request.Body.CanRead || !Request.Body.CanSeek || Request.Body.Length == 0)
-            {
-                return null;
-            }
-            string documentContents = null;
             try
             {
+                if (Request == null || !Request.Body.CanRead || !Request.Body.CanSeek || Request.Body.Length == 0)
+                {
+                    return null;
+                }
+
                 using (var stream = new MemoryStream())
                 {
                     Request.Body.Seek(0, SeekOrigin.Begin);
                     Request.Body.CopyTo(stream);
-                    documentContents = Encoding.UTF8.GetString(stream.ToArray());
+                   return Encoding.UTF8.GetString(stream.ToArray());
                 }
             }
             catch (Exception)
             {
                 // discard exception
+                return null;
             }
-            return documentContents;
         }
 
         public Guid? ExceptionalLog(Exception exception, Dictionary<string, string> customData, string categoryName, string appName)
