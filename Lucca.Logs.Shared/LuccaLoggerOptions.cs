@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using CloudNative.CloudEvents;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -47,7 +48,7 @@ namespace Lucca.Logs.Shared
                 return _guidWithPlaceHolder.Value;
             }
         }
-
+        
         /// <summary>
         /// Separator between for EventId.Id and EventId.Name. Default to .
         /// </summary>
@@ -60,9 +61,11 @@ namespace Lucca.Logs.Shared
         ///     <c>default(EventId)</c></remarks>
         public bool IgnoreEmptyEventId { get; set; }
 
+        internal Func<CloudEvent> CloudEventAccessor { get; set; }
+        
         public LoggingConfiguration Nlog
         {
-            get => _nlog ?? (_nlog = GenerateLuccaDefaultConfig());
+            get => _nlog ??= GenerateLuccaDefaultConfig();
             set => _nlog = value;
         }
 
@@ -103,7 +106,7 @@ namespace Lucca.Logs.Shared
                 LineEnding = LineEndingMode.CRLF,
                 ArchiveAboveSize = 1048576,
                 MaxArchiveFiles = 100,
-                Layout = LuccaDataWrapper.GenerateJsonLayout()
+                Layout = LogMeta.LuccaJsonLayout
             };
             // 1Mb file size
             var fileRule = new LoggingRule("*", LogLevel.Trace, fileTarget);

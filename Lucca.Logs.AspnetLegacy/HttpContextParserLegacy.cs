@@ -16,6 +16,7 @@ namespace Lucca.Logs.AspnetLegacy
         {
             _httpContextAccessor = httpContextAccessor;
         }
+        public bool IsContextDefined => _httpContextAccessor?.HttpContext != null;
 
         private HttpRequest Request
         {

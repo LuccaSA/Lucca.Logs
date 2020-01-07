@@ -3,6 +3,7 @@ using System.Linq;
 using Lucca.Logs.AspnetCore;
 using Lucca.Logs.Shared;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using NLog.Config;
 using NLog.Targets;
 using Xunit;
@@ -13,8 +14,6 @@ namespace Lucca.Logs.Tests
     public class NLogInjectionTest
     {
         [Theory]
-        //[InlineData(LogLevel.Debug)]
-        //[InlineData(LogLevel.Trace)]
         [InlineData(LogLevel.Critical)]
         [InlineData(LogLevel.Error)]
         [InlineData(LogLevel.Information)]
@@ -30,7 +29,7 @@ namespace Lucca.Logs.Tests
                 }, "myLogger");
             });
             var player = provider.GetRequiredService<DummyLogFactoryPlayer>();
-
+             
             player.Log(logLevel, 42, new Exception(), "the answer");
             
             string expected = String.Format("the answer|{0}|Exception of type 'System.Exception' was thrown.|42", logLevel.ToNLogLevel());
@@ -38,8 +37,6 @@ namespace Lucca.Logs.Tests
         }
 
         [Theory]
-        //[InlineData(LogLevel.Debug)]
-        //[InlineData(LogLevel.Trace)]
         [InlineData(LogLevel.Critical)]
         [InlineData(LogLevel.Error)]
         [InlineData(LogLevel.Information)]
