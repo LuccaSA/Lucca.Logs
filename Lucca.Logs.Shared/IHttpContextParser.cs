@@ -5,6 +5,7 @@ namespace Lucca.Logs.Shared
 {
     public interface IHttpContextParser
     {
+        bool IsContextDefined { get; }
         string ExtractUrl(Uripart uriPart);
         string Method { get; }
         string Ip { get; }

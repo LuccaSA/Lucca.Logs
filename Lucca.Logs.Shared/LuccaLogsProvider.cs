@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,13 +14,15 @@ namespace Lucca.Logs.Shared
         private readonly IExceptionQualifier _filters;
         private readonly IExceptionalWrapper _exceptionalWrapper;
         private readonly IDisposable _changeListener;
+        private readonly IEnumerable<ILogDetailsExtractor> _logDetailsExtractors;
 
-        public LuccaLogsProvider(IOptionsMonitor<LuccaLoggerOptions> options, IHttpContextParser httpContextAccessor, IExceptionQualifier filters, IExceptionalWrapper exceptionalWrapper)
+        public LuccaLogsProvider(IOptionsMonitor<LuccaLoggerOptions> options, IHttpContextParser httpContextAccessor, IExceptionQualifier filters, IExceptionalWrapper exceptionalWrapper, IEnumerable<ILogDetailsExtractor> logDetailsExtractors)
         {
             _options = options;
             _httpContextAccessor = httpContextAccessor;
             _filters = filters;
             _exceptionalWrapper = exceptionalWrapper;
+            _logDetailsExtractors = logDetailsExtractors;
 
             _changeListener = options.OnChange((o, name) =>
                 {
@@ -45,7 +48,7 @@ namespace Lucca.Logs.Shared
 
                 exceptionalSetting.OnBeforeLog += (o, eb) =>
                 {
-                    var querystring = eb.Error.ServerVariables.Get("QUERY_STRING");
+                    var querystring = eb?.Error?.ServerVariables?.Get("QUERY_STRING");
                     if (querystring != null)
                     {
                         eb.Error.ServerVariables.Set("QUERY_STRING", querystring.ClearQueryStringPassword());
@@ -58,7 +61,8 @@ namespace Lucca.Logs.Shared
         public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName)
         {
             LuccaLoggerOptions opt = _options.CurrentValue;
-            return new LuccaLogger(categoryName, _httpContextAccessor, LogManager.GetLogger(categoryName), opt, _filters, _exceptionalWrapper, _options.CurrentValue.ApplicationName);
+            var logExtractor = new LogExtractor(_logDetailsExtractors, new EnvironmentDetailsExtractor(opt));
+            return new LuccaLogger(categoryName, _httpContextAccessor, LogManager.GetLogger(categoryName), opt, logExtractor, _filters, _exceptionalWrapper, _options.CurrentValue.ApplicationName);
         }
 
         public void Dispose()

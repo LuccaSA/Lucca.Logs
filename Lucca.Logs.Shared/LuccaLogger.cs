@@ -18,15 +18,17 @@ namespace Lucca.Logs.Shared
         private readonly IHttpContextParser _httpContextWrapper;
         private readonly Logger _nloLogger;
         private readonly LuccaLoggerOptions _options;
+        private readonly LogExtractor _logExtractor;
         private readonly IExceptionQualifier _filters;
         private readonly IExceptionalWrapper _exceptionalWrapper;
         private readonly string _appName;
 
-        public LuccaLogger(string categoryName, IHttpContextParser httpContextAccessor, Logger nloLogger, LuccaLoggerOptions options, IExceptionQualifier filters, IExceptionalWrapper exceptionalWrapper, string appName)
+        public LuccaLogger(string categoryName, IHttpContextParser httpContextAccessor, Logger nloLogger, LuccaLoggerOptions options, LogExtractor logExtractor, IExceptionQualifier filters, IExceptionalWrapper exceptionalWrapper, string appName)
         {
             _categoryName = categoryName;
             _httpContextWrapper = httpContextAccessor;
             _nloLogger = nloLogger;
+            _logExtractor = logExtractor;
             _options = options;
             _filters = filters;
             _exceptionalWrapper = exceptionalWrapper;
@@ -50,7 +52,7 @@ namespace Lucca.Logs.Shared
 
             bool isError = logLevel == LogLevel.Error || logLevel == LogLevel.Critical;
 
-            Dictionary<string, string> customData = LuccaDataWrapper.GatherData(_httpContextWrapper, isError, _appName);
+            Dictionary<string, string> customData = _logExtractor.GatherData( isError);
 
             Guid? guid = null;
             if (_exceptionalWrapper.Enabled && exception != null && (_filters == null || _filters.LogToOpserver(exception)))
@@ -82,7 +84,7 @@ namespace Lucca.Logs.Shared
         {
             foreach (KeyValuePair<string, string> kv in customData)
             {
-                if (kv.Key != LuccaDataWrapper.RawPostedData)
+                if (kv.Key != LogMeta.RawPostedData)
                 {
                     eventInfo.Properties[kv.Key] = kv.Value;
                 }
@@ -95,11 +97,11 @@ namespace Lucca.Logs.Shared
 
             if (options.GuidWithPlaceHolder)
             {
-                eventInfo.Properties[LuccaDataWrapper.Link] = String.Format(options.GuidLink, guid.Value.ToString("N"));
+                eventInfo.Properties[LogMeta.Link] = String.Format(options.GuidLink, guid.Value.ToString("N"));
             }
             else
             {
-                eventInfo.Properties[LuccaDataWrapper.Link] = options.GuidLink + guid.Value.ToString("N");
+                eventInfo.Properties[LogMeta.Link] = options.GuidLink + guid.Value.ToString("N");
             }
         }
 
@@ -136,7 +138,8 @@ namespace Lucca.Logs.Shared
         /// <summary>
         /// Is logging enabled for this logger at this <paramref name="logLevel"/>?
         /// </summary>
-        private static bool IsNlogEnabled(NLog.LogLevel logLevel, Logger nloLogger) => nloLogger.IsEnabled(logLevel);
+        private static bool IsNlogEnabled(NLog.LogLevel logLevel, Logger nloLogger)
+            => nloLogger.IsEnabled(logLevel);
 
         public bool IsEnabled(LogLevel logLevel)
         {

@@ -19,6 +19,8 @@ namespace Lucca.Logs.AspnetCore
 
         private HttpRequest Request => _httpContextAccessor?.HttpContext?.Request;
 
+        public bool IsContextDefined => _httpContextAccessor?.HttpContext != null;
+
         public string ExtractUrl(Uripart uriPart)
         {
             if (Request == null)
