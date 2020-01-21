@@ -1,5 +1,4 @@
-﻿using System;
-using CloudNative.CloudEvents;
+﻿using CloudNative.CloudEvents;
 using Microsoft.Extensions.Options;
 
 namespace Lucca.Logs.Shared
@@ -25,8 +24,20 @@ namespace Lucca.Logs.Shared
         public string CorrelationId { get; } = string.Empty;
         public string Payload => Event.Data.ToString();
         public string Warning { get; } = string.Empty;
-        public int Priority { get; } = 42;
 
-        private CloudEvent Event => _options.Value.CloudEventAccessor();
+        private CloudEvent Event
+        {
+            get
+            {
+                try
+                {
+                    return _options.Value.CloudEventAccessor();
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
     }
 }   

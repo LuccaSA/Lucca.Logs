@@ -14,6 +14,5 @@
         string CorrelationId { get; }
         string Payload { get; }
         string Warning { get; }
-        int Priority { get; }
     }
 }

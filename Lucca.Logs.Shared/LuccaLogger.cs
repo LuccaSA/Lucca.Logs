@@ -139,10 +139,7 @@ namespace Lucca.Logs.Shared
         /// Is logging enabled for this logger at this <paramref name="logLevel"/>?
         /// </summary>
         private static bool IsNlogEnabled(NLog.LogLevel logLevel, Logger nloLogger)
-        {
-            var enabled = nloLogger.IsEnabled(logLevel);
-            return enabled;
-        }
+            => nloLogger.IsEnabled(logLevel);
 
         public bool IsEnabled(LogLevel logLevel)
         {

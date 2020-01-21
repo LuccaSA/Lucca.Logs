@@ -39,6 +39,5 @@
         public string CorrelationId => _httpRequest.GetHeader(LogMeta._correlationId);
         public string Payload => _httpRequest.TryGetBodyContent();
         public string Warning => _httpRequest == null ? "HttpContext.Current is null" : null;
-        public int Priority { get; } = 100;
     }
 }
