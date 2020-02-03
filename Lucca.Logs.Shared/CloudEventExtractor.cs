@@ -1,4 +1,5 @@
 ﻿using CloudNative.CloudEvents;
+using CloudNative.CloudEvents.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Lucca.Logs.Shared
@@ -21,7 +22,18 @@ namespace Lucca.Logs.Shared
         public string ServerName => Event.Source.DnsSafeHost;
         public string HostAddress { get; } = string.Empty;
         public string UserAgent => Event.SpecVersion.ToString();
-        public string CorrelationId { get; } = string.Empty;
+        public string CorrelationId
+        {
+            get
+            {
+                string traceParent = Event.Extension<DistributedTracingExtension>()?.TraceParent;
+                if (traceParent != null)
+                {
+                    return traceParent;
+                }
+                return string.Empty;
+            }
+        }
         public string Payload => Event.Data.ToString();
         public string Warning { get; } = string.Empty;
 
@@ -40,4 +52,4 @@ namespace Lucca.Logs.Shared
             }
         }
     }
-}   
+}
