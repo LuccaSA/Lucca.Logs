@@ -1,4 +1,4 @@
-﻿namespace Lucca.Logs.Tests.Integration
+﻿namespace Lucca.Logs.Netcore.Tests.Integration
 {
     public class TestDto
     {

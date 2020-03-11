@@ -1,7 +1,7 @@
 ﻿using Lucca.Logs.Shared;
 using Microsoft.Extensions.Options;
 
-namespace Lucca.Logs.Tests
+namespace Lucca.Logs.Netcore.Tests
 {
     public class InjectOption
     {

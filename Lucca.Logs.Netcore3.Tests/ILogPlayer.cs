@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace Lucca.Logs.Tests
+namespace Lucca.Logs.Netcore.Tests
 {
 	public interface ILogPlayer<T>
 		where T : class

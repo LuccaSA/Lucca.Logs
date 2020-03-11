@@ -4,17 +4,18 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Exceptional;
+using StackExchange.Exceptional.Stores;
 
-namespace Lucca.Logs.Tests.Integration
+namespace Lucca.Logs.Netcore.Tests.Integration
 {
     public class Startup
     {
         private readonly ErrorStore _memoryErrorStore;
 
-        public Startup(IConfiguration configuration, ErrorStore memoryErrorStore)
+        public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            _memoryErrorStore = memoryErrorStore;
+            _memoryErrorStore = new MemoryErrorStore(42);
         }
 
         public IConfiguration Configuration { get; set; }
@@ -24,19 +25,27 @@ namespace Lucca.Logs.Tests.Integration
             services.AddMvc()
                 .AddApplicationPart(typeof(DirectExceptionController).Assembly);
 
+            services.AddSingleton(_memoryErrorStore);
+
             services.AddLogging(l =>
             {
                 l.AddLuccaLogs(o =>
                 {
 
-                },"IntegrationTest", _memoryErrorStore);
+                }, "IntegrationTest", _memoryErrorStore);
             });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseLuccaLogs();
-            app.UseMvc();
+
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

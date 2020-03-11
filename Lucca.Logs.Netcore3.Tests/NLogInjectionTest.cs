@@ -3,13 +3,12 @@ using System.Linq;
 using Lucca.Logs.AspnetCore;
 using Lucca.Logs.Shared;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using NLog.Config;
 using NLog.Targets;
 using Xunit;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
-namespace Lucca.Logs.Tests
+namespace Lucca.Logs.Netcore.Tests
 {
     public class NLogInjectionTest
     {
