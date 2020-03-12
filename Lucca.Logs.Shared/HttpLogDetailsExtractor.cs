@@ -1,4 +1,4 @@
-﻿namespace Lucca.Logs.Shared
+﻿namespace Lucca.Logs.Abstractions
 {
     public class HttpLogDetailsExtractor : ILogDetailsExtractor
     {
@@ -10,12 +10,12 @@
         }
 
         public bool CanExtract => _httpRequest.IsContextDefined;
-        public string PageRest => _httpRequest.ExtractUrl(Uripart.Path | Uripart.Query);
-        public string PageRest2 => _httpRequest.ExtractUrl(Uripart.Path | Uripart.Query);
-        public string Page => _httpRequest.ExtractUrl(Uripart.Full);
+        public string PageRest => _httpRequest.ExtractUrl(UriParts.Path | UriParts.Query);
+        public string PageRest2 => _httpRequest.ExtractUrl(UriParts.Path | UriParts.Query);
+        public string Page => _httpRequest.ExtractUrl(UriParts.Full);
         public string Verb => _httpRequest.Method;
-        public string Uri => _httpRequest.ExtractUrl(Uripart.Path);
-        public string ServerName => _httpRequest.ExtractUrl(Uripart.Host);
+        public string UriPath => _httpRequest.ExtractUrl(UriParts.Path);
+        public string ServerName => _httpRequest.ExtractUrl(UriParts.Host);
 
         public string HostAddress
         {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
-using Lucca.Logs.Shared;
+using Lucca.Logs.Abstractions;
 
 namespace Lucca.Logs.AspnetCore
 {

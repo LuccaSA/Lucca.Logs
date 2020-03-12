@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.ExceptionHandling;
-using Lucca.Logs.Shared;
+using Lucca.Logs.Abstractions;
 
 namespace Lucca.Logs.AspnetLegacy
 {
@@ -12,14 +12,12 @@ namespace Lucca.Logs.AspnetLegacy
     {
         private void Handle(ExceptionHandlerContext context)
         {
-            IExceptionQualifier efilter = context.RequestContext.Configuration.DependencyResolver.GetService(typeof(IExceptionQualifier)) as IExceptionQualifier;
-
-            if (efilter == null)
+            if (!(context.RequestContext.Configuration.DependencyResolver.GetService(typeof(IExceptionQualifier)) is IExceptionQualifier filter))
             {
                 return;
             }
 
-            string message = efilter.DisplayExceptionDetails(context.Exception) ? context.Exception.Message : efilter.GenericErrorMessage;
+            string message = filter.DisplayExceptionDetails(context.Exception) ? context.Exception.Message : filter.GenericErrorMessage;
 
             context.Result = new TextPlainErrorResult
             {
@@ -30,10 +28,13 @@ namespace Lucca.Logs.AspnetLegacy
 
         public Task HandleAsync(ExceptionHandlerContext context, CancellationToken cancellationToken)
         {
-            Handle(context);
+            if (context != null)
+            {
+                Handle(context);
+            }
             return Task.CompletedTask;
         }
-         
+
         private class TextPlainErrorResult : IHttpActionResult
         {
             public HttpRequestMessage Request { get; set; }
@@ -42,9 +43,11 @@ namespace Lucca.Logs.AspnetLegacy
 
             public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
             {
-                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-                response.Content = new StringContent(Content);
-                response.RequestMessage = Request;
+                var response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                {
+                    Content = new StringContent(Content),
+                    RequestMessage = Request
+                };
                 return Task.FromResult(response);
             }
         }

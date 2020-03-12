@@ -1,4 +1,5 @@
-﻿using System.Web.Http.Controllers;
+﻿using System;
+using System.Web.Http.Controllers;
 using System.Web.Http.ExceptionHandling;
 
 namespace Lucca.Logs.AspnetLegacy
@@ -7,6 +8,7 @@ namespace Lucca.Logs.AspnetLegacy
     {
         public override void Log(ExceptionLoggerContext context)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
             HttpControllerContext controllerContext = context.ExceptionContext?.ControllerContext;
             context.Exception.HttpLog(controllerContext);
         }

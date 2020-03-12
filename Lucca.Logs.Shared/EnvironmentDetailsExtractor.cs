@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lucca.Logs.Shared
+namespace Lucca.Logs.Abstractions
 {
     public class EnvironmentDetailsExtractor
     {

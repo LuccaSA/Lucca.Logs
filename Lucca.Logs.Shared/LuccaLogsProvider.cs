@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NLog;
 
-namespace Lucca.Logs.Shared
+namespace Lucca.Logs.Abstractions
 {
     public sealed class LuccaLogsProvider : ILoggerProvider
     {
@@ -18,7 +18,7 @@ namespace Lucca.Logs.Shared
 
         public LuccaLogsProvider(IOptionsMonitor<LuccaLoggerOptions> options, IHttpContextParser httpContextAccessor, IExceptionQualifier filters, IExceptionalWrapper exceptionalWrapper, IEnumerable<ILogDetailsExtractor> logDetailsExtractors)
         {
-            _options = options;
+            _options = options ?? throw new ArgumentNullException(nameof(options));
             _httpContextAccessor = httpContextAccessor;
             _filters = filters;
             _exceptionalWrapper = exceptionalWrapper;

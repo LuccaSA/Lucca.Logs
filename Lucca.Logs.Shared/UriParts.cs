@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace Lucca.Logs.Shared
+namespace Lucca.Logs.Abstractions
 {
     [Flags]
-    public enum Uripart
+    public enum UriParts
     {
         None = 0,
         Scheme = 1,

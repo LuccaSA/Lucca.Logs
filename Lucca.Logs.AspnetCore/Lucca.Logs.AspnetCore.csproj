@@ -18,6 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Lucca.Logs.Shared\Lucca.Logs.Shared.csproj" />
+    <ProjectReference Include="..\Lucca.Logs.Shared\Lucca.Logs.Abstractions.csproj" />
   </ItemGroup>
 </Project>

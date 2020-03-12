@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Lucca.Logs.Shared;
+using Lucca.Logs.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -34,7 +34,7 @@ namespace Lucca.Logs.AspnetCore
         {
             try
             {
-                await _next(context);
+                await _next(context).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -53,7 +53,7 @@ namespace Lucca.Logs.AspnetCore
                         _filter?.GenericErrorMessage,
                         _filter?.PreferedResponseType(context.Request.Path));
 
-                    await GenerateErrorResponseAsync(context, info);
+                    await GenerateErrorResponseAsync(context, info).ConfigureAwait(false);
                 }
                 catch (Exception ex2)
                 {
@@ -77,14 +77,14 @@ namespace Lucca.Logs.AspnetCore
 
             if (acceptable != null)
             {
-                if (await TryRenderErrorOnContentTypeAsync(acceptable, context, info))
+                if (await TryRenderErrorOnContentTypeAsync(acceptable, context, info).ConfigureAwait(false))
                 {
                     return;
                 }
             }
 
             // If explicit content type (Content-Type header) match, we render
-            if (!string.IsNullOrEmpty(context.Request.ContentType) && await TryRenderErrorOnContentTypeAsync(context.Request.ContentType, context, info))
+            if (!string.IsNullOrEmpty(context.Request.ContentType) && await TryRenderErrorOnContentTypeAsync(context.Request.ContentType, context, info).ConfigureAwait(false))
             {
                 return;
             }
@@ -92,7 +92,7 @@ namespace Lucca.Logs.AspnetCore
             // fallback on PreferedResponseType
             if (!string.IsNullOrWhiteSpace(info.PreferedResponseType))
             {
-                if (await TryRenderErrorOnContentTypeAsync(info.PreferedResponseType, context, info))
+                if (await TryRenderErrorOnContentTypeAsync(info.PreferedResponseType, context, info).ConfigureAwait(false))
                 {
                     return;
                 }
@@ -100,7 +100,7 @@ namespace Lucca.Logs.AspnetCore
 
             // fallback on generic text/plain error
             context.Response.ContentType = _textPlain;
-            await context.Response.WriteAsync(info.GenericErrorMessage);
+            await context.Response.WriteAsync(info.GenericErrorMessage).ConfigureAwait(false);
         }
 
         internal static string NegociateAcceptableContentType(HttpRequest httpRequest)
@@ -122,9 +122,9 @@ namespace Lucca.Logs.AspnetCore
                 {
                     continue;
                 }
-                if (contentType.MediaType.Value.StartsWith(_textPlain)
-                    || contentType.MediaType.Value.StartsWith(_appJson)
-                    || contentType.MediaType.Value.StartsWith(_textHtml))
+                if (contentType.MediaType.Value.StartsWith(_textPlain, StringComparison.OrdinalIgnoreCase)
+                    || contentType.MediaType.Value.StartsWith(_appJson, StringComparison.OrdinalIgnoreCase)
+                    || contentType.MediaType.Value.StartsWith(_textHtml, StringComparison.OrdinalIgnoreCase))
                 {
                     return contentType.MediaType.Value;
                 }
@@ -139,13 +139,13 @@ namespace Lucca.Logs.AspnetCore
                 switch (contentType)
                 {
                     case _textPlain:
-                        await TextPlainReport(context, info);
+                        await TextPlainReport(context, info).ConfigureAwait(false);
                         return true;
                     case _appJson:
-                        await JsonReport(context, info);
+                        await JsonReport(context, info).ConfigureAwait(false);
                         return true;
                     case _textHtml:
-                        await HtmlReport(context, info);
+                        await HtmlReport(context, info).ConfigureAwait(false);
                         return true;
                 }
             }
@@ -158,23 +158,23 @@ namespace Lucca.Logs.AspnetCore
 
         private async Task HtmlReport(HttpContext httpContext, LuccaExceptionBuilderInfo info)
         {
-            string data = await _options.Value.HtmlResponse(info);
+            string data = await _options.Value.HtmlResponse(info).ConfigureAwait(false);
             httpContext.Response.ContentType = _textHtml;
-            await httpContext.Response.WriteAsync(data);
+            await httpContext.Response.WriteAsync(data).ConfigureAwait(false);
         }
 
         private async Task TextPlainReport(HttpContext httpContext, LuccaExceptionBuilderInfo info)
         {
-            string data = await _options.Value.TextPlainResponse(info);
+            string data = await _options.Value.TextPlainResponse(info).ConfigureAwait(false);
             httpContext.Response.ContentType = _textPlain;
-            await httpContext.Response.WriteAsync(data);
+            await httpContext.Response.WriteAsync(data).ConfigureAwait(false);
         }
 
         private async Task JsonReport(HttpContext httpContext, LuccaExceptionBuilderInfo info)
         {
-            string data = await _options.Value.JsonResponse(info);
+            string data = await _options.Value.JsonResponse(info).ConfigureAwait(false);
             httpContext.Response.ContentType = _appJson;
-            await httpContext.Response.WriteAsync(data);
+            await httpContext.Response.WriteAsync(data).ConfigureAwait(false);
         }
 
         private static List<MediaTypeHeaderValue> GetAcceptableMediaTypes(HttpRequest request)

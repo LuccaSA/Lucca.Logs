@@ -1,4 +1,5 @@
-﻿using Lucca.Logs.Shared;
+﻿using System;
+using Lucca.Logs.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Lucca.Logs.Netcore.Tests
@@ -7,6 +8,7 @@ namespace Lucca.Logs.Netcore.Tests
     {
         public InjectOption(IOptions<LuccaLoggerOptions> options)
         {
+            if (options == null) throw new ArgumentNullException(nameof(options));
             Options = options.Value;
         }
 

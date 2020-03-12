@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Lucca.Logs.Shared
+namespace Lucca.Logs.Abstractions
 {
     public interface IHttpContextParser
     {
         bool IsContextDefined { get; }
-        string ExtractUrl(Uripart uriPart);
+        string ExtractUrl(UriParts uriPart);
         string Method { get; }
         string Ip { get; }
         bool ContainsHeader(string header);

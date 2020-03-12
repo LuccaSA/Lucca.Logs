@@ -1,5 +1,5 @@
 ﻿using System;
-using Lucca.Logs.Shared;
+using Lucca.Logs.Abstractions;
 using StackExchange.Exceptional;
 using StackExchange.Exceptional.Internal;
 

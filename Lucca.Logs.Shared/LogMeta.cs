@@ -1,6 +1,6 @@
 ﻿using NLog.Layouts;
 
-namespace Lucca.Logs.Shared
+namespace Lucca.Logs.Abstractions
 {
     internal static class LogMeta
     {

@@ -7,7 +7,7 @@ using NLog.Targets;
 using StackExchange.Exceptional;
 using StackExchange.Exceptional.Stores;
 
-namespace Lucca.Logs.Shared
+namespace Lucca.Logs.Abstractions
 {
     public class LuccaLoggerOptions
     {
@@ -76,7 +76,7 @@ namespace Lucca.Logs.Shared
 
         public ErrorStore GenerateExceptionalStore()
         {
-            if (!String.IsNullOrEmpty(ConnectionString))
+            if (!string.IsNullOrEmpty(ConnectionString))
             {
                 return new SQLErrorStore(ConnectionString, ApplicationName);
             }
@@ -89,6 +89,7 @@ namespace Lucca.Logs.Shared
             return new MemoryErrorStore(new ErrorStoreSettings { ApplicationName = ApplicationName });
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by framework")]
         private LoggingConfiguration GenerateLuccaDefaultConfig()
         {
             var nLogConfig = new LoggingConfiguration();

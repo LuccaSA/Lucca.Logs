@@ -1,6 +1,5 @@
 ﻿using Lucca.Logs.AspnetCore;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Exceptional;
@@ -36,7 +35,9 @@ namespace Lucca.Logs.Netcore.Tests.Integration
             });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+#pragma warning disable CA1822 // Mark members as static
+        public void Configure(IApplicationBuilder app)
+#pragma warning restore CA1822 // Mark members as static
         {
             app.UseLuccaLogs();
 

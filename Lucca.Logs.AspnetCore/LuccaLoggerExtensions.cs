@@ -1,6 +1,6 @@
 ﻿using System;
 using CloudNative.CloudEvents;
-using Lucca.Logs.Shared;
+using Lucca.Logs.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -18,18 +18,21 @@ namespace Lucca.Logs.AspnetCore
     {
         public static ILuccaLoggingBuilder AddLuccaLogs(this ILoggingBuilder loggingBuilder, IConfigurationSection config, string appName, Action<LuccaLoggerOptions> configureOptions = null)
         {
+            if (loggingBuilder == null) throw new ArgumentNullException(nameof(loggingBuilder));
             loggingBuilder.Services.AddLuccaLogs(config, appName, configureOptions);
             return new LuccaLoggingBuilder(loggingBuilder);
         }
 
         public static ILuccaLoggingBuilder AddLuccaLogs(this ILoggingBuilder loggingBuilder, Action<LuccaLoggerOptions> configureOptions, string appName, ErrorStore errorStore = null)
         {
+            if (loggingBuilder == null) throw new ArgumentNullException(nameof(loggingBuilder));
             loggingBuilder.Services.AddLuccaLogs(configureOptions, appName, errorStore);
             return new LuccaLoggingBuilder(loggingBuilder);
         }
 
         public static ILoggingBuilder WithCloudEvents(this ILuccaLoggingBuilder luccaLoggingBuilder, Func<CloudEvent> cloudEventAccessor)
         {
+            if (luccaLoggingBuilder == null) throw new ArgumentNullException(nameof(luccaLoggingBuilder));
             luccaLoggingBuilder.Services.PostConfigure<LuccaLoggerOptions>(o =>
             {
                 o.CloudEventAccessor = cloudEventAccessor;
@@ -150,6 +153,7 @@ namespace Lucca.Logs.AspnetCore
     {
         public LuccaLoggingBuilder(ILoggingBuilder loggingBuilder)
         {
+            if (loggingBuilder == null) throw new ArgumentNullException(nameof(loggingBuilder));
             Services = loggingBuilder.Services;
         }
 

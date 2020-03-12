@@ -1,7 +1,7 @@
 ﻿using System;
 using StackExchange.Exceptional.Internal;
 
-namespace Lucca.Logs.Shared
+namespace Lucca.Logs.Abstractions
 {
     public interface IExceptionalWrapper
     {

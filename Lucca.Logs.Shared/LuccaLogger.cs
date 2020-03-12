@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Datadog.Trace;
 using Microsoft.Extensions.Logging;
 using NLog;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
-namespace Lucca.Logs.Shared
+namespace Lucca.Logs.Abstractions
 {
     public class LuccaLogger : ILogger
     {
@@ -99,11 +100,11 @@ namespace Lucca.Logs.Shared
 
             if (options.GuidWithPlaceHolder)
             {
-                eventInfo.Properties[LogMeta.Link] = String.Format(options.GuidLink, guid.Value.ToString("N"));
+                eventInfo.Properties[LogMeta.Link] = string.Format(CultureInfo.InvariantCulture, options.GuidLink, guid.Value.ToString("N", CultureInfo.InvariantCulture));
             }
             else
             {
-                eventInfo.Properties[LogMeta.Link] = options.GuidLink + guid.Value.ToString("N");
+                eventInfo.Properties[LogMeta.Link] = options.GuidLink + guid.Value.ToString("N", CultureInfo.InvariantCulture);
             }
         }
 

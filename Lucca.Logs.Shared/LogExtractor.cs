@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Datadog.Trace;
 
-namespace Lucca.Logs.Shared
+namespace Lucca.Logs.Abstractions
 {
     public class LogExtractor
     {
@@ -34,7 +35,7 @@ namespace Lucca.Logs.Shared
                 TryAdd(LogMeta._pageRest2, extractor.PageRest2);
                 TryAdd(LogMeta._page, extractor.Page);
                 TryAdd(LogMeta._verb, extractor.Verb);
-                TryAdd(LogMeta._uri, extractor.Uri);
+                TryAdd(LogMeta._uri, extractor.UriPath);
                 TryAdd(LogMeta._serverName, extractor.ServerName);
                 TryAdd(LogMeta._correlationId, extractor.CorrelationId);
                 TryAdd(LogMeta._hostAddress, extractor.HostAddress);
@@ -43,8 +44,8 @@ namespace Lucca.Logs.Shared
                 var traceId = CorrelationIdentifier.TraceId;
                 if (traceId != 0)
                 {
-                    TryAdd(LogMeta._traceId, traceId.ToString());
-                    TryAdd(LogMeta._spanId, CorrelationIdentifier.SpanId.ToString());
+                    TryAdd(LogMeta._traceId, traceId.ToString(CultureInfo.InvariantCulture));
+                    TryAdd(LogMeta._spanId, CorrelationIdentifier.SpanId.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (!isError)

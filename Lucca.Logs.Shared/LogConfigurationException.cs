@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Lucca.Logs.Shared
+namespace Lucca.Logs.Abstractions
 {
     [Serializable]
     public sealed class LogConfigurationException : Exception
@@ -13,6 +13,14 @@ namespace Lucca.Logs.Shared
 
         private LogConfigurationException(SerializationInfo info, StreamingContext context)
             : base(info, context)
+        {
+        }
+
+        public LogConfigurationException()
+        {
+        }
+
+        public LogConfigurationException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

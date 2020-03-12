@@ -42,7 +42,7 @@ namespace Lucca.Logs.Netcore.Tests
 
             player.Log(logLevel, 42, new Exception(), "the answer");
 
-            List<Error> found = await _memoryStore.GetAllAsync();
+            List<Error> found = await _memoryStore.GetAllAsync().ConfigureAwait(false);
             if (logLevel > LogLevel.Debug)
             {
                 Assert.Single(found);

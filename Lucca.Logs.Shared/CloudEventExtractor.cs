@@ -2,7 +2,7 @@
 using CloudNative.CloudEvents.Extensions;
 using Microsoft.Extensions.Options;
 
-namespace Lucca.Logs.Shared
+namespace Lucca.Logs.Abstractions
 {
     public class CloudEventExtractor : ILogDetailsExtractor
     {
@@ -18,7 +18,7 @@ namespace Lucca.Logs.Shared
         public string PageRest2 => Event.Type;
         public string Page => Event.Subject;
         public string Verb => "Event";
-        public string Uri => Event.Source.ToString();
+        public string UriPath => Event.Source.ToString();
         public string ServerName => Event.Source.DnsSafeHost;
         public string HostAddress { get; } = string.Empty;
         public string UserAgent => Event.SpecVersion.ToString();

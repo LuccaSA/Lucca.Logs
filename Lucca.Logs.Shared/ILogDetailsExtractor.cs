@@ -1,4 +1,4 @@
-﻿namespace Lucca.Logs.Shared
+﻿namespace Lucca.Logs.Abstractions
 {
     public interface ILogDetailsExtractor
     {
@@ -7,7 +7,7 @@
         string PageRest2 { get; }
         string Page { get; }
         string Verb { get; }
-        string Uri { get; }
+        string UriPath { get; }
         string ServerName { get; }
         string HostAddress { get; }
         string UserAgent { get; }

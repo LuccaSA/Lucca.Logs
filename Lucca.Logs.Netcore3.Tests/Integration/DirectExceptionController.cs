@@ -31,7 +31,9 @@ namespace Lucca.Logs.Netcore.Tests.Integration
         }
 
         [HttpPost]
+#pragma warning disable CA1801 // Review unused parameters
         public void Post([FromBody] TestDto dto)
+#pragma warning restore CA1801 // Review unused parameters
         {
             try
             {

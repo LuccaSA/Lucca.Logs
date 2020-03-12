@@ -20,11 +20,11 @@ namespace Lucca.Logs.AspnetCore
             HtmlResponse = i => throw new NotImplementedException();
         }
 
-        public Func<LuccaExceptionBuilderInfo, Task<String>> TextPlainResponse { get; set; }
-        public Func<LuccaExceptionBuilderInfo, Task<String>> HtmlResponse { get; set; }
-        public Func<LuccaExceptionBuilderInfo, Task<String>> JsonResponse { get; set; }
+        public Func<LuccaExceptionBuilderInfo, Task<string>> TextPlainResponse { get; set; }
+        public Func<LuccaExceptionBuilderInfo, Task<string>> HtmlResponse { get; set; }
+        public Func<LuccaExceptionBuilderInfo, Task<string>> JsonResponse { get; set; }
 
-        public Task<String> DefaultHandler(LuccaExceptionBuilderInfo builderInfo) => Task.FromResult($"Error code: {builderInfo.StatusCode}");
+        public static Task<string> DefaultHandler(LuccaExceptionBuilderInfo builderInfo) => Task.FromResult($"Error code: {builderInfo?.StatusCode}");
     }
 
     public class LuccaExceptionBuilderInfo

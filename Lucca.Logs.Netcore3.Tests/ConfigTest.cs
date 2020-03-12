@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
+using Lucca.Logs.Abstractions;
 using Lucca.Logs.AspnetCore;
-using Lucca.Logs.Shared;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -77,19 +77,7 @@ namespace Lucca.Logs.Netcore.Tests
 
             Assert.Equal("myConnectionString", injected.Options.ConnectionString);
         }
-
-        [Fact]
-        public void LoadConfig_InnerNlog()
-        {
-            // TODO
-        }
-
-        [Fact]
-        public void LoadConfig_InnerExceptional()
-        {
-            // TODO
-        }
-
+         
         private static IConfigurationRoot LoadConfig(string configFile) => new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile(@"Configs\" + configFile, false, true)

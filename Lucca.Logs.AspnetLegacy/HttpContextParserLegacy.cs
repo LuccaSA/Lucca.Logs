@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Web;
-using Lucca.Logs.Shared;
+using Lucca.Logs.Abstractions;
 using StackExchange.Exceptional;
 
 namespace Lucca.Logs.AspnetLegacy
@@ -35,29 +35,29 @@ namespace Lucca.Logs.AspnetLegacy
             }
         }
 
-        public string ExtractUrl(Uripart uriPart)
+        public string ExtractUrl(UriParts uriPart)
         {
             if (Request == null)
                 return null;
 
             var urlBuilder = new StringBuilder();
-            if ((uriPart & Uripart.Scheme) == Uripart.Scheme && !String.IsNullOrWhiteSpace(Request.Url.Scheme))
+            if ((uriPart & UriParts.Scheme) == UriParts.Scheme && !string.IsNullOrWhiteSpace(Request.Url.Scheme))
             {
                 urlBuilder.Append(Request.Url.Scheme + "://");
             }
-            if ((uriPart & Uripart.Host) == Uripart.Host)
+            if ((uriPart & UriParts.Host) == UriParts.Host)
             {
                 urlBuilder.Append(Request.Url.DnsSafeHost);
             }
-            if ((uriPart & Uripart.Port) == Uripart.Port && Request.Url.Port > 0)
+            if ((uriPart & UriParts.Port) == UriParts.Port && Request.Url.Port > 0)
             {
                 urlBuilder.Append(":" + Request.Url.Port);
             }
-            if ((uriPart & Uripart.Path) == Uripart.Path)
+            if ((uriPart & UriParts.Path) == UriParts.Path)
             {
                 urlBuilder.Append(Request.Url.LocalPath);
             }
-            if ((uriPart & Uripart.Query) == Uripart.Query)
+            if ((uriPart & UriParts.Query) == UriParts.Query)
             {
                 urlBuilder.Append(Request.Url.Query.ClearQueryStringPassword());
             }

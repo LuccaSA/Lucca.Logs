@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -31,12 +32,12 @@ namespace Lucca.Logs.Netcore.Tests.Integration
         [Fact]
         public async Task ExOnGet()
         {
-            var host = await _hostBuilder.StartAsync();
+            var host = await _hostBuilder.StartAsync().ConfigureAwait(false);
             var client = host.GetTestClient();
-            var response = await client.GetAsync("/api/directException");
+            var response = await client.GetAsync(new Uri("/api/directException")).ConfigureAwait(false);
 
             var memoryStore = host.Services.GetRequiredService<ErrorStore>(); 
-            List<Error> found = await memoryStore.GetAllAsync();
+            List<Error> found = await memoryStore.GetAllAsync().ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
              
@@ -48,17 +49,17 @@ namespace Lucca.Logs.Netcore.Tests.Integration
         [Fact]
         public async Task ExOnPost()
         {
-            var host = await _hostBuilder.StartAsync();
+            var host = await _hostBuilder.StartAsync().ConfigureAwait(false);
             var client = host.GetTestClient();
             TestDto dto = new TestDto { Data = "hey !" };
             var json = JsonConvert.SerializeObject(dto);
 
-            HttpContent payload = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await client.PostAsync("/api/directException", payload);
+            using HttpContent payload = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await client.PostAsync(new Uri("/api/directException"), payload).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var memoryStore = host.Services.GetRequiredService<ErrorStore>();
-            List<Error> found = await memoryStore.GetAllAsync();
+            List<Error> found = await memoryStore.GetAllAsync().ConfigureAwait(false);
 
             Assert.Single(found);
             Assert.Contains("RawPostedData", found.First().CustomData.Keys);
@@ -68,18 +69,18 @@ namespace Lucca.Logs.Netcore.Tests.Integration
         [Fact]
         public async Task ExOnGetDirectWithAccept()
         {
-            var host = await _hostBuilder.StartAsync();
+            var host = await _hostBuilder.StartAsync().ConfigureAwait(false);
             var client = host.GetTestClient();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
-            HttpResponseMessage response = await client.GetAsync("/api/directException/direct");
+            HttpResponseMessage response = await client.GetAsync(new Uri("/api/directException/direct")).ConfigureAwait(false);
 
-            var data = await response.Content.ReadAsStringAsync();
+            var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             var memoryStore = host.Services.GetRequiredService<ErrorStore>();
-            List<Error> found = await memoryStore.GetAllAsync();
+            List<Error> found = await memoryStore.GetAllAsync().ConfigureAwait(false);
 
             Assert.Single(found);
-            Assert.StartsWith("{\"status\":500,\"message\":\"get\"}", data);
+            Assert.StartsWith("{\"status\":500,\"message\":\"get\"}", data, System.StringComparison.Ordinal);
 
             Assert.Equal("IntegrationTest", found.First().ApplicationName);
         }

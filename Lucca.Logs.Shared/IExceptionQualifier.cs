@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace Lucca.Logs.Shared
+namespace Lucca.Logs.Abstractions
 {
     /// <summary>
     /// Filter exceptions for exceptional storage

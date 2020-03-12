@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace Lucca.Logs.Shared
+namespace Lucca.Logs.Abstractions
 {
     internal static class NLogHelper
     {

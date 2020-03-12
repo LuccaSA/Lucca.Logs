@@ -7,9 +7,10 @@ namespace Lucca.Logs.Netcore.Tests
 	public static class LogPlayerExtension
 	{
 		public static void Log<T>(this ILogPlayer<T> player, LogLevel logLevel, int eventId, Exception exception, string message)
-			where T : class 
-		{
-			switch (logLevel)
+			where T : class
+        {
+            if (player == null) throw new ArgumentNullException(nameof(player));
+            switch (logLevel)
 			{
 				case LogLevel.Trace:
 					player.Logger.LogTrace(eventId, exception, message);
@@ -32,6 +33,6 @@ namespace Lucca.Logs.Netcore.Tests
 				default:
 					throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null);
 			}
-		}
+        }
 	}
 }
