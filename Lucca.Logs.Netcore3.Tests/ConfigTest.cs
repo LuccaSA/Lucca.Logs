@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Lucca.Logs.Tests
+namespace Lucca.Logs.Netcore.Tests
 {
     public class ConfigTest
     {

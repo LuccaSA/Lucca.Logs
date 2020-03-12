@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace Lucca.Logs.Tests
+namespace Lucca.Logs.Netcore.Tests
 {
     public class DummyLogPlayer : ILogPlayer<DummyLogPlayer>
     {

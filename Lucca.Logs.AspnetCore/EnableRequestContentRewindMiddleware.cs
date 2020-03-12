@@ -20,11 +20,7 @@ namespace Lucca.Logs.AspnetCore
 
         public async Task Invoke(HttpContext context)
         {
-#if NETCOREAPP2_1
-            context.Request.EnableRewind();
-#else
             context.Request.EnableBuffering();
-#endif
             await _next(context);
         }
     }

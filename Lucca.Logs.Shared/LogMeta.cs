@@ -31,6 +31,9 @@ namespace Lucca.Logs.Shared
         internal const string _forwardedHeader = "X-Forwarded-For";
         internal const string _correlationId = "X-Correlation-ID";
 
+        internal const string _traceId = "dd.trace_id";
+        internal const string _spanId = "dd.span_id";
+
         private static string[] Keys => new[]
         {
             _warning,
@@ -49,7 +52,9 @@ namespace Lucca.Logs.Shared
             _exceptionNamespace,
             _httpLikeExceptionStatus,
             _uri,
-            _correlationId
+            _correlationId,
+            _traceId,
+            _spanId,
         };
 
         public static JsonLayout LuccaJsonLayout { get; } = GenerateJsonLayout();

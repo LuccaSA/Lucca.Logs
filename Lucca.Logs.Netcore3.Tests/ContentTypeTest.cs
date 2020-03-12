@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
-namespace Lucca.Logs.Tests
+namespace Lucca.Logs.Netcore.Tests
 {
 
     public class ContentTypeTest

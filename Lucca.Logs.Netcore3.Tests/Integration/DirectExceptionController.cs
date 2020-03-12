@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace Lucca.Logs.Tests.Integration
+namespace Lucca.Logs.Netcore.Tests.Integration
 {
     [Route("api/[controller]")]
     public class DirectExceptionController : Controller

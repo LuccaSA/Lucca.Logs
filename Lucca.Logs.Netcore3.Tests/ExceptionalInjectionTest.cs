@@ -9,7 +9,7 @@ using StackExchange.Exceptional;
 using StackExchange.Exceptional.Stores;
 using Xunit;
 
-namespace Lucca.Logs.Tests
+namespace Lucca.Logs.Netcore.Tests
 {
     public class ExceptionalInjectionTest
     {
