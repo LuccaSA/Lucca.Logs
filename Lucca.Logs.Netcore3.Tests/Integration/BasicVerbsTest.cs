@@ -26,21 +26,21 @@ namespace Lucca.Logs.Netcore.Tests.Integration
                     // Add TestServer
                     webHost.UseTestServer();
                     webHost.UseStartup<Startup>();
-                }); 
+                });
         }
-         
+
         [Fact]
         public async Task ExOnGet()
         {
             var host = await _hostBuilder.StartAsync().ConfigureAwait(false);
             var client = host.GetTestClient();
-            var response = await client.GetAsync(new Uri("/api/directException")).ConfigureAwait(false);
+            var response = await client.GetAsync(new Uri("/api/directException", UriKind.Relative)).ConfigureAwait(false);
 
-            var memoryStore = host.Services.GetRequiredService<ErrorStore>(); 
+            var memoryStore = host.Services.GetRequiredService<ErrorStore>();
             List<Error> found = await memoryStore.GetAllAsync().ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
-             
+
             Assert.Single(found);
 
             Assert.Equal("IntegrationTest", found.First().ApplicationName);
@@ -55,7 +55,7 @@ namespace Lucca.Logs.Netcore.Tests.Integration
             var json = JsonConvert.SerializeObject(dto);
 
             using HttpContent payload = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await client.PostAsync(new Uri("/api/directException"), payload).ConfigureAwait(false);
+            var response = await client.PostAsync(new Uri("/api/directException", UriKind.Relative), payload).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var memoryStore = host.Services.GetRequiredService<ErrorStore>();
@@ -72,7 +72,7 @@ namespace Lucca.Logs.Netcore.Tests.Integration
             var host = await _hostBuilder.StartAsync().ConfigureAwait(false);
             var client = host.GetTestClient();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
-            HttpResponseMessage response = await client.GetAsync(new Uri("/api/directException/direct")).ConfigureAwait(false);
+            HttpResponseMessage response = await client.GetAsync(new Uri("/api/directException/direct", UriKind.Relative)).ConfigureAwait(false);
 
             var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
