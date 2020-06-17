@@ -38,6 +38,11 @@ namespace Lucca.Logs.AspnetCore
             }
             catch (Exception ex)
             {
+                if (!_options.Value.IsExceptionHandled(ex))
+                {
+                    throw;
+                }
+
                 _logger.LogError(0, ex, "An unhandled exception has occurred: " + ex.Message);
                 if (context.Response.HasStarted)
                 {
