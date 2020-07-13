@@ -8,36 +8,32 @@
         {
             _httpRequest = httpRequest;
         }
-
-        public bool CanExtract => _httpRequest.IsContextDefined;
-        public string PageRest => _httpRequest.ExtractUrl(Uripart.Path | Uripart.Query);
-        public string PageRest2 => _httpRequest.ExtractUrl(Uripart.Path | Uripart.Query);
-        public string Page => _httpRequest.ExtractUrl(Uripart.Full);
-        public string Verb => _httpRequest.Method;
-        public string Uri => _httpRequest.ExtractUrl(Uripart.Path);
-        public string ServerName => _httpRequest.ExtractUrl(Uripart.Host);
-
-        public string HostAddress
+          
+         
+        public LogDetail CreateLogDetail()
         {
-            get
+            IHttpContextRequest httpRequest = _httpRequest.HttpRequestAccessor();
+            if (httpRequest == null)
             {
-                // Récupération de l'IP forwardée par HAProxy, et fallback UserHostAddress
-                string ip = null;
-                if (_httpRequest.ContainsHeader(LogMeta._luccaForwardedHeader))
-                {
-                    ip = _httpRequest.GetHeader(LogMeta._forwardedHeader);
-                }
-                if (string.IsNullOrEmpty(ip))
-                {
-                    ip = _httpRequest.Ip;
-                }
-                return ip;
+                return new LogDetail { CanExtract = false };
             }
-        }
 
-        public string UserAgent => _httpRequest.GetHeader("User-Agent");
-        public string CorrelationId => _httpRequest.GetHeader(LogMeta._correlationId);
-        public string Payload => _httpRequest.TryGetBodyContent();
-        public string Warning => _httpRequest == null ? "HttpContext.Current is null" : null;
+            return new LogDetail
+            {
+                CanExtract = true,
+                PageRest = _httpRequest.ExtractUrl(Uripart.Path | Uripart.Query, httpRequest),
+                PageRest2 = _httpRequest.ExtractUrl(Uripart.Path | Uripart.Query, httpRequest),
+                Page = _httpRequest.ExtractUrl(Uripart.Full, httpRequest),
+                Verb = _httpRequest.GetMethod(httpRequest),
+                Uri = _httpRequest.ExtractUrl(Uripart.Path, httpRequest),
+                ServerName = _httpRequest.ExtractUrl(Uripart.Host, httpRequest),
+                HostAddress = _httpRequest.HostAddress(httpRequest),
+                UserAgent = _httpRequest.GetHeader("User-Agent", httpRequest),
+                CorrelationId = _httpRequest.GetHeader(LogMeta._correlationId, httpRequest),
+                Payload = _httpRequest.TryGetBodyContent(httpRequest),
+                Warning = _httpRequest == null ? "HttpContext.Current is null" : null
+            };
+
+        }
     }
 }

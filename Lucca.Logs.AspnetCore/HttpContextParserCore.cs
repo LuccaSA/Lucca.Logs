@@ -17,76 +17,6 @@ namespace Lucca.Logs.AspnetCore
             _httpContextAccessor = httpContextAccessor;
         }
 
-        private HttpRequest Request => _httpContextAccessor?.HttpContext?.Request;
-
-        public bool IsContextDefined => _httpContextAccessor?.HttpContext != null;
-
-        public string ExtractUrl(Uripart uriPart)
-        {
-            if (Request == null)
-                return null;
-
-            var urlBuilder = new StringBuilder();
-            if ((uriPart & Uripart.Scheme) == Uripart.Scheme && !String.IsNullOrWhiteSpace(Request.Scheme))
-            {
-                urlBuilder.Append(Request.Scheme + "://");
-            }
-            if ((uriPart & Uripart.Host) == Uripart.Host)
-            {
-                urlBuilder.Append(Request.Host.Host);
-            }
-            if ((uriPart & Uripart.Port) == Uripart.Port && Request.Host.Port > 0)
-            {
-                urlBuilder.Append(":" + Request.Host.Port);
-            }
-            if ((uriPart & Uripart.Path) == Uripart.Path)
-            {
-                urlBuilder.Append(Request.PathBase.ToUriComponent());
-                urlBuilder.Append(Request.Path.ToUriComponent());
-            }
-            if ((uriPart & Uripart.Query) == Uripart.Query)
-            {
-                urlBuilder.Append(Request.QueryString.Value.ClearQueryStringPassword());
-            }
-            return urlBuilder.ToString();
-        }
-
-        public string Method => Request?.Method;
-
-        public bool ContainsHeader(string header)
-        {
-            if (Request == null)
-                return false;
-
-            return Request.Headers.ContainsKey(header);
-        }
-
-        public string GetHeader(string header) => Request?.Headers[header];
-
-        public string Ip => Request?.HttpContext?.Connection?.RemoteIpAddress?.ToString();
-
-        public string TryGetBodyContent()
-        {
-            try
-            {
-                if (Request == null || !Request.Body.CanRead || !Request.Body.CanSeek || Request.Body.Length == 0)
-                {
-                    return null;
-                }
-
-                using (var stream = new MemoryStream())
-                {
-                    Request.Body.Seek(0, SeekOrigin.Begin);
-                    Request.Body.CopyTo(stream);
-                   return Encoding.UTF8.GetString(stream.ToArray());
-                }
-            }
-            catch (Exception)
-            {
-                // discard exception
-                return null;
-            }
-        }
 
         public Guid? ExceptionalLog(Exception exception, Dictionary<string, string> customData, string categoryName, string appName)
         {
@@ -97,9 +27,11 @@ namespace Lucca.Logs.AspnetCore
 
             Error error;
 
-            if (Request?.HttpContext != null)
+            var request = _httpContextAccessor?.HttpContext?.Request;
+
+            if (request?.HttpContext != null)
             {
-                error = exception.Log(Request.HttpContext, categoryName, false, customData, appName);
+                error = exception.Log(request.HttpContext, categoryName, false, customData, appName);
             }
             else
             {
@@ -109,5 +41,111 @@ namespace Lucca.Logs.AspnetCore
             return error?.GUID;
         }
 
+        public IHttpContextRequest HttpRequestAccessor()
+        {
+            var req = _httpContextAccessor?.HttpContext?.Request;
+            return req != null ? new HttpContextRequestCore(req) : null;
+        }
+
+        public string ExtractUrl(Uripart uriPart, IHttpContextRequest httpRequest)
+        {
+            var request = (httpRequest as HttpContextRequestCore).HttpRequest;
+            if (request == null)
+                return null;
+
+            var urlBuilder = new StringBuilder();
+            if ((uriPart & Uripart.Scheme) == Uripart.Scheme && !String.IsNullOrWhiteSpace(request.Scheme))
+            {
+                urlBuilder.Append(request.Scheme + "://");
+            }
+            if ((uriPart & Uripart.Host) == Uripart.Host)
+            {
+                urlBuilder.Append(request.Host.Host);
+            }
+            if ((uriPart & Uripart.Port) == Uripart.Port && request.Host.Port > 0)
+            {
+                urlBuilder.Append(":" + request.Host.Port);
+            }
+            if ((uriPart & Uripart.Path) == Uripart.Path)
+            {
+                urlBuilder.Append(request.PathBase.ToUriComponent());
+                urlBuilder.Append(request.Path.ToUriComponent());
+            }
+            if ((uriPart & Uripart.Query) == Uripart.Query)
+            {
+                urlBuilder.Append(request.QueryString.Value.ClearQueryStringPassword());
+            }
+            return urlBuilder.ToString();
+        }
+
+        public bool ContainsHeader(string header, IHttpContextRequest httpRequest)
+        {
+            var request = (httpRequest as HttpContextRequestCore).HttpRequest;
+            if (request == null)
+                return false;
+
+            return request.Headers.ContainsKey(header);
+        }
+
+        public string GetHeader(string header, IHttpContextRequest httpRequest)
+        {
+            var request = (httpRequest as HttpContextRequestCore).HttpRequest;
+            return request?.Headers[header];
+        }
+
+        public string TryGetBodyContent(IHttpContextRequest httpRequest)
+        {
+            var request = (httpRequest as HttpContextRequestCore).HttpRequest;
+            try
+            {
+                if (request == null || !request.Body.CanRead || !request.Body.CanSeek || request.Body.Length == 0)
+                {
+                    return null;
+                }
+
+                using (var stream = new MemoryStream())
+                {
+                    request.Body.Seek(0, SeekOrigin.Begin);
+                    request.Body.CopyTo(stream);
+                    return Encoding.UTF8.GetString(stream.ToArray());
+                }
+            }
+            catch (Exception)
+            {
+                // discard exception
+                return null;
+            }
+        }
+
+        public string GetMethod(IHttpContextRequest httpRequest)
+        {
+            var request = (httpRequest as HttpContextRequestCore).HttpRequest;
+            return request?.Method;
+        }
+
+        public string HostAddress(IHttpContextRequest httpRequest)
+        {
+            var request = (httpRequest as HttpContextRequestCore).HttpRequest;
+            string ip = null;
+            if (request.Headers.ContainsKey(LogMeta._luccaForwardedHeader))
+            {
+                ip = request.Headers[LogMeta._forwardedHeader];
+            }
+            if (string.IsNullOrEmpty(ip))
+            {
+                ip = request?.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+            }
+            return ip;
+        }
+    }
+
+    public class HttpContextRequestCore : IHttpContextRequest
+    {
+        public HttpRequest HttpRequest { get; }
+
+        public HttpContextRequestCore(HttpRequest httpRequest)
+        {
+            HttpRequest = httpRequest;
+        }
     }
 }
