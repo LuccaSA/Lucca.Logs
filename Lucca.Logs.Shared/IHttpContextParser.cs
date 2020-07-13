@@ -5,14 +5,17 @@ namespace Lucca.Logs.Shared
 {
     public interface IHttpContextParser
     {
-        bool IsContextDefined { get; }
-        string ExtractUrl(Uripart uriPart);
-        string Method { get; }
-        string Ip { get; }
-        bool ContainsHeader(string header);
-        string GetHeader(string header);
-        string TryGetBodyContent();
-
+        string ExtractUrl(Uripart uriPart, IHttpContextRequest httpRequest);
+        bool ContainsHeader(string header, IHttpContextRequest httpRequest);
+        string GetHeader(string header, IHttpContextRequest httpRequest);
+        string TryGetBodyContent(IHttpContextRequest httpRequest);
         Guid? ExceptionalLog(Exception exception, Dictionary<string, string> customData, string categoryName, string appName);
+        IHttpContextRequest HttpRequestAccessor();
+        string GetMethod(IHttpContextRequest httpRequest);
+        string HostAddress(IHttpContextRequest httpRequest);
+    }
+
+    public interface IHttpContextRequest
+    {
     }
 }
