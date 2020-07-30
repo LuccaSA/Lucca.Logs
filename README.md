@@ -12,24 +12,23 @@ En mode injection de dépendance, il suffit de se faire injecter un `ILogger<T>`
 
 Plus d'infos ici : [Logging in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-2.1&tabs=aspnetcore2x)
 
-
-## Setup MVC6 / netcoreapp2 
+## Setup netcoreapp3.1 
 
 Dans la méthode `ConfigureServices` du startup.cs, ajoutez le registering suivant après `services.AddMvc();`
 
 ```csharp
 services.AddLogging(l =>
 {
-    l.AddLuccaLogs(Configuration.GetSection("LuccaLogs", {appName}));
+    l.AddLuccaLogs(Configuration.GetSection("LuccaLogs"), {appName});
 });
-services.AddSingleton<IExceptionQualifier, ExceptionQualifier>(); 
+services.AddSingleton<IExceptionQualifier, GenericExceptionQualifier>(); 
 ```
 
 - `AddLuccaLogs` permet de register l'ensemble des classes nécessaires à Lucca.Logs
-- En paramètre, on prends la section du fichier de configuration nécéssaire. [Un exemple est dispo ici](https://github.com/LuccaSA/Lucca.Logs/blob/master/Lucca.Logs.Tests/Configs/standard.json).
-- Vous pouvez utiliser une implémentation perso d'un `IExceptionQualifier` permettant de piloter le comportement du logger selon les exceptions
+- En paramètre, on prends la section du fichier de configuration nécessaire.
+- Vous pouvez utiliser une implémentation perso d'un `IExceptionQualifier` au lieu de `GenericExceptionQualifier` permettant de piloter le comportement du logger selon les exceptions
 
-Dans la méthode `Configure`, ajoutez ceci avant `app.UseMvc();` (Attention à l'ordre)
+Dans la méthode `Configure`, ajoutez ceci avant `app.UseEndpoints();` (Attention à l'ordre)
 
 ```csharp
 if (env.IsDevelopment())
@@ -38,10 +37,7 @@ if (env.IsDevelopment())
 }
 else
 {
-    app.UseLuccaLogs(new LuccaExceptionHandlerOption()
-    {
-        HtmlResponse = ExceptionMessage.GenerateHtmlError
-    });
+    app.UseLuccaLogs(new LuccaExceptionHandlerOption());
 }
 ```
 
