@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Datadog.Trace;
 
 namespace Lucca.Logs.Shared
 {
@@ -41,13 +40,6 @@ namespace Lucca.Logs.Shared
                 TryAdd(LogMeta._correlationId, logdetail.CorrelationId);
                 TryAdd(LogMeta._hostAddress, logdetail.HostAddress);
                 TryAdd(LogMeta._userAgent, logdetail.UserAgent);
-
-                var traceId = CorrelationIdentifier.TraceId;
-                if (traceId != 0)
-                {
-                    TryAdd(LogMeta._traceId, traceId.ToString());
-                    TryAdd(LogMeta._spanId, CorrelationIdentifier.SpanId.ToString());
-                }
 
                 if (!isError)
                 {
