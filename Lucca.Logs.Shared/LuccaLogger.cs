@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Datadog.Trace;
 using Microsoft.Extensions.Logging;
 using NLog;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -58,7 +57,6 @@ namespace Lucca.Logs.Shared
             Guid? guid = null;
             if (_exceptionalWrapper.Enabled && exception != null && (_filters == null || _filters.LogToOpserver(exception)))
             {
-                Tracer.Instance?.ActiveScope?.Span?.SetTag(Tags.ManualKeep, "true");
                 guid = _httpContextWrapper.ExceptionalLog(exception, customData, _categoryName, _appName);
             }
 
