@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Datadog.Trace;
 
 namespace Lucca.Logs.Shared
 {
@@ -25,33 +24,28 @@ namespace Lucca.Logs.Shared
             for (int i = 0; i < _logDetailsExtractors.Length; i++)
             {
                 ILogDetailsExtractor extractor = _logDetailsExtractors[i];
-                if (!extractor.CanExtract)
+
+                var logdetail = extractor.CreateLogDetail();
+                if (!logdetail.CanExtract)
                 {
                     continue;
                 }
-                TryAdd(LogMeta._warning, extractor.Warning);
-                TryAdd(LogMeta._pageRest, extractor.PageRest);
-                TryAdd(LogMeta._pageRest2, extractor.PageRest2);
-                TryAdd(LogMeta._page, extractor.Page);
-                TryAdd(LogMeta._verb, extractor.Verb);
-                TryAdd(LogMeta._uri, extractor.Uri);
-                TryAdd(LogMeta._serverName, extractor.ServerName);
-                TryAdd(LogMeta._correlationId, extractor.CorrelationId);
-                TryAdd(LogMeta._hostAddress, extractor.HostAddress);
-                TryAdd(LogMeta._userAgent, extractor.UserAgent);
-
-                var traceId = CorrelationIdentifier.TraceId;
-                if (traceId != 0)
-                {
-                    TryAdd(LogMeta._traceId, traceId.ToString());
-                    TryAdd(LogMeta._spanId, CorrelationIdentifier.SpanId.ToString());
-                }
+                TryAdd(LogMeta._warning, logdetail.Warning);
+                TryAdd(LogMeta._pageRest, logdetail.PageRest);
+                TryAdd(LogMeta._pageRest2, logdetail.PageRest2);
+                TryAdd(LogMeta._page, logdetail.Page);
+                TryAdd(LogMeta._verb, logdetail.Verb);
+                TryAdd(LogMeta._uri, logdetail.Uri);
+                TryAdd(LogMeta._serverName, logdetail.ServerName);
+                TryAdd(LogMeta._correlationId, logdetail.CorrelationId);
+                TryAdd(LogMeta._hostAddress, logdetail.HostAddress);
+                TryAdd(LogMeta._userAgent, logdetail.UserAgent);
 
                 if (!isError)
                 {
                     return data;
                 }
-                data.Add(LogMeta.RawPostedData, extractor.Payload);
+                data.Add(LogMeta.RawPostedData, logdetail.Payload);
                 return data;
             }
 

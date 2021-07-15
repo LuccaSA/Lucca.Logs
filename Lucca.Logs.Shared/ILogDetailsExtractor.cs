@@ -2,17 +2,23 @@
 {
     public interface ILogDetailsExtractor
     {
-        bool CanExtract { get; }
-        string PageRest { get; }
-        string PageRest2 { get; }
-        string Page { get; }
-        string Verb { get; }
-        string Uri { get; }
-        string ServerName { get; }
-        string HostAddress { get; }
-        string UserAgent { get; }
-        string CorrelationId { get; }
-        string Payload { get; }
-        string Warning { get; }
+        LogDetail CreateLogDetail();
+
+    }
+
+    public class LogDetail
+    {
+        public bool CanExtract { get; set; }
+        public string PageRest { get; set; }
+        public string PageRest2 { get; set; }
+        public string Page { get; set; }
+        public string Verb { get; set; }
+        public string Uri { get; set; }
+        public string ServerName { get; set; }
+        public string HostAddress { get; set; }
+        public string UserAgent { get; set; }
+        public string CorrelationId { get; set; }
+        public string Payload { get; set; }
+        public string Warning { get; set; }
     }
 }
