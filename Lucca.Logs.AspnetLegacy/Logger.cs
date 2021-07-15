@@ -52,5 +52,8 @@ namespace Lucca.Logs.AspnetLegacy
         {
             GetFactory.CreateLogger(appName).LogCritical(message);
         }
+
+        public static void LogCritical(Exception exception, string message, string appName)
+            => GetFactory.CreateLogger(appName).LogCritical(exception, message);
     }
 }
