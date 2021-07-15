@@ -5,3 +5,4 @@
 /.vscode
 /.versionCounter
 *.user
+*/BenchmarkDotNet.Artifacts/
