@@ -9,7 +9,8 @@ namespace Lucca.Logs.AspnetCore
     {
         public virtual bool LogToOpserver(Exception exception)
         {
-            return true;
+            var statusCode = StatusCode(exception);
+            return !statusCode.HasValue || statusCode.Value >= HttpStatusCode.InternalServerError;
         }
 
         public virtual bool DisplayExceptionDetails(Exception exception)
