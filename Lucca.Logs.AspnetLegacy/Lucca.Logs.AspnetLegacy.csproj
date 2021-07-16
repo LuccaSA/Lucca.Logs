@@ -16,7 +16,7 @@
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.7" />
     <PackageReference Include="Microsoft.AspNet.WebApi.WebHost" Version="5.2.7" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.2" />
-    <PackageReference Include="StackExchange.Exceptional" Version="2.1.0" />
+    <PackageReference Include="StackExchange.Exceptional" Version="2.2.17" />
   </ItemGroup>
 
   <ItemGroup>
