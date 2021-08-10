@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Serilog.Extensions.Logging;
 using StackExchange.Exceptional;
 #if NETCOREAPP3_1
 using Microsoft.AspNetCore.Http;
@@ -126,19 +128,36 @@ namespace Lucca.Logs.AspnetCore
         private static void RegisterLuccaLogsProvider(this IServiceCollection services)
         {
             services.AddSingleton<ILogDetailsExtractor, HttpLogDetailsExtractor>();
+            services.AddSingleton<LogExtractor>();
+            services.AddSingleton<EnvironmentDetailsExtractor>();
 
 #if NETCOREAPP3_1
             services.TryAddSingleton<IExceptionQualifier, GenericExceptionQualifier>();
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddSingleton<IHttpContextParser, HttpContextParserCore>();
-            services.AddSingleton<ILoggerProvider, LuccaLogsProvider>();
             services.AddSingleton<IExceptionalWrapper, ExceptionalWrapperCore>();
 #else
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessorLegacy>();
             services.TryAddSingleton<IHttpContextParser, HttpContextParserLegacy>();
-            services.AddSingleton<ILoggerProvider, LuccaLogsProvider>();
             services.AddSingleton<IExceptionalWrapper, ExceptionalWrapperLegacy>();
 #endif
+
+            services.AddSingleton<ILoggerProvider, SerilogLoggerProvider>(s =>
+            {
+                var opt = s.GetRequiredService<IOptions<LuccaLoggerOptions>>().Value;
+            
+                IHttpContextParser httpContextWrapper = s.GetRequiredService<IHttpContextParser>();
+                LogExtractor logExtractor = s.GetRequiredService<LogExtractor>();
+                IExceptionalWrapper exceptionalWrapper = s.GetRequiredService<IExceptionalWrapper>();
+                IExceptionQualifier filters = s.GetRequiredService<IExceptionQualifier>();
+
+                var loggerOption = LoggerSetupExtensions.CreateLoggerConfiguration(
+                    opt,
+                     httpContextWrapper, logExtractor,
+                    exceptionalWrapper, filters);
+                 
+                return new SerilogLoggerProvider(loggerOption.CreateLogger(), true);
+            });
         }
     }
 
