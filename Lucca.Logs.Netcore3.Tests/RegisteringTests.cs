@@ -17,19 +17,18 @@ namespace Lucca.Logs.Netcore.Tests
         [InlineData(LogLevel.Warning)]
         public void FactoryTest(LogLevel logLevel)
         {
-            var targetSink = new TestSink();
+            var targetStore = new LogStoreInMemory();
             ServiceProvider provider = TestHelper.Register<DummyLogFactoryPlayer>(loggingBuilder =>
             {
                 loggingBuilder.AddLuccaLogs(o =>
-                {
-                    o.TestSink = targetSink;
-                }, "myLogger");
+                { 
+                }, "myLogger", targetStore);
             });
             var player = provider.GetRequiredService<DummyLogFactoryPlayer>();
              
             player.Log(logLevel, 42, new Exception(), "the answer");
             
-            var logEvent = targetSink.Writes.FirstOrDefault(); 
+            var logEvent = targetStore.LogEvents.FirstOrDefault(); 
             Assert.Equal("the answer", logEvent.MessageTemplate.Text);
             Assert.Equal(logLevel, LevelConvert.ToExtensionsLevel(logEvent.Level));
         }
@@ -41,19 +40,18 @@ namespace Lucca.Logs.Netcore.Tests
         [InlineData(LogLevel.Warning)]
         public void LoggerTest(LogLevel logLevel)
         {
-            var targetSink = new TestSink();
+            var targetStore = new LogStoreInMemory();
             ServiceProvider provider = TestHelper.Register<DummyLogPlayer>(loggingBuilder =>
             {
                 loggingBuilder.AddLuccaLogs(o =>
                 {
-                    o.TestSink = targetSink;
-                }, "myLogger");
+                }, "myLogger", targetStore);
             });
             var player = provider.GetRequiredService<DummyLogPlayer>();
 
             player.Log(logLevel, 42, new Exception(), "the answer");
 
-            var logEvent = targetSink.Writes.FirstOrDefault();
+            var logEvent = targetStore.LogEvents.FirstOrDefault();
             Assert.Equal("the answer", logEvent.MessageTemplate.Text);
             Assert.Equal(logLevel, LevelConvert.ToExtensionsLevel(logEvent.Level));
             Assert.Equal("{ Id: 42 }", logEvent.Properties["EventId"].ToString());

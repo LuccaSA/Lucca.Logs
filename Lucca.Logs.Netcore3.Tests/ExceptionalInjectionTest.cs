@@ -1,23 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Lucca.Logs.AspnetCore;
+using Lucca.Logs.Shared;
+using Lucca.Logs.Shared.Exceptional;
+using Lucca.Logs.Shared.Opserver;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using StackExchange.Exceptional;
-using StackExchange.Exceptional.Stores;
+using Serilog.Events; 
 using Xunit;
 
 namespace Lucca.Logs.Netcore.Tests
 {
     public class ExceptionalInjectionTest
     {
-        private readonly ErrorStore _memoryStore;
+        private readonly LogStoreInMemory _memoryStore;
 
         public ExceptionalInjectionTest()
         {
-            _memoryStore = new MemoryErrorStore(42);
+            _memoryStore = new LogStoreInMemory();
         }
 
         [Theory]
@@ -27,7 +30,7 @@ namespace Lucca.Logs.Netcore.Tests
         [InlineData(LogLevel.Error)]
         [InlineData(LogLevel.Information)]
         [InlineData(LogLevel.Warning)]
-        public async Task FactoryTest(LogLevel logLevel)
+        public void FactoryTest(LogLevel logLevel)
         {
             ServiceProvider provider = TestHelper.Register<DummyLogFactoryPlayer>(loggingBuilder =>
             {
@@ -42,7 +45,11 @@ namespace Lucca.Logs.Netcore.Tests
 
             player.Log(logLevel, 42, new Exception(), "the answer");
 
-            List<Error> found = await _memoryStore.GetAllAsync();
+            var found = _memoryStore.LogEvents
+                .Select(e => e.ToExceptionalError())
+                .Where(e => e != null)
+                .ToList();
+
             if (logLevel > LogLevel.Debug)
             {
                 Assert.Single(found);
@@ -52,6 +59,28 @@ namespace Lucca.Logs.Netcore.Tests
             {
                 Assert.Empty(found);
             }
+        }
+
+    }
+
+    public class LogStoreInMemory : LogStore
+    {
+        public Queue<LogEvent> LogEvents { get; set; } = new Queue<LogEvent>();
+
+        public override bool TryWrite(LogEvent item)
+        {
+            LogEvents.Enqueue(item);
+            return base.TryWrite(item);
+        }
+
+        public override ValueTask<bool> WaitToReadAsync(CancellationToken cancellationToken = default)
+        {
+            return default;
+        }
+
+        public override ValueTask<LogEvent> ReadAsync(CancellationToken cancellationToken = default)
+        {
+            return new ValueTask<LogEvent>(LogEvents.Dequeue());
         }
 
     }

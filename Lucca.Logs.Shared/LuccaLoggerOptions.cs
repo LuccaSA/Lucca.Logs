@@ -1,18 +1,10 @@
 ﻿using System;
 using CloudNative.CloudEvents;
-using Serilog.Core;
-using StackExchange.Exceptional;
-using StackExchange.Exceptional.Stores;
 
 namespace Lucca.Logs.Shared
 {
     public class LuccaLoggerOptions
     {
-        public LuccaLoggerOptions()
-        {
-            EventIdSeparator = ".";
-        }
-
         /// <summary>
         /// Default application name
         /// </summary>
@@ -23,6 +15,8 @@ namespace Lucca.Logs.Shared
         /// </summary>
         public string ConnectionString { get; set; }
 
+        public string ExceptionTableName { get; set; } = "Exceptions";
+
         /// <summary>
         /// Custom log file path
         /// </summary>
@@ -31,53 +25,20 @@ namespace Lucca.Logs.Shared
         /// <summary>
         /// Base URI for external link 
         /// </summary>
-        /// <example>"http://opserver.lucca.local/exceptions/detail?id={0}"</example>
-        public string GuidLink { get; set; } = "http://opserver.lucca.local/exceptions/detail?id={0}";
+        /// <example>"http://opserver.com/exceptions/detail?id={0}"</example>
+        public string GuidLink { get; set; } = "http://opserver.com/exceptions/detail?id={0}";
 
         public bool GuidWithPlaceHolder
         {
             get
             {
-                if (!_guidWithPlaceHolder.HasValue)
-                {
-                    _guidWithPlaceHolder = GuidLink.Contains("{0}");
-                }
+                _guidWithPlaceHolder ??= GuidLink.Contains("{0}");
                 return _guidWithPlaceHolder.Value;
             }
         }
-
-        /// <summary>
-        /// Separator between for EventId.Id and EventId.Name. Default to .
-        /// </summary>
-        public string EventIdSeparator { get; set; }
-        /// <summary>
-        /// Skip allocation of <see cref="LogEventInfo.Properties" />-dictionary
-        /// </summary>
-        /// <remarks>
-        /// using
-        ///     <c>default(EventId)</c></remarks>
-        public bool IgnoreEmptyEventId { get; set; }
-
+ 
         internal Func<CloudEvent> CloudEventAccessor { get; set; }
-        
-        internal ErrorStore ExplicitErrorStore { get; set; }
-        public ILogEventSink TestSink { get; set; }
-
+         
         private bool? _guidWithPlaceHolder;
-
-        public ErrorStore GenerateExceptionalStore()
-        {
-            if (!String.IsNullOrEmpty(ConnectionString))
-            {
-                return new SQLErrorStore(ConnectionString, ApplicationName);
-            }
-
-            if (ExplicitErrorStore != null)
-            {
-                return ExplicitErrorStore;
-            }
-
-            return new MemoryErrorStore(new ErrorStoreSettings { ApplicationName = ApplicationName });
-        }
     }
 }

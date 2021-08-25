@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Lucca.Logs.AspnetCore;
+using Lucca.Logs.Shared.Opserver;
+using Microsoft.AspNetCore.Builder;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -9,7 +11,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
-using StackExchange.Exceptional;
 using Xunit;
 
 namespace Lucca.Logs.Netcore.Tests.Integration
@@ -17,6 +18,8 @@ namespace Lucca.Logs.Netcore.Tests.Integration
     public class BasicVerbsTest
     {
         private readonly IHostBuilder _hostBuilder;
+        private readonly LogStoreInMemory _memoryStore = new LogStoreInMemory();
+
         public BasicVerbsTest()
         {
             _hostBuilder = new HostBuilder()
@@ -24,8 +27,25 @@ namespace Lucca.Logs.Netcore.Tests.Integration
                 {
                     // Add TestServer
                     webHost.UseTestServer();
-                    webHost.UseStartup<Startup>();
-                }); 
+                    webHost.ConfigureServices(s =>
+                    {
+                        s.AddMvc().AddApplicationPart(typeof(DirectExceptionController).Assembly);
+                        s.AddLogging(l =>
+                        {
+                            l.AddLuccaLogs(null, "IntegrationTest", _memoryStore);
+                        });
+                    });
+                    webHost.Configure(app =>
+                    {
+                        app.UseLuccaLogs();
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapControllers();
+                        });
+                    });
+
+                });
         }
          
         [Fact]
@@ -34,9 +54,11 @@ namespace Lucca.Logs.Netcore.Tests.Integration
             var host = await _hostBuilder.StartAsync();
             var client = host.GetTestClient();
             var response = await client.GetAsync("/api/directException");
-
-            var memoryStore = host.Services.GetRequiredService<ErrorStore>(); 
-            List<Error> found = await memoryStore.GetAllAsync();
+             
+            var found = _memoryStore.LogEvents
+                .Select(e => e.ToExceptionalError())
+                .Where(e => e != null)
+                .ToList();
 
             response.EnsureSuccessStatusCode();
              
@@ -57,8 +79,11 @@ namespace Lucca.Logs.Netcore.Tests.Integration
             var response = await client.PostAsync("/api/directException", payload);
             response.EnsureSuccessStatusCode();
 
-            var memoryStore = host.Services.GetRequiredService<ErrorStore>();
-            List<Error> found = await memoryStore.GetAllAsync();
+            var found = _memoryStore.LogEvents
+                .Select(e => e.ToExceptionalError())
+                .Where(e => e != null)
+                .ToList();
+
 
             Assert.Single(found);
             Assert.Contains("RawPostedData", found.First().CustomData.Keys);
@@ -75,8 +100,10 @@ namespace Lucca.Logs.Netcore.Tests.Integration
 
             var data = await response.Content.ReadAsStringAsync();
 
-            var memoryStore = host.Services.GetRequiredService<ErrorStore>();
-            List<Error> found = await memoryStore.GetAllAsync();
+            var found = _memoryStore.LogEvents
+                .Select(e => e.ToExceptionalError())
+                .Where(e => e != null)
+                .ToList();
 
             Assert.Single(found);
             Assert.StartsWith("{\"status\":500,\"message\":\"get\"}", data);

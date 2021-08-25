@@ -1,74 +1,97 @@
-﻿using Serilog.Core;
+﻿using Lucca.Logs.Shared.Exceptional;
+using Microsoft.Extensions.Options;
+using Serilog.Core;
 using Serilog.Events;
 using System;
+using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Lucca.Logs.Shared
 {
     public class LuccaLogsEnricher : ILogEventEnricher
     {
-        private readonly LuccaLoggerOptions _options;
-        private readonly IHttpContextParser _httpContextWrapper;
-        private readonly LogExtractor _logExtractor;
-        private readonly IExceptionalWrapper _exceptionalWrapper;
+        private readonly IOptions<LuccaLoggerOptions> _options;
         private readonly IExceptionQualifier _filters;
+        private readonly ILogDetailsExtractor[] _logDetailsExtractors;
 
-        public LuccaLogsEnricher(LuccaLoggerOptions options, IHttpContextParser httpContextWrapper, LogExtractor logExtractor, IExceptionalWrapper exceptionalWrapper, IExceptionQualifier filters)
+        public LuccaLogsEnricher(IOptions<LuccaLoggerOptions> options,
+            IExceptionQualifier filters,
+            IEnumerable<ILogDetailsExtractor> logDetailsExtractors)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
-            _httpContextWrapper = httpContextWrapper;
-            _logExtractor = logExtractor;
-            _exceptionalWrapper = exceptionalWrapper;
-            _filters = filters;
+            _filters = filters ?? throw new ArgumentNullException(nameof(filters));
+            if (logDetailsExtractors == null) throw new ArgumentNullException(nameof(logDetailsExtractors));
+
+            _logDetailsExtractors = logDetailsExtractors.ToArray();
         }
 
         public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
         {
+            // todo :
+            // - plug IExceptionQualifier
+
             if (logEvent == null) throw new ArgumentNullException(nameof(logEvent));
 
-            TryGetContext(logEvent, out var categoryName);
-
             bool isError = logEvent.Level == LogEventLevel.Error || logEvent.Level == LogEventLevel.Fatal;
-            Dictionary<string, string> customData = _logExtractor.GatherData(isError);
 
-            Guid? guid = null;
-            if (_exceptionalWrapper.Enabled && logEvent.Exception != null && (_filters == null || _filters.LogToOpserver(logEvent.Exception)))
+            logEvent.TryAdd(LogMeta.AppName, _options.Value.ApplicationName);
+            logEvent.TryAdd(LogMeta.AppPool, Environment.GetEnvironmentVariable("APP_POOL_ID", EnvironmentVariableTarget.Process));
+
+            if (logEvent.Exception != null)
             {
-                guid = _httpContextWrapper.ExceptionalLog(logEvent.Exception, customData, categoryName, _options.ApplicationName);
+                logEvent.TryAdd(LogMeta.LogSiteStackTrace, $"\n\nFull Trace:\n\n{new StackTrace(3, true)}");
+                var exception = logEvent.Exception.ToString();
+                logEvent.TryAdd(LogMeta.StackTrace, exception);
+                logEvent.TryAdd(LogMeta.ExceptionHash, GetHashcode(exception).ToString());
+
+                var baseException = logEvent.Exception;
+                if (baseException.IsBCLException())
+                    baseException = baseException.GetBaseException();
+
+                logEvent.TryAdd(LogMeta.Exception, exception); // todo : en doublon avec StackTrace
+                logEvent.TryAdd(LogMeta.ExceptionType, baseException.GetType().FullName);
+                logEvent.TryAdd(LogMeta.ExceptionMessage, baseException.Message);
+                logEvent.TryAdd(LogMeta.ExceptionSource, baseException.Source);
             }
 
-            if (guid.HasValue)
+            for (int i = 0; i < _logDetailsExtractors.Length; i++)
             {
-                string path = null;
-                if (_options.GuidWithPlaceHolder)
-                {
-                    path = String.Format(_options.GuidLink, guid.Value.ToString("N"));
-                }
-                else
-                {
-                    path = _options.GuidLink + guid.Value.ToString("N");
-                }
-                logEvent.AddPropertyIfAbsent(new LogEventProperty(LogMeta.Link, new ScalarValue(path)));
-            }
+                ILogDetailsExtractor extractor = _logDetailsExtractors[i];
 
-            foreach (var v in customData)
-            {
-                logEvent.AddPropertyIfAbsent(new LogEventProperty(v.Key, new ScalarValue(v.Value)));
+                var logdetail = extractor.CreateLogDetail(logEvent.Exception != null);
+                if (!logdetail.CanExtract)
+                {
+                    continue;
+                }
+                logEvent.TryAdd(LogMeta.Warning, logdetail.Warning);
+                logEvent.TryAdd(LogMeta.PageRest, logdetail.PageRest);
+                logEvent.TryAdd(LogMeta.PageRest2, logdetail.PageRest2);
+                logEvent.TryAdd(LogMeta.Page, logdetail.Page);
+                logEvent.TryAdd(LogMeta.Verb, logdetail.Verb);
+                logEvent.TryAdd(LogMeta.Uri, logdetail.Uri);
+                logEvent.TryAdd(LogMeta.ServerName, logdetail.ServerName);
+                logEvent.TryAdd(LogMeta.CorrelationId, logdetail.CorrelationId);
+                logEvent.TryAdd(LogMeta.HostAddress, logdetail.HostAddress);
+                logEvent.TryAdd(LogMeta.UserAgent, logdetail.UserAgent);
+
+
+                if (isError)
+                {
+                    logEvent.TryAdd(LogMeta.RawPostedData, logdetail.Payload);
+                }
             }
         }
 
-        private static bool TryGetContext(LogEvent logEvent, out string context)
+        private static int GetHashcode(string exception)
         {
-            if (logEvent.Properties.TryGetValue(Constants.SourceContextPropertyName, out var propertyValue))
+            int hashcode;
+            unchecked
             {
-                if (propertyValue is ScalarValue sv && sv.Value is string sourceContext)
-                {
-                    context = sourceContext;
-                    return true;
-                }
+                hashcode = (exception.GetDeterministicHashCode() * 397)
+                           ^ Environment.MachineName.GetDeterministicHashCode();
             }
-            context = null;
-            return false;
+            return hashcode;
         }
     }
 }

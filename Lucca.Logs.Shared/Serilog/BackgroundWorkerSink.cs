@@ -1,45 +1,24 @@
-using Serilog;
-using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Debugging;
 using Serilog.Events;
 using System;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace Lucca.Logs.Shared
 {
-    public static class LoggerConfigurationAsyncExtensions
-    {
-        public static LoggerConfiguration Async(
-            this LoggerSinkConfiguration loggerSinkConfiguration,
-            Action<LoggerSinkConfiguration> configure)
-        {
-            return LoggerSinkConfiguration.Wrap(
-                loggerSinkConfiguration,
-                wrappedSink => new BackgroundWorkerSink(wrappedSink),
-                configure,
-                LevelAlias.Minimum,
-                null);
-        }
-    }
-    
     internal sealed class BackgroundWorkerSink : ILogEventSink, IDisposable
     {
         private readonly ILogEventSink _wrappedSink;
-        private readonly Channel<LogEvent> _channel;
+        private readonly ILogEventSinkAsync _logEventSinkAsync;
+        private readonly LogStore _store;
         private readonly Task _worker;
 
-        public BackgroundWorkerSink(ILogEventSink wrappedSink)
+        public BackgroundWorkerSink(ILogEventSink wrappedSink, ILogEventSinkAsync logEventSinkAsync, LogStore store)
         {
             _wrappedSink = wrappedSink ?? throw new ArgumentNullException(nameof(wrappedSink));
-            _channel = Channel.CreateUnbounded<LogEvent>(new UnboundedChannelOptions
-            {
-                AllowSynchronousContinuations = true,
-                SingleWriter = false,
-                SingleReader = false
-            });
+            _logEventSinkAsync = logEventSinkAsync;
+            _store = store ?? new LogStore();
 
             _worker = Task.Factory
                 .StartNew(PumpAsync, CancellationToken.None, TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach, TaskScheduler.Default)
@@ -48,13 +27,13 @@ namespace Lucca.Logs.Shared
 
         public void Emit(LogEvent logEvent)
         {
-            _channel.Writer.TryWrite(logEvent);
+            _store.TryWrite(logEvent);
         }
 
         public void Dispose()
         {
             // Prevent any more events from being added
-            _channel.Writer.Complete(); 
+            _store.Complete();
 
             // Allow queued events to be flushed
             _worker
@@ -69,11 +48,13 @@ namespace Lucca.Logs.Shared
         {
             try
             {
-                while (await _channel.Reader.WaitToReadAsync())
+                while (await _store.WaitToReadAsync())
                 {
-                    var logEvent = await _channel.Reader.ReadAsync();
+                    var logEvent = await _store.ReadAsync();
                     try
                     {
+                        await _logEventSinkAsync.EmitAsync(logEvent);
+                        // todo : clean logEvent.TryAdd(LogMeta.RawPostedData, logdetail.Payload);
                         _wrappedSink.Emit(logEvent);
                     }
                     catch (Exception ex)

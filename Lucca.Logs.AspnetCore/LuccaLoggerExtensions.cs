@@ -1,13 +1,18 @@
 ﻿using System;
 using CloudNative.CloudEvents;
 using Lucca.Logs.Shared;
+using Lucca.Logs.Shared.Opserver;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Serilog;
+using Serilog.Events;
 using Serilog.Extensions.Logging;
-using StackExchange.Exceptional;
+using Serilog.Formatting.Json;
+using System.IO;
+using System.Text;
 #if NETCOREAPP3_1
 using Microsoft.AspNetCore.Http;
 #else
@@ -20,13 +25,14 @@ namespace Lucca.Logs.AspnetCore
     {
         public static ILuccaLoggingBuilder AddLuccaLogs(this ILoggingBuilder loggingBuilder, IConfigurationSection config, string appName, Action<LuccaLoggerOptions> configureOptions = null)
         {
+            if (config == null) throw new ArgumentNullException(nameof(config));
             loggingBuilder.Services.AddLuccaLogs(config, appName, configureOptions);
             return new LuccaLoggingBuilder(loggingBuilder);
         }
 
-        public static ILuccaLoggingBuilder AddLuccaLogs(this ILoggingBuilder loggingBuilder, Action<LuccaLoggerOptions> configureOptions, string appName, ErrorStore errorStore = null)
+        public static ILuccaLoggingBuilder AddLuccaLogs(this ILoggingBuilder loggingBuilder, Action<LuccaLoggerOptions> configureOptions, string appName, LogStore logStore = null)
         {
-            loggingBuilder.Services.AddLuccaLogs(configureOptions, appName, errorStore);
+            loggingBuilder.Services.AddLuccaLogs(null, appName, configureOptions, logStore);
             return new LuccaLoggingBuilder(loggingBuilder);
         }
 
@@ -40,30 +46,23 @@ namespace Lucca.Logs.AspnetCore
             return luccaLoggingBuilder;
         }
 
-        private static IServiceCollection AddLuccaLogs(this IServiceCollection services, IConfigurationSection config, string appName, Action<LuccaLoggerOptions> configureOptions = null)
+        private static IServiceCollection AddLuccaLogs(this IServiceCollection services, IConfigurationSection config, string appName, Action<LuccaLoggerOptions> configureOptions = null, LogStore logStore = null)
         {
-            if (config == null)
-            {
-                throw new ArgumentNullException(nameof(config));
-            }
             if (string.IsNullOrWhiteSpace(appName))
             {
                 throw new ArgumentNullException(nameof(appName));
             }
-
-            if (!config.Exists())
-            {
-                throw new LogConfigurationException("Missing configuration section");
-            }
+  
             services.AddOptions();
-            services.Configure<LuccaLoggerOptions>(config);
-#if NETCOREAPP3_1
-            services.AddExceptional(e =>
+            if (config != null)
             {
-                var luccaLogsOption = config.Get<LuccaLoggerOptions>();
-                e.DefaultStore = luccaLogsOption.GenerateExceptionalStore();
-            });
-#endif
+                if (!config.Exists())
+                {
+                    throw new LogConfigurationException("Missing configuration section");
+                }
+                services.Configure<LuccaLoggerOptions>(config);
+            }
+            
             if (configureOptions != null)
             {
                 services.Configure(configureOptions);
@@ -76,88 +75,64 @@ namespace Lucca.Logs.AspnetCore
                     o.ApplicationName = appName;
                 }
             });
-            services.RegisterLuccaLogsProvider();
+            services.RegisterLuccaLogsProvider(logStore);
             return services;
         }
+         
 
-        private static IServiceCollection AddLuccaLogs(this IServiceCollection services, Action<LuccaLoggerOptions> configureOptions, string appName, ErrorStore errorStore = null)
-        {
-            if (string.IsNullOrWhiteSpace(appName))
-            {
-                throw new ArgumentNullException(nameof(appName));
-            }
-
-            services.AddOptions();
-
-            if (configureOptions != null)
-            {
-                services.Configure<LuccaLoggerOptions>(o =>
-                {
-                    o.ExplicitErrorStore = errorStore;
-                    configureOptions(o);
-                });
-            }
-
-            if (errorStore != null)
-            {
-#if NETCOREAPP3_1
-                services.AddExceptional(o =>
-                {
-                    o.Store.Type = errorStore.GetType().ToString();
-                    o.DefaultStore = errorStore;
-                });
-#else
-                Exceptional.Configure(o =>
-                {
-                    o.Store.Type = errorStore.GetType().ToString();
-                    o.DefaultStore = errorStore;
-                });
-#endif
-            }
-            services.PostConfigure<LuccaLoggerOptions>(o =>
-            {
-                if (string.IsNullOrWhiteSpace(o.ApplicationName))
-                {
-                    o.ApplicationName = appName;
-                }
-            });
-            services.RegisterLuccaLogsProvider();
-            return services;
-        }
-
-        private static void RegisterLuccaLogsProvider(this IServiceCollection services)
+        private static void RegisterLuccaLogsProvider(this IServiceCollection services, LogStore logStore = null)
         {
             services.AddSingleton<ILogDetailsExtractor, HttpLogDetailsExtractor>();
-            services.AddSingleton<LogExtractor>();
-            services.AddSingleton<EnvironmentDetailsExtractor>();
+            services.AddSingleton<LuccaLogsEnricher>();
+            services.AddSingleton<OpserverLogSinkAsync>();
 
 #if NETCOREAPP3_1
             services.TryAddSingleton<IExceptionQualifier, GenericExceptionQualifier>();
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddSingleton<IHttpContextParser, HttpContextParserCore>();
-            services.AddSingleton<IExceptionalWrapper, ExceptionalWrapperCore>();
 #else
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessorLegacy>();
             services.TryAddSingleton<IHttpContextParser, HttpContextParserLegacy>();
-            services.AddSingleton<IExceptionalWrapper, ExceptionalWrapperLegacy>();
 #endif
 
             services.AddSingleton<ILoggerProvider, SerilogLoggerProvider>(s =>
             {
+                var enrich = s.GetRequiredService<LuccaLogsEnricher>();
+                var asyncSink = s.GetRequiredService<OpserverLogSinkAsync>();
                 var opt = s.GetRequiredService<IOptions<LuccaLoggerOptions>>().Value;
-            
-                IHttpContextParser httpContextWrapper = s.GetRequiredService<IHttpContextParser>();
-                LogExtractor logExtractor = s.GetRequiredService<LogExtractor>();
-                IExceptionalWrapper exceptionalWrapper = s.GetRequiredService<IExceptionalWrapper>();
-                IExceptionQualifier filters = s.GetRequiredService<IExceptionQualifier>();
 
-                var loggerOption = LoggerSetupExtensions.CreateLoggerConfiguration(
-                    opt,
-                     httpContextWrapper, logExtractor,
-                    exceptionalWrapper, filters);
-                 
-                return new SerilogLoggerProvider(loggerOption.CreateLogger(), true);
+                string path = PrepareLogPath(opt);
+
+                var loggerConf = new LoggerConfiguration()
+                    .Enrich.FromLogContext()
+                    .Enrich.With(enrich)
+                    .WriteTo.Async(asyncSink, conf =>
+                    {
+                        conf.File(new JsonFormatter(), path, rollingInterval: RollingInterval.Day, retainedFileCountLimit: 31, encoding: Encoding.UTF8);
+                        conf.Console();
+                    }, logStore).MinimumLevel.Is(LogEventLevel.Debug);
+
+                return new SerilogLoggerProvider(loggerConf.CreateLogger(), true);
             });
+        }
+
+        private static string PrepareLogPath(LuccaLoggerOptions options)
+        {
+            string path;
+            if (Path.IsPathRooted(options.LogFilePath))
+            {
+                path = options.LogFilePath;
+            }
+            else if (!string.IsNullOrWhiteSpace(options.LogFilePath))
+            {
+                path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, options.LogFilePath);
+            }
+            else
+            {
+                path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "/logs/logfile.txt");
+            }
+
+            return path;
         }
     }
 

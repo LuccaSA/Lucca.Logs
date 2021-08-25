@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Web;
 using Lucca.Logs.Shared;
-using StackExchange.Exceptional;
 
 namespace Lucca.Logs.AspnetLegacy
 {
@@ -16,28 +14,7 @@ namespace Lucca.Logs.AspnetLegacy
         {
             _httpContextAccessor = httpContextAccessor;
         }
-       
-        public Guid? ExceptionalLog(Exception exception, Dictionary<string, string> customData, string categoryName, string appName)
-        {
-            if (exception == null)
-            {
-                return null;
-            }
-
-            Error error;
-            var ctx = _httpContextAccessor?.HttpContext;
-            if (ctx != null)
-            {
-                error = exception.Log(ctx, categoryName, false, customData, appName);
-            }
-            else
-            {
-                error = exception.LogNoContext(categoryName, false, customData, appName);
-            }
-
-            return error?.GUID;
-        }
-
+        
         public string ExtractUrl(Uripart uriPart, IHttpContextRequest httpRequest)
         {
             var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
@@ -128,9 +105,9 @@ namespace Lucca.Logs.AspnetLegacy
         {
             var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
             string ip = null;
-            if (request.Headers.Get(LogMeta._luccaForwardedHeader) != null)
+            if (request.Headers.Get(LogMeta.LuccaForwardedHeader) != null)
             {
-                ip = request.Headers[LogMeta._forwardedHeader];
+                ip = request.Headers[LogMeta.ForwardedHeader];
             }
             if (string.IsNullOrEmpty(ip))
             {
