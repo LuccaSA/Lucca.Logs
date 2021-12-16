@@ -13,8 +13,7 @@ namespace Lucca.Logs.AspnetLegacy
     {
         private void Handle(ExceptionHandlerContext context)
         {
-            IExceptionQualifier? efilter = context.RequestContext.Configuration.DependencyResolver.GetService(typeof(IExceptionQualifier)) as IExceptionQualifier;
-            if (efilter is null)
+            if (context.RequestContext.Configuration.DependencyResolver.GetService(typeof(IExceptionQualifier)) is not IExceptionQualifier efilter)
             {
                 return;
             }
@@ -43,9 +42,11 @@ namespace Lucca.Logs.AspnetLegacy
 
             public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
             {
-                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-                response.Content = new StringContent(Content);
-                response.RequestMessage = Request;
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                {
+                    Content = new StringContent(Content),
+                    RequestMessage = Request
+                };
                 return Task.FromResult(response);
             }
         }

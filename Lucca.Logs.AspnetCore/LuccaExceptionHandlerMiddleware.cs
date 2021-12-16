@@ -38,7 +38,7 @@ namespace Lucca.Logs.AspnetCore
             }
             catch (Exception ex)
             {
-                _logger.LogError(0, ex, "An unhandled exception has occurred: " + ex.Message);
+                _logger.LogError(0, ex, "An unhandled exception has occurred: {message}", ex.Message);
                 if (context.Response.HasStarted)
                 {
                     _logger.LogWarning("The response has already started, the error handler will not be executed.");
@@ -100,7 +100,7 @@ namespace Lucca.Logs.AspnetCore
 
             // fallback on generic text/plain error
             context.Response.ContentType = _textPlain;
-            await context.Response.WriteAsync(info.GenericErrorMessage);
+            await context.Response.WriteAsync(info.GenericErrorMessage ?? GenericExceptionQualifier.DefaultErrorMessage);
         }
 
         internal static string? NegociateAcceptableContentType(HttpRequest httpRequest)
@@ -148,7 +148,7 @@ namespace Lucca.Logs.AspnetCore
             }
             catch (Exception e)
             {
-                _logger.LogError(0, e, "An exception was thrown attempting to render the error with content type " + contentType);
+                _logger.LogError(0, e, "An exception was thrown attempting to render the error with content type {contentType}", contentType);
             }
             return false;
         }

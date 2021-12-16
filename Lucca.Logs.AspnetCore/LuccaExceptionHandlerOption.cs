@@ -24,7 +24,7 @@ namespace Lucca.Logs.AspnetCore
         public Func<LuccaExceptionBuilderInfo, Task<string>> HtmlResponse { get; set; }
         public Func<LuccaExceptionBuilderInfo, Task<string>> JsonResponse { get; set; }
 
-        public Task<string> DefaultHandler(LuccaExceptionBuilderInfo builderInfo) => Task.FromResult($"Error code: {builderInfo.StatusCode}");
+        private static Task<string> DefaultHandler(LuccaExceptionBuilderInfo builderInfo) => Task.FromResult($"Error code: {builderInfo.StatusCode}");
     }
 
     public class LuccaExceptionBuilderInfo

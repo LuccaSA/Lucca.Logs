@@ -7,6 +7,7 @@ namespace Lucca.Logs.AspnetCore
 {
     public class GenericExceptionQualifier : IExceptionQualifier
     {
+        internal static readonly string DefaultErrorMessage = "Oops ! Something went wrong. Please contact your administrator";
         public virtual bool LogToOpserver(Exception exception)
         {
             var statusCode = StatusCode(exception);
@@ -22,7 +23,7 @@ namespace Lucca.Logs.AspnetCore
             _ => null,
         };
 
-        public virtual string GenericErrorMessage => "Oops ! Something went wrong. Please contact your administrator";
+        public virtual string GenericErrorMessage => DefaultErrorMessage;
 
         public virtual string PreferedResponseType(string path) => "application/json";
     }
