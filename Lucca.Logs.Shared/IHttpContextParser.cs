@@ -11,7 +11,7 @@ namespace Lucca.Logs.Shared
 
     public interface IHttpContextRequest
     {
-        string ExtractUrl(Uripart uriPart);
+        string ExtractUrl(Uriparts uriPart);
         bool ContainsHeader(string header);
         string? GetHeader(string header);
         string? TryGetBodyContent();

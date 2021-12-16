@@ -56,27 +56,27 @@ namespace Lucca.Logs.AspnetCore
             HttpRequest = httpRequest;
         }
 
-        public string ExtractUrl(Uripart uriPart)
+        public string ExtractUrl(Uriparts uriPart)
         {
             var urlBuilder = new StringBuilder();
-            if ((uriPart & Uripart.Scheme) == Uripart.Scheme && !string.IsNullOrWhiteSpace(HttpRequest.Scheme))
+            if ((uriPart & Uriparts.Scheme) == Uriparts.Scheme && !string.IsNullOrWhiteSpace(HttpRequest.Scheme))
             {
                 urlBuilder.Append(HttpRequest.Scheme + "://");
             }
-            if ((uriPart & Uripart.Host) == Uripart.Host)
+            if ((uriPart & Uriparts.Host) == Uriparts.Host)
             {
                 urlBuilder.Append(HttpRequest.Host.Host);
             }
-            if ((uriPart & Uripart.Port) == Uripart.Port && HttpRequest.Host.Port > 0)
+            if ((uriPart & Uriparts.Port) == Uriparts.Port && HttpRequest.Host.Port > 0)
             {
                 urlBuilder.Append(":" + HttpRequest.Host.Port);
             }
-            if ((uriPart & Uripart.Path) == Uripart.Path)
+            if ((uriPart & Uriparts.Path) == Uriparts.Path)
             {
                 urlBuilder.Append(HttpRequest.PathBase.ToUriComponent());
                 urlBuilder.Append(HttpRequest.Path.ToUriComponent());
             }
-            if ((uriPart & Uripart.Query) == Uripart.Query)
+            if ((uriPart & Uriparts.Query) == Uriparts.Query)
             {
                 urlBuilder.Append(HttpRequest.QueryString.Value.ClearQueryStringPassword());
             }

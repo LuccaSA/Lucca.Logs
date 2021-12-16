@@ -25,12 +25,12 @@
             return new LogDetail
             {
                 CanExtract = true,
-                PageRest = httpRequest.ExtractUrl(Uripart.Path | Uripart.Query),
-                PageRest2 = httpRequest.ExtractUrl(Uripart.Path | Uripart.Query),
-                Page = httpRequest.ExtractUrl(Uripart.Full),
+                PageRest = httpRequest.ExtractUrl(Uriparts.Path | Uriparts.Query),
+                PageRest2 = httpRequest.ExtractUrl(Uriparts.Path | Uriparts.Query),
+                Page = httpRequest.ExtractUrl(Uriparts.Full),
                 Verb = httpRequest.GetMethod(),
-                Uri = httpRequest.ExtractUrl(Uripart.Path),
-                ServerName = httpRequest.ExtractUrl(Uripart.Host),
+                Uri = httpRequest.ExtractUrl(Uriparts.Path),
+                ServerName = httpRequest.ExtractUrl(Uriparts.Host),
                 HostAddress = httpRequest.HostAddress(),
                 UserAgent = httpRequest.GetHeader("User-Agent"),
                 CorrelationId = httpRequest.GetHeader(LogMeta._correlationId),
