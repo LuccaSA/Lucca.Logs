@@ -15,23 +15,26 @@
             IHttpContextRequest? httpRequest = _httpRequest.HttpRequestAccessor();
             if (httpRequest is null)
             {
-                return new LogDetail { CanExtract = false };
+                return new LogDetail
+                {
+                    CanExtract = false,
+                    Warning = "HttpContext.Current is null"
+                };
             }
 
             return new LogDetail
             {
                 CanExtract = true,
-                PageRest = _httpRequest.ExtractUrl(Uripart.Path | Uripart.Query, httpRequest),
-                PageRest2 = _httpRequest.ExtractUrl(Uripart.Path | Uripart.Query, httpRequest),
-                Page = _httpRequest.ExtractUrl(Uripart.Full, httpRequest),
-                Verb = _httpRequest.GetMethod(httpRequest),
-                Uri = _httpRequest.ExtractUrl(Uripart.Path, httpRequest),
-                ServerName = _httpRequest.ExtractUrl(Uripart.Host, httpRequest),
-                HostAddress = _httpRequest.HostAddress(httpRequest),
-                UserAgent = _httpRequest.GetHeader("User-Agent", httpRequest),
-                CorrelationId = _httpRequest.GetHeader(LogMeta._correlationId, httpRequest),
-                Payload = _httpRequest.TryGetBodyContent(httpRequest),
-                Warning = _httpRequest is null ? "HttpContext.Current is null" : null
+                PageRest = httpRequest.ExtractUrl(Uripart.Path | Uripart.Query),
+                PageRest2 = httpRequest.ExtractUrl(Uripart.Path | Uripart.Query),
+                Page = httpRequest.ExtractUrl(Uripart.Full),
+                Verb = httpRequest.GetMethod(),
+                Uri = httpRequest.ExtractUrl(Uripart.Path),
+                ServerName = httpRequest.ExtractUrl(Uripart.Host),
+                HostAddress = httpRequest.HostAddress(),
+                UserAgent = httpRequest.GetHeader("User-Agent"),
+                CorrelationId = httpRequest.GetHeader(LogMeta._correlationId),
+                Payload = httpRequest.TryGetBodyContent()
             };
 
         }
