@@ -49,9 +49,9 @@ namespace Lucca.Logs.Shared
                 exceptionalSetting.OnBeforeLog += (o, eb) =>
                 {
                     var querystring = eb?.Error?.ServerVariables?.Get("QUERY_STRING");
-                    if (querystring != null)
+                    if (querystring is not null)
                     {
-                        eb.Error.ServerVariables.Set("QUERY_STRING", querystring.ClearQueryStringPassword());
+                        eb!.Error.ServerVariables.Set("QUERY_STRING", querystring.ClearQueryStringPassword());
                     }
                 };
             });
@@ -62,7 +62,7 @@ namespace Lucca.Logs.Shared
         {
             LuccaLoggerOptions opt = _options.CurrentValue;
             var logExtractor = new LogExtractor(_logDetailsExtractors, new EnvironmentDetailsExtractor(opt));
-            return new LuccaLogger(categoryName, _httpContextAccessor, LogManager.GetLogger(categoryName), opt, logExtractor, _filters, _exceptionalWrapper, _options.CurrentValue.ApplicationName);
+            return new LuccaLogger(categoryName, _httpContextAccessor, LogManager.GetLogger(categoryName), opt, logExtractor, _filters, _exceptionalWrapper, _options.CurrentValue.ApplicationName!);
         }
 
         public void Dispose()
@@ -75,9 +75,9 @@ namespace Lucca.Logs.Shared
     {
         private static readonly Regex _passwordClean = new Regex("(?<=[?&]" + Regex.Escape("password") + "=)[^&]*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        public static string ClearQueryStringPassword(this string source)
+        public static string? ClearQueryStringPassword(this string? source)
         {
-            if (source == null)
+            if (source is null)
             {
                 return null;
             }

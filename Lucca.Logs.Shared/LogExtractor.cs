@@ -14,9 +14,9 @@ namespace Lucca.Logs.Shared
             _environmentDetailsExtractor = environmentDetailsExtractor;
         }
 
-        public Dictionary<string, string> GatherData(bool isError)
+        public Dictionary<string, string?> GatherData(bool isError)
         {
-            var data = new Dictionary<string, string>(16);
+            var data = new Dictionary<string, string?>(16);
 
             TryAdd(LogMeta._appName, _environmentDetailsExtractor.AppName);
             TryAdd(LogMeta._appPool, _environmentDetailsExtractor.AppPool);
@@ -49,7 +49,7 @@ namespace Lucca.Logs.Shared
                 return data;
             }
 
-            void TryAdd(string key, string value)
+            void TryAdd(string key, string? value)
             {
                 if (!string.IsNullOrEmpty(value))
                 {

@@ -31,7 +31,7 @@ namespace Lucca.Logs.Netcore.Tests
              
             player.Log(logLevel, 42, new Exception(), "the answer");
             
-            string expected = String.Format("the answer|{0}|Exception of type 'System.Exception' was thrown.|42", logLevel.ToNLogLevel());
+            string expected = string.Format("the answer|{0}|Exception of type 'System.Exception' was thrown.|42", logLevel.ToNLogLevel());
             Assert.Equal(expected, target.Logs.FirstOrDefault());
         }
 
@@ -54,7 +54,7 @@ namespace Lucca.Logs.Netcore.Tests
 
             player.Log(logLevel, 42, new Exception(), "the answer");
 
-            string expected = String.Format("the answer|{0}|Exception of type 'System.Exception' was thrown.|42", logLevel.ToNLogLevel());
+            string expected = string.Format("the answer|{0}|Exception of type 'System.Exception' was thrown.|42", logLevel.ToNLogLevel());
             Assert.Equal(expected, target.Logs.FirstOrDefault());
         }
 

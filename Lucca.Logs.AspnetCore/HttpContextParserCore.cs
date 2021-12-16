@@ -18,9 +18,9 @@ namespace Lucca.Logs.AspnetCore
         }
 
 
-        public Guid? ExceptionalLog(Exception exception, Dictionary<string, string> customData, string categoryName, string appName)
+        public Guid? ExceptionalLog(Exception exception, Dictionary<string, string?> customData, string categoryName, string appName)
         {
-            if (exception == null)
+            if (exception is null)
             {
                 return null;
             }
@@ -29,7 +29,7 @@ namespace Lucca.Logs.AspnetCore
 
             var request = _httpContextAccessor?.HttpContext?.Request;
 
-            if (request?.HttpContext != null)
+            if (request?.HttpContext is not null)
             {
                 error = exception.Log(request.HttpContext, categoryName, false, customData, appName);
             }
@@ -41,20 +41,22 @@ namespace Lucca.Logs.AspnetCore
             return error?.GUID;
         }
 
-        public IHttpContextRequest HttpRequestAccessor()
+        public IHttpContextRequest? HttpRequestAccessor()
         {
             var req = _httpContextAccessor?.HttpContext?.Request;
-            return req != null ? new HttpContextRequestCore(req) : null;
+            return req is not null ? new HttpContextRequestCore(req) : null;
         }
 
-        public string ExtractUrl(Uripart uriPart, IHttpContextRequest httpRequest)
+        public string? ExtractUrl(Uripart uriPart, IHttpContextRequest httpRequest)
         {
             var request = (httpRequest as HttpContextRequestCore).HttpRequest;
-            if (request == null)
+            if (request is null)
+            {
                 return null;
+            }
 
             var urlBuilder = new StringBuilder();
-            if ((uriPart & Uripart.Scheme) == Uripart.Scheme && !String.IsNullOrWhiteSpace(request.Scheme))
+            if ((uriPart & Uripart.Scheme) == Uripart.Scheme && !string.IsNullOrWhiteSpace(request.Scheme))
             {
                 urlBuilder.Append(request.Scheme + "://");
             }
@@ -81,24 +83,24 @@ namespace Lucca.Logs.AspnetCore
         public bool ContainsHeader(string header, IHttpContextRequest httpRequest)
         {
             var request = (httpRequest as HttpContextRequestCore).HttpRequest;
-            if (request == null)
+            if (request is null)
                 return false;
 
             return request.Headers.ContainsKey(header);
         }
 
-        public string GetHeader(string header, IHttpContextRequest httpRequest)
+        public string? GetHeader(string header, IHttpContextRequest httpRequest)
         {
             var request = (httpRequest as HttpContextRequestCore).HttpRequest;
             return request?.Headers[header];
         }
 
-        public string TryGetBodyContent(IHttpContextRequest httpRequest)
+        public string? TryGetBodyContent(IHttpContextRequest httpRequest)
         {
             var request = (httpRequest as HttpContextRequestCore).HttpRequest;
             try
             {
-                if (request == null || !request.Body.CanRead || !request.Body.CanSeek || request.Body.Length == 0)
+                if (request is null || !request.Body.CanRead || !request.Body.CanSeek || request.Body.Length == 0)
                 {
                     return null;
                 }
@@ -117,16 +119,16 @@ namespace Lucca.Logs.AspnetCore
             }
         }
 
-        public string GetMethod(IHttpContextRequest httpRequest)
+        public string? GetMethod(IHttpContextRequest httpRequest)
         {
             var request = (httpRequest as HttpContextRequestCore).HttpRequest;
             return request?.Method;
         }
 
-        public string HostAddress(IHttpContextRequest httpRequest)
+        public string? HostAddress(IHttpContextRequest httpRequest)
         {
             var request = (httpRequest as HttpContextRequestCore).HttpRequest;
-            string ip = null;
+            string? ip = null;
             if (request.Headers.ContainsKey(LogMeta._luccaForwardedHeader))
             {
                 ip = request.Headers[LogMeta._forwardedHeader];

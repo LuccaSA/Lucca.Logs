@@ -14,14 +14,14 @@ namespace Lucca.Logs.Shared
 
         public LogDetail CreateLogDetail()
         {
-            CloudEvent cloudEvent = _options.Value.CloudEventAccessor();
-            if (cloudEvent == null)
+            CloudEvent cloudEvent = _options.Value.CloudEventAccessor!();
+            if (cloudEvent is null)
             {
                 return new LogDetail { CanExtract = false };
             }
             return new LogDetail
             {
-                CanExtract = cloudEvent != null,
+                CanExtract = true,
                 PageRest = cloudEvent.Id,
                 PageRest2 = cloudEvent.Type,
                 Page = cloudEvent.Subject,
@@ -31,8 +31,7 @@ namespace Lucca.Logs.Shared
                 HostAddress = string.Empty,
                 UserAgent = cloudEvent.SpecVersion.ToString(),
                 CorrelationId = cloudEvent.Extension<DistributedTracingExtension>()?.TraceParent ?? string.Empty,
-                Payload = cloudEvent.Data.ToString(),
-                Warning = string.Empty
+                Payload = cloudEvent.Data.ToString()
             };
         }
     }

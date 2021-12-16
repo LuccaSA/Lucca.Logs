@@ -20,16 +20,16 @@ namespace Lucca.Logs.AspnetCore
             HtmlResponse = i => throw new NotImplementedException();
         }
 
-        public Func<LuccaExceptionBuilderInfo, Task<String>> TextPlainResponse { get; set; }
-        public Func<LuccaExceptionBuilderInfo, Task<String>> HtmlResponse { get; set; }
-        public Func<LuccaExceptionBuilderInfo, Task<String>> JsonResponse { get; set; }
+        public Func<LuccaExceptionBuilderInfo, Task<string>> TextPlainResponse { get; set; }
+        public Func<LuccaExceptionBuilderInfo, Task<string>> HtmlResponse { get; set; }
+        public Func<LuccaExceptionBuilderInfo, Task<string>> JsonResponse { get; set; }
 
-        public Task<String> DefaultHandler(LuccaExceptionBuilderInfo builderInfo) => Task.FromResult($"Error code: {builderInfo.StatusCode}");
+        public Task<string> DefaultHandler(LuccaExceptionBuilderInfo builderInfo) => Task.FromResult($"Error code: {builderInfo.StatusCode}");
     }
 
     public class LuccaExceptionBuilderInfo
     {
-        public LuccaExceptionBuilderInfo(Exception exception, HttpStatusCode statusCode, bool displayExceptionDetails, string genericErrorMessage, string preferedResponseType)
+        public LuccaExceptionBuilderInfo(Exception exception, HttpStatusCode statusCode, bool displayExceptionDetails, string? genericErrorMessage, string? preferedResponseType)
         {
             Exception = exception;
             StatusCode = statusCode;
@@ -41,7 +41,7 @@ namespace Lucca.Logs.AspnetCore
         public Exception Exception { get; }
         public HttpStatusCode StatusCode { get; }
         public bool DisplayExceptionDetails { get; }
-        public string GenericErrorMessage { get; }
-        public string PreferedResponseType { get; }
+        public string? GenericErrorMessage { get; }
+        public string? PreferedResponseType { get; }
     }
 }

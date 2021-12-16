@@ -6,14 +6,16 @@
     <VersionSuffix>alpha</VersionSuffix>
     <PackageVersion>0.0.0</PackageVersion>
     <RepositoryUrl>https://github.com/LuccaSA/Lucca.Logs</RepositoryUrl>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.2" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.2" />
-    <PackageReference Include="NLog" Version="4.6.8" />
-    <PackageReference Include="StackExchange.Exceptional.Shared" Version="2.1.0" /> 
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+    <PackageReference Include="NLog" Version="4.7.13" />
+    <PackageReference Include="StackExchange.Exceptional.Shared" Version="2.2.17" />
     <PackageReference Include="CloudNative.CloudEvents" Version="1.3.80" />
   </ItemGroup>
 

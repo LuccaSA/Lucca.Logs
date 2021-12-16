@@ -17,16 +17,16 @@ namespace Lucca.Logs.AspnetLegacy
             _httpContextAccessor = httpContextAccessor;
         }
        
-        public Guid? ExceptionalLog(Exception exception, Dictionary<string, string> customData, string categoryName, string appName)
+        public Guid? ExceptionalLog(Exception exception, Dictionary<string, string?> customData, string categoryName, string appName)
         {
-            if (exception == null)
+            if (exception is null)
             {
                 return null;
             }
 
             Error error;
             var ctx = _httpContextAccessor?.HttpContext;
-            if (ctx != null)
+            if (ctx is not null)
             {
                 error = exception.Log(ctx, categoryName, false, customData, appName);
             }
@@ -38,14 +38,16 @@ namespace Lucca.Logs.AspnetLegacy
             return error?.GUID;
         }
 
-        public string ExtractUrl(Uripart uriPart, IHttpContextRequest httpRequest)
+        public string? ExtractUrl(Uripart uriPart, IHttpContextRequest httpRequest)
         {
             var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
-            if (request == null)
+            if (request is null)
+            {
                 return null;
+            }
 
             var urlBuilder = new StringBuilder();
-            if ((uriPart & Uripart.Scheme) == Uripart.Scheme && !String.IsNullOrWhiteSpace(request.Url.Scheme))
+            if ((uriPart & Uripart.Scheme) == Uripart.Scheme && !string.IsNullOrWhiteSpace(request.Url.Scheme))
             {
                 urlBuilder.Append(request.Url.Scheme + "://");
             }
@@ -71,22 +73,22 @@ namespace Lucca.Logs.AspnetLegacy
         public bool ContainsHeader(string header, IHttpContextRequest httpRequest)
         {
             var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
-            return request?.Headers.Get(header) != null;
+            return request?.Headers.Get(header) is not null;
         }
 
-        public string GetHeader(string header, IHttpContextRequest httpRequest)
+        public string? GetHeader(string header, IHttpContextRequest httpRequest)
         {
             var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
             return request?.Headers.Get(header);
         }
 
-        public string TryGetBodyContent(IHttpContextRequest httpRequest)
+        public string? TryGetBodyContent(IHttpContextRequest httpRequest)
         {
             var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
-            string documentContents = null;
+            string? documentContents = null;
             try
             {
-                if (request == null || request.InputStream.Length == 0)
+                if (request is null || request.InputStream.Length == 0)
                 {
                     return null;
                 }
@@ -104,9 +106,9 @@ namespace Lucca.Logs.AspnetLegacy
             return documentContents;
         }
 
-        public IHttpContextRequest HttpRequestAccessor()
+        public IHttpContextRequest? HttpRequestAccessor()
         {
-            HttpRequest request = null;
+            HttpRequest? request = null;
             try
             {
                 request = _httpContextAccessor?.HttpContext?.Request;
@@ -115,20 +117,20 @@ namespace Lucca.Logs.AspnetLegacy
             {
                 // ignored
             } 
-            return request != null ? new HttpContextRequestLegacy(request) : null;
+            return request is not null ? new HttpContextRequestLegacy(request) : null;
         }
 
-        public string GetMethod(IHttpContextRequest httpRequest)
+        public string? GetMethod(IHttpContextRequest httpRequest)
         {
             var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
             return request?.HttpMethod;
         }
 
-        public string HostAddress(IHttpContextRequest httpRequest)
+        public string? HostAddress(IHttpContextRequest httpRequest)
         {
             var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
-            string ip = null;
-            if (request.Headers.Get(LogMeta._luccaForwardedHeader) != null)
+            string? ip = null;
+            if (request.Headers.Get(LogMeta._luccaForwardedHeader) is not null)
             {
                 ip = request.Headers[LogMeta._forwardedHeader];
             }

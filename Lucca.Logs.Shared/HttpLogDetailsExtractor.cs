@@ -12,8 +12,8 @@
          
         public LogDetail CreateLogDetail()
         {
-            IHttpContextRequest httpRequest = _httpRequest.HttpRequestAccessor();
-            if (httpRequest == null)
+            IHttpContextRequest? httpRequest = _httpRequest.HttpRequestAccessor();
+            if (httpRequest is null)
             {
                 return new LogDetail { CanExtract = false };
             }
@@ -31,7 +31,7 @@
                 UserAgent = _httpRequest.GetHeader("User-Agent", httpRequest),
                 CorrelationId = _httpRequest.GetHeader(LogMeta._correlationId, httpRequest),
                 Payload = _httpRequest.TryGetBodyContent(httpRequest),
-                Warning = _httpRequest == null ? "HttpContext.Current is null" : null
+                Warning = _httpRequest is null ? "HttpContext.Current is null" : null
             };
 
         }

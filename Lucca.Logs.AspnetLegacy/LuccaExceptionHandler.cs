@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,20 +13,16 @@ namespace Lucca.Logs.AspnetLegacy
     {
         private void Handle(ExceptionHandlerContext context)
         {
-            IExceptionQualifier efilter = context.RequestContext.Configuration.DependencyResolver.GetService(typeof(IExceptionQualifier)) as IExceptionQualifier;
+            IExceptionQualifier? efilter = context.RequestContext.Configuration.DependencyResolver.GetService(typeof(IExceptionQualifier)) as IExceptionQualifier;
 
-            if (efilter == null)
+            if (efilter is null)
             {
                 return;
             }
 
             string message = efilter.DisplayExceptionDetails(context.Exception) ? context.Exception.Message : efilter.GenericErrorMessage;
 
-            context.Result = new TextPlainErrorResult
-            {
-                Request = context.ExceptionContext.Request,
-                Content = message
-            };
+            context.Result = new TextPlainErrorResult(context.ExceptionContext.Request, message);
         }
 
         public Task HandleAsync(ExceptionHandlerContext context, CancellationToken cancellationToken)
@@ -36,9 +33,14 @@ namespace Lucca.Logs.AspnetLegacy
          
         private class TextPlainErrorResult : IHttpActionResult
         {
-            public HttpRequestMessage Request { get; set; }
+            public HttpRequestMessage Request { get; }
+            public string Content { get; }
 
-            public string Content { get; set; }
+            public TextPlainErrorResult(HttpRequestMessage request, string content)
+            {
+                Request = request;
+                Content = content;
+            }
 
             public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
             {

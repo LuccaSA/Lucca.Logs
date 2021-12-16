@@ -12,7 +12,7 @@ namespace Lucca.Logs.Shared
         private static readonly object _emptyEventId = default(EventId);    // Cache boxing of empty EventId-struct
         private static readonly object _zeroEventId = default(EventId).Id;  // Cache boxing of zero EventId-Value
 
-        private Tuple<string, string, string> _eventIdPropertyNames;
+        private Tuple<string?, string?, string?>? _eventIdPropertyNames;
 
         private readonly string _categoryName;
         private readonly IHttpContextParser _httpContextWrapper;
@@ -35,9 +35,9 @@ namespace Lucca.Logs.Shared
             _appName = appName;
         }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
-            if (formatter == null)
+            if (formatter is null)
             {
                 throw new ArgumentNullException(nameof(formatter));
             }
@@ -45,17 +45,17 @@ namespace Lucca.Logs.Shared
             NLog.LogLevel nLogLogLevel = logLevel.ToNLogLevel();
             bool isLogging = IsNlogEnabled(nLogLogLevel, _nloLogger);
 
-            if (!isLogging && (exception == null || !_exceptionalWrapper.Enabled))
+            if (!isLogging && (exception is null || !_exceptionalWrapper.Enabled))
             {
                 return;
             }
 
             bool isError = logLevel == LogLevel.Error || logLevel == LogLevel.Critical;
 
-            Dictionary<string, string> customData = _logExtractor.GatherData( isError);
+            Dictionary<string, string?> customData = _logExtractor.GatherData( isError);
 
             Guid? guid = null;
-            if (_exceptionalWrapper.Enabled && exception != null && (_filters == null || _filters.LogToOpserver(exception)))
+            if (_exceptionalWrapper.Enabled && exception is not null && (_filters is null || _filters.LogToOpserver(exception)))
             {
                 guid = _httpContextWrapper.ExceptionalLog(exception, customData, _categoryName, _appName);
             }
@@ -66,7 +66,7 @@ namespace Lucca.Logs.Shared
             }
 
             string message = formatter(state, exception);
-            if (message == "[null]" && exception != null)
+            if (message == "[null]" && exception is not null)
             {
                 message = exception.Message;
             }
@@ -80,9 +80,9 @@ namespace Lucca.Logs.Shared
             _nloLogger.Log(eventInfo);
         }
 
-        private static void AppendLuccaData(Guid? guid, LogEventInfo eventInfo, LuccaLoggerOptions options, Dictionary<string, string> customData)
+        private static void AppendLuccaData(Guid? guid, LogEventInfo eventInfo, LuccaLoggerOptions options, Dictionary<string, string?> customData)
         {
-            foreach (KeyValuePair<string, string> kv in customData)
+            foreach (KeyValuePair<string, string?> kv in customData)
             {
                 if (kv.Key != LogMeta.RawPostedData)
                 {
@@ -97,7 +97,7 @@ namespace Lucca.Logs.Shared
 
             if (options.GuidWithPlaceHolder)
             {
-                eventInfo.Properties[LogMeta.Link] = String.Format(options.GuidLink, guid.Value.ToString("N"));
+                eventInfo.Properties[LogMeta.Link] = string.Format(options.GuidLink, guid.Value.ToString("N"));
             }
             else
             {
@@ -105,7 +105,7 @@ namespace Lucca.Logs.Shared
             }
         }
 
-        private LogEventInfo CreateNlogEventInfo(EventId eventId, Exception exception, NLog.LogLevel nLogLogLevel, string message)
+        private LogEventInfo CreateNlogEventInfo(EventId eventId, Exception? exception, NLog.LogLevel nLogLogLevel, string message)
         {
             //message arguments are not needed as it is already checked that the loglevel is enabled.
             LogEventInfo eventInfo = LogEventInfo.Create(nLogLogLevel, _nloLogger.Name, message);
@@ -113,12 +113,12 @@ namespace Lucca.Logs.Shared
             if (!_options.IgnoreEmptyEventId || eventId.Id != 0 || !string.IsNullOrEmpty(eventId.Name))
             {
                 // Attempt to reuse the same string-allocations based on the current <see cref="NLogProviderOptions.EventIdSeparator"/>
-                Tuple<string, string, string> eventIdPropertyNames = _eventIdPropertyNames ?? new Tuple<string, string, string>(null, null, null);
+                Tuple<string?, string?, string?> eventIdPropertyNames = _eventIdPropertyNames ?? new Tuple<string?, string?, string?>(null, null, null);
                 string eventIdSeparator = _options.EventIdSeparator ?? string.Empty;
                 if (!ReferenceEquals(eventIdPropertyNames.Item1, eventIdSeparator))
                 {
                     // Perform atomic cache update of the string-allocations matching the current separator
-                    eventIdPropertyNames = new Tuple<string, string, string>(
+                    eventIdPropertyNames = new Tuple<string?, string?, string?>(
                         eventIdSeparator,
                         string.Concat("EventId", eventIdSeparator, "Id"),
                         string.Concat("EventId", eventIdSeparator, "Name"));
@@ -128,7 +128,7 @@ namespace Lucca.Logs.Shared
                 bool idIsZero = eventId.Id == 0;
                 eventInfo.Properties[eventIdPropertyNames.Item2] = idIsZero ? _zeroEventId : eventId.Id;
                 eventInfo.Properties[eventIdPropertyNames.Item3] = eventId.Name;
-                eventInfo.Properties["EventId"] = idIsZero && eventId.Name == null ? _emptyEventId : eventId;
+                eventInfo.Properties["EventId"] = idIsZero && eventId.Name is null ? _emptyEventId : eventId;
             }
 
             return eventInfo;
@@ -148,7 +148,7 @@ namespace Lucca.Logs.Shared
 
         public IDisposable BeginScope<TState>(TState state)
         {
-            if (state == null)
+            if (state is null)
             {
                 throw new ArgumentNullException(nameof(state));
             }

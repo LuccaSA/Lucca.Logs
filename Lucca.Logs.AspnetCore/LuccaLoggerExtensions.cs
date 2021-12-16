@@ -16,13 +16,13 @@ namespace Lucca.Logs.AspnetCore
 {
     public static class LuccaLoggerExtensions
     {
-        public static ILuccaLoggingBuilder AddLuccaLogs(this ILoggingBuilder loggingBuilder, IConfigurationSection config, string appName, Action<LuccaLoggerOptions> configureOptions = null)
+        public static ILuccaLoggingBuilder AddLuccaLogs(this ILoggingBuilder loggingBuilder, IConfigurationSection config, string appName, Action<LuccaLoggerOptions>? configureOptions = null)
         {
             loggingBuilder.Services.AddLuccaLogs(config, appName, configureOptions);
             return new LuccaLoggingBuilder(loggingBuilder);
         }
 
-        public static ILuccaLoggingBuilder AddLuccaLogs(this ILoggingBuilder loggingBuilder, Action<LuccaLoggerOptions> configureOptions, string appName, ErrorStore errorStore = null)
+        public static ILuccaLoggingBuilder AddLuccaLogs(this ILoggingBuilder loggingBuilder, Action<LuccaLoggerOptions> configureOptions, string appName, ErrorStore? errorStore = null)
         {
             loggingBuilder.Services.AddLuccaLogs(configureOptions, appName, errorStore);
             return new LuccaLoggingBuilder(loggingBuilder);
@@ -38,9 +38,9 @@ namespace Lucca.Logs.AspnetCore
             return luccaLoggingBuilder;
         }
 
-        private static IServiceCollection AddLuccaLogs(this IServiceCollection services, IConfigurationSection config, string appName, Action<LuccaLoggerOptions> configureOptions = null)
+        private static IServiceCollection AddLuccaLogs(this IServiceCollection services, IConfigurationSection config, string appName, Action<LuccaLoggerOptions>? configureOptions = null)
         {
-            if (config == null)
+            if (config is null)
             {
                 throw new ArgumentNullException(nameof(config));
             }
@@ -62,7 +62,7 @@ namespace Lucca.Logs.AspnetCore
                 e.DefaultStore = luccaLogsOption.GenerateExceptionalStore();
             });
 #endif
-            if (configureOptions != null)
+            if (configureOptions is not null)
             {
                 services.Configure(configureOptions);
             }
@@ -78,7 +78,7 @@ namespace Lucca.Logs.AspnetCore
             return services;
         }
 
-        private static IServiceCollection AddLuccaLogs(this IServiceCollection services, Action<LuccaLoggerOptions> configureOptions, string appName, ErrorStore errorStore = null)
+        private static IServiceCollection AddLuccaLogs(this IServiceCollection services, Action<LuccaLoggerOptions> configureOptions, string appName, ErrorStore? errorStore = null)
         {
             if (string.IsNullOrWhiteSpace(appName))
             {
@@ -87,7 +87,7 @@ namespace Lucca.Logs.AspnetCore
 
             services.AddOptions();
 
-            if (configureOptions != null)
+            if (configureOptions is not null)
             {
                 services.Configure<LuccaLoggerOptions>(o =>
                 {
@@ -96,7 +96,7 @@ namespace Lucca.Logs.AspnetCore
                 });
             }
 
-            if (errorStore != null)
+            if (errorStore is not null)
             {
 #if NETCOREAPP3_1
                 services.AddExceptional(o =>

@@ -13,14 +13,14 @@ namespace Lucca.Logs.AspnetLegacy
 
         public static ILoggerFactory GetFactory => DefaultFactory ?? _defaultLogger.Value;
 
-        public static ILoggerFactory DefaultFactory { get; set; }
+        public static ILoggerFactory? DefaultFactory { get; set; }
 
         /// <summary>
         /// Logs an exception
         /// </summary>
         /// <param name="ex">The exception to log</param>
         /// <param name="appName">The current application name</param>
-        public static void LogException(Exception ex, string appName, string message = null)
+        public static void LogException(Exception ex, string appName, string? message = null)
         {
             GetFactory.CreateLogger(appName).LogError(ex, message);
         }

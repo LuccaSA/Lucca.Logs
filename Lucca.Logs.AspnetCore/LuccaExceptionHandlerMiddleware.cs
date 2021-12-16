@@ -73,9 +73,9 @@ namespace Lucca.Logs.AspnetCore
             ClearHttpResponseResponse(context, info.StatusCode);
 
             // Extracts the Accept header
-            string acceptable = NegociateAcceptableContentType(context.Request);
+            string? acceptable = NegociateAcceptableContentType(context.Request);
 
-            if (acceptable != null)
+            if (acceptable is not null)
             {
                 if (await TryRenderErrorOnContentTypeAsync(acceptable, context, info))
                 {
@@ -103,16 +103,16 @@ namespace Lucca.Logs.AspnetCore
             await context.Response.WriteAsync(info.GenericErrorMessage);
         }
 
-        internal static string NegociateAcceptableContentType(HttpRequest httpRequest)
+        internal static string? NegociateAcceptableContentType(HttpRequest httpRequest)
         {
             var contentTypes = GetAcceptableMediaTypes(httpRequest);
             var acceptable = GetFirstAcceptableMatch(contentTypes);
             return acceptable;
         }
 
-        private static string GetFirstAcceptableMatch(IEnumerable<MediaTypeHeaderValue> contentTypes)
+        private static string? GetFirstAcceptableMatch(IEnumerable<MediaTypeHeaderValue>? contentTypes)
         {
-            if (contentTypes == null)
+            if (contentTypes is null)
             {
                 return null;
             }
@@ -177,7 +177,7 @@ namespace Lucca.Logs.AspnetCore
             await httpContext.Response.WriteAsync(data);
         }
 
-        private static List<MediaTypeHeaderValue> GetAcceptableMediaTypes(HttpRequest request)
+        private static List<MediaTypeHeaderValue>? GetAcceptableMediaTypes(HttpRequest request)
         {
             //https://developer.mozilla.org/en-US/docs/Glossary/Quality_values
             return request.GetTypedHeaders()?.Accept?.OrderByDescending(h => h.Quality ?? 1).ToList();

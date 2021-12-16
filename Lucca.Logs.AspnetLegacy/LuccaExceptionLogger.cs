@@ -7,7 +7,7 @@ namespace Lucca.Logs.AspnetLegacy
     {
         public override void Log(ExceptionLoggerContext context)
         {
-            HttpControllerContext controllerContext = context.ExceptionContext?.ControllerContext;
+            HttpControllerContext? controllerContext = context.ExceptionContext?.ControllerContext;
             context.Exception.HttpLog(controllerContext);
         }
     }

@@ -11,20 +11,20 @@ namespace Lucca.Logs.AspnetLegacy
         /// <summary>
         /// Helps logging an exception in an HttpContext
         /// </summary>
-        public static void HttpLog(this Exception exception, HttpControllerContext context)
+        public static void HttpLog(this Exception exception, HttpControllerContext? context)
         {
             Logger.LogException(exception, context.TryGetAppName() ?? DefaultAppName);
         }
 
-        private static string TryGetAppName(this HttpControllerContext controllerContext)
+        private static string? TryGetAppName(this HttpControllerContext? controllerContext)
         {
-            if (controllerContext?.ControllerDescriptor?.ControllerType == null)
+            if (controllerContext?.ControllerDescriptor?.ControllerType is null)
             {
                 return null;
             }
 
             string appNameSpace = controllerContext.ControllerDescriptor.ControllerType.Namespace;
-            if (appNameSpace != null)
+            if (appNameSpace is not null)
             {
                 string[] nsChunks = appNameSpace.Split('.');
                 if (nsChunks.Length > 0)

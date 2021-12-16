@@ -19,17 +19,17 @@ namespace Lucca.Logs.Shared
         /// <summary>
         /// Default application name
         /// </summary>
-        public string ApplicationName { get; set; }
+        public string? ApplicationName { get; set; }
 
         /// <summary>
         /// Exceptional Connexion String
         /// </summary>
-        public string ConnectionString { get; set; }
+        public string? ConnectionString { get; set; }
 
         /// <summary>
         /// Custom log file path
         /// </summary>
-        public string LogFilePath { get; set; }
+        public string? LogFilePath { get; set; }
 
         /// <summary>
         /// Base URI for external link 
@@ -61,7 +61,7 @@ namespace Lucca.Logs.Shared
         ///     <c>default(EventId)</c></remarks>
         public bool IgnoreEmptyEventId { get; set; }
 
-        internal Func<CloudEvent> CloudEventAccessor { get; set; }
+        internal Func<CloudEvent>? CloudEventAccessor { get; set; }
         
         public LoggingConfiguration Nlog
         {
@@ -69,24 +69,24 @@ namespace Lucca.Logs.Shared
             set => _nlog = value;
         }
 
-        internal ErrorStore ExplicitErrorStore { get; set; }
+        internal ErrorStore? ExplicitErrorStore { get; set; }
 
-        private LoggingConfiguration _nlog;
+        private LoggingConfiguration? _nlog;
         private bool? _guidWithPlaceHolder;
 
         public ErrorStore GenerateExceptionalStore()
         {
-            if (!String.IsNullOrEmpty(ConnectionString))
+            if (!string.IsNullOrEmpty(ConnectionString))
             {
-                return new SQLErrorStore(ConnectionString, ApplicationName);
+                return new SQLErrorStore(ConnectionString, ApplicationName!);
             }
 
-            if (ExplicitErrorStore != null)
+            if (ExplicitErrorStore is not null)
             {
                 return ExplicitErrorStore;
             }
 
-            return new MemoryErrorStore(new ErrorStoreSettings { ApplicationName = ApplicationName });
+            return new MemoryErrorStore(new ErrorStoreSettings { ApplicationName = ApplicationName! });
         }
 
         private LoggingConfiguration GenerateLuccaDefaultConfig()
