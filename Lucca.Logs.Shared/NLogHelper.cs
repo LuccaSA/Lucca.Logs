@@ -9,27 +9,16 @@ namespace Lucca.Logs.Shared
         /// </summary>
         /// <param name="logLevel">level to be converted.</param>
         /// <returns></returns>
-        internal static NLog.LogLevel ToNLogLevel(this LogLevel logLevel)
+        internal static NLog.LogLevel ToNLogLevel(this LogLevel logLevel) => logLevel switch
         {
-            switch (logLevel)
-            {
-                case LogLevel.Trace:
-                    return NLog.LogLevel.Trace;
-                case LogLevel.Debug:
-                    return NLog.LogLevel.Debug;
-                case LogLevel.Information:
-                    return NLog.LogLevel.Info;
-                case LogLevel.Warning:
-                    return NLog.LogLevel.Warn;
-                case LogLevel.Error:
-                    return NLog.LogLevel.Error;
-                case LogLevel.Critical:
-                    return NLog.LogLevel.Fatal;
-                case LogLevel.None:
-                    return NLog.LogLevel.Off;
-                default:
-                    return NLog.LogLevel.Debug;
-            }
-        }
+            LogLevel.Trace => NLog.LogLevel.Trace,
+            LogLevel.Debug => NLog.LogLevel.Debug,
+            LogLevel.Information => NLog.LogLevel.Info,
+            LogLevel.Warning => NLog.LogLevel.Warn,
+            LogLevel.Error => NLog.LogLevel.Error,
+            LogLevel.Critical => NLog.LogLevel.Fatal,
+            LogLevel.None => NLog.LogLevel.Off,
+            _ => NLog.LogLevel.Debug,
+        };
     }
 }

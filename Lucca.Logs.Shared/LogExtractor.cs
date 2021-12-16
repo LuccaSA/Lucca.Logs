@@ -25,7 +25,7 @@ namespace Lucca.Logs.Shared
             {
                 ILogDetailsExtractor extractor = _logDetailsExtractors[i];
 
-                var logdetail = extractor.CreateLogDetail();
+                LogDetail? logdetail = extractor.CreateLogDetail();
                 if (!logdetail.CanExtract)
                 {
                     continue;

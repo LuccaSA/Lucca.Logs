@@ -134,20 +134,17 @@ namespace Lucca.Logs.AspnetCore
 
         private async Task<bool> TryRenderErrorOnContentTypeAsync(string contentType, HttpContext context, LuccaExceptionBuilderInfo info)
         {
+            Task<bool> GetReportMethodAsync() => contentType switch
+            {
+                _textPlain => TextPlainReportAsync(context, info),
+                _appJson => JsonReportAsync(context, info),
+                _textHtml => HtmlReportAsync(context, info),
+                _ => Task.FromResult(false),
+            };
+
             try
             {
-                switch (contentType)
-                {
-                    case _textPlain:
-                        await TextPlainReport(context, info);
-                        return true;
-                    case _appJson:
-                        await JsonReport(context, info);
-                        return true;
-                    case _textHtml:
-                        await HtmlReport(context, info);
-                        return true;
-                }
+                return await GetReportMethodAsync();
             }
             catch (Exception e)
             {
@@ -156,25 +153,28 @@ namespace Lucca.Logs.AspnetCore
             return false;
         }
 
-        private async Task HtmlReport(HttpContext httpContext, LuccaExceptionBuilderInfo info)
+        private async Task<bool> HtmlReportAsync(HttpContext httpContext, LuccaExceptionBuilderInfo info)
         {
             string data = await _options.Value.HtmlResponse(info);
             httpContext.Response.ContentType = _textHtml;
             await httpContext.Response.WriteAsync(data);
+            return true;
         }
 
-        private async Task TextPlainReport(HttpContext httpContext, LuccaExceptionBuilderInfo info)
+        private async Task<bool> TextPlainReportAsync(HttpContext httpContext, LuccaExceptionBuilderInfo info)
         {
             string data = await _options.Value.TextPlainResponse(info);
             httpContext.Response.ContentType = _textPlain;
             await httpContext.Response.WriteAsync(data);
+            return true;
         }
 
-        private async Task JsonReport(HttpContext httpContext, LuccaExceptionBuilderInfo info)
+        private async Task<bool> JsonReportAsync(HttpContext httpContext, LuccaExceptionBuilderInfo info)
         {
             string data = await _options.Value.JsonResponse(info);
             httpContext.Response.ContentType = _appJson;
             await httpContext.Response.WriteAsync(data);
+            return true;
         }
 
         private static List<MediaTypeHeaderValue>? GetAcceptableMediaTypes(HttpRequest request)

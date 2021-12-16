@@ -9,6 +9,12 @@ namespace Lucca.Logs.Shared
 {
     public class LuccaLogger : ILogger
     {
+        private const string EventId = "EventId";
+        private const string Null = "[null]";
+        private const string Id = "Id";
+        private const string Name = "Name";
+        private const string GuidFormat = "N";
+
         private static readonly object _emptyEventId = default(EventId);    // Cache boxing of empty EventId-struct
         private static readonly object _zeroEventId = default(EventId).Id;  // Cache boxing of zero EventId-Value
 
@@ -66,7 +72,7 @@ namespace Lucca.Logs.Shared
             }
 
             string message = formatter(state, exception);
-            if (message == "[null]" && exception is not null)
+            if (message == Null && exception is not null)
             {
                 message = exception.Message;
             }
@@ -97,11 +103,11 @@ namespace Lucca.Logs.Shared
 
             if (options.GuidWithPlaceHolder)
             {
-                eventInfo.Properties[LogMeta.Link] = string.Format(options.GuidLink, guid.Value.ToString("N"));
+                eventInfo.Properties[LogMeta.Link] = string.Format(options.GuidLink, guid.Value.ToString(GuidFormat));
             }
             else
             {
-                eventInfo.Properties[LogMeta.Link] = options.GuidLink + guid.Value.ToString("N");
+                eventInfo.Properties[LogMeta.Link] = options.GuidLink + guid.Value.ToString(GuidFormat);
             }
         }
 
@@ -120,15 +126,15 @@ namespace Lucca.Logs.Shared
                     // Perform atomic cache update of the string-allocations matching the current separator
                     eventIdPropertyNames = new Tuple<string?, string?, string?>(
                         eventIdSeparator,
-                        string.Concat("EventId", eventIdSeparator, "Id"),
-                        string.Concat("EventId", eventIdSeparator, "Name"));
+                        string.Concat(EventId, eventIdSeparator, Id),
+                        string.Concat(EventId, eventIdSeparator, Name));
                     _eventIdPropertyNames = eventIdPropertyNames;
                 }
 
                 bool idIsZero = eventId.Id == 0;
                 eventInfo.Properties[eventIdPropertyNames.Item2] = idIsZero ? _zeroEventId : eventId.Id;
                 eventInfo.Properties[eventIdPropertyNames.Item3] = eventId.Name;
-                eventInfo.Properties["EventId"] = idIsZero && eventId.Name is null ? _emptyEventId : eventId;
+                eventInfo.Properties[EventId] = idIsZero && eventId.Name is null ? _emptyEventId : eventId;
             }
 
             return eventInfo;

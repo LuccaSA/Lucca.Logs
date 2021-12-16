@@ -14,7 +14,6 @@ namespace Lucca.Logs.AspnetLegacy
         private void Handle(ExceptionHandlerContext context)
         {
             IExceptionQualifier? efilter = context.RequestContext.Configuration.DependencyResolver.GetService(typeof(IExceptionQualifier)) as IExceptionQualifier;
-
             if (efilter is null)
             {
                 return;

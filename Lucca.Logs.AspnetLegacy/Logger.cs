@@ -6,10 +6,7 @@ namespace Lucca.Logs.AspnetLegacy
 {
     public static class Logger
     {
-        private static readonly Lazy<ILoggerFactory> _defaultLogger = new Lazy<ILoggerFactory>(() =>
-        {
-            return LoggerBuilder.CreateLuccaLogsFactory(_ => { });
-        });
+        private static readonly Lazy<ILoggerFactory> _defaultLogger = new(() => LoggerBuilder.CreateLuccaLogsFactory(_ => { }));
 
         public static ILoggerFactory GetFactory => DefaultFactory ?? _defaultLogger.Value;
 

@@ -2,6 +2,7 @@
 {
     public class HttpLogDetailsExtractor : ILogDetailsExtractor
     {
+        private const string UserAgent = "User-Agent";
         private readonly IHttpContextParser _httpRequest;
 
         public HttpLogDetailsExtractor(IHttpContextParser httpRequest)
@@ -15,11 +16,7 @@
             IHttpContextRequest? httpRequest = _httpRequest.HttpRequestAccessor();
             if (httpRequest is null)
             {
-                return new LogDetail
-                {
-                    CanExtract = false,
-                    Warning = "HttpContext.Current is null"
-                };
+                return LogDetail.NoExtraction;
             }
 
             return new LogDetail
@@ -32,11 +29,10 @@
                 Uri = httpRequest.ExtractUrl(Uriparts.Path),
                 ServerName = httpRequest.ExtractUrl(Uriparts.Host),
                 HostAddress = httpRequest.HostAddress(),
-                UserAgent = httpRequest.GetHeader("User-Agent"),
+                UserAgent = httpRequest.GetHeader(UserAgent),
                 CorrelationId = httpRequest.GetHeader(LogMeta._correlationId),
                 Payload = httpRequest.TryGetBodyContent()
             };
-
         }
     }
 }

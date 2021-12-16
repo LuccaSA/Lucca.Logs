@@ -24,10 +24,7 @@ namespace Lucca.Logs.Shared
             _exceptionalWrapper = exceptionalWrapper;
             _logDetailsExtractors = logDetailsExtractors;
 
-            _changeListener = options.OnChange((o, name) =>
-                {
-                    PropagateOptions(o);
-                });
+            _changeListener = options.OnChange((o, name) => PropagateOptions(o));
 
             PropagateOptions(_options.CurrentValue);
         }
@@ -48,7 +45,7 @@ namespace Lucca.Logs.Shared
 
                 exceptionalSetting.OnBeforeLog += (o, eb) =>
                 {
-                    var querystring = eb?.Error?.ServerVariables?.Get("QUERY_STRING");
+                    string? querystring = eb?.Error?.ServerVariables?.Get("QUERY_STRING");
                     if (querystring is not null)
                     {
                         eb!.Error.ServerVariables.Set("QUERY_STRING", querystring.ClearQueryStringPassword());
@@ -73,7 +70,7 @@ namespace Lucca.Logs.Shared
 
     internal static class CleanExtension
     {
-        private static readonly Regex _passwordClean = new Regex("(?<=[?&]" + Regex.Escape("password") + "=)[^&]*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _passwordClean = new("(?<=[?&]" + Regex.Escape("password") + "=)[^&]*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public static string? ClearQueryStringPassword(this string? source)
         {

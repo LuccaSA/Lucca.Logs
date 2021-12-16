@@ -17,25 +17,24 @@ namespace Lucca.Logs.AspnetLegacy
             _httpContextAccessor = httpContextAccessor;
         }
        
-        public Guid? ExceptionalLog(Exception exception, Dictionary<string, string?> customData, string categoryName, string appName)
+        public Guid? ExceptionalLog(Exception? exception, Dictionary<string, string?> customData, string categoryName, string appName)
         {
             if (exception is null)
             {
                 return null;
             }
 
-            Error error;
-            var ctx = _httpContextAccessor?.HttpContext;
-            if (ctx is not null)
+            Error GetError()
             {
-                error = exception.Log(ctx, categoryName, false, customData, appName);
-            }
-            else
-            {
-                error = exception.LogNoContext(categoryName, false, customData, appName);
+                var ctx = _httpContextAccessor?.HttpContext;
+                if (ctx is not null)
+                {
+                    return exception.Log(ctx, categoryName, false, customData, appName);
+                }
+                return exception.LogNoContext(categoryName, false, customData, appName);
             }
 
-            return error?.GUID;
+            return GetError()?.GUID;
         }
 
         public IHttpContextRequest? HttpRequestAccessor()
@@ -53,8 +52,11 @@ namespace Lucca.Logs.AspnetLegacy
         }
     }
 
-    public class HttpContextRequestLegacy : IHttpContextRequest
+    internal class HttpContextRequestLegacy : IHttpContextRequest
     {
+        private const string SchemeEnd = "://";
+        private const string Colon = ":";
+
         public HttpRequest HttpRequest { get; }
 
         public HttpContextRequestLegacy(HttpRequest httpRequest)
@@ -67,7 +69,7 @@ namespace Lucca.Logs.AspnetLegacy
             var urlBuilder = new StringBuilder();
             if ((uriPart & Uriparts.Scheme) == Uriparts.Scheme && !string.IsNullOrWhiteSpace(HttpRequest.Url.Scheme))
             {
-                urlBuilder.Append(HttpRequest.Url.Scheme + "://");
+                urlBuilder.Append(HttpRequest.Url.Scheme + SchemeEnd);
             }
             if ((uriPart & Uriparts.Host) == Uriparts.Host)
             {
@@ -75,7 +77,7 @@ namespace Lucca.Logs.AspnetLegacy
             }
             if ((uriPart & Uriparts.Port) == Uriparts.Port && HttpRequest.Url.Port > 0)
             {
-                urlBuilder.Append(":" + HttpRequest.Url.Port);
+                urlBuilder.Append(Colon + HttpRequest.Url.Port);
             }
             if ((uriPart & Uriparts.Path) == Uriparts.Path)
             {
@@ -88,15 +90,7 @@ namespace Lucca.Logs.AspnetLegacy
             return urlBuilder.ToString();
         }
 
-        public bool ContainsHeader(string header)
-        {
-            return HttpRequest.Headers.Get(header) is not null;
-        }
-
-        public string? GetHeader(string header)
-        {
-            return HttpRequest.Headers.Get(header);
-        }
+        public string? GetHeader(string header) => HttpRequest.Headers.Get(header);
 
         public string? TryGetBodyContent()
         {
@@ -105,27 +99,23 @@ namespace Lucca.Logs.AspnetLegacy
                 return null;
             }
 
-            string? documentContents = null;
             try
             {
                 using (var stream = new MemoryStream())
                 {
                     HttpRequest.InputStream.Seek(0, SeekOrigin.Begin);
                     HttpRequest.InputStream.CopyTo(stream);
-                    documentContents = Encoding.UTF8.GetString(stream.ToArray());
+                    return Encoding.UTF8.GetString(stream.ToArray());
                 }
             }
             catch (Exception)
             {
                 // discard exception
             }
-            return documentContents;
+            return null;
         }
 
-        public string GetMethod()
-        {
-            return HttpRequest.HttpMethod;
-        }
+        public string GetMethod() => HttpRequest.HttpMethod;
 
         public string? HostAddress()
         {

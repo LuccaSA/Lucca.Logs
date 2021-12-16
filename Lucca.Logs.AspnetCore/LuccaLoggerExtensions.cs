@@ -30,10 +30,7 @@ namespace Lucca.Logs.AspnetCore
 
         public static ILoggingBuilder WithCloudEvents(this ILuccaLoggingBuilder luccaLoggingBuilder, Func<CloudEvent> cloudEventAccessor)
         {
-            luccaLoggingBuilder.Services.PostConfigure<LuccaLoggerOptions>(o =>
-            {
-                o.CloudEventAccessor = cloudEventAccessor;
-            });
+            luccaLoggingBuilder.Services.PostConfigure<LuccaLoggerOptions>(o => o.CloudEventAccessor = cloudEventAccessor);
             luccaLoggingBuilder.Services.AddSingleton<ILogDetailsExtractor, CloudEventExtractor>();
             return luccaLoggingBuilder;
         }
@@ -53,8 +50,10 @@ namespace Lucca.Logs.AspnetCore
             {
                 throw new LogConfigurationException("Missing configuration section");
             }
+
             services.AddOptions();
             services.Configure<LuccaLoggerOptions>(config);
+
 #if NETCOREAPP3_1
             services.AddExceptional(e =>
             {

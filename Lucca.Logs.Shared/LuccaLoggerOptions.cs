@@ -37,6 +37,7 @@ namespace Lucca.Logs.Shared
         /// <example>"http://opserver.lucca.local/exceptions/detail?id={0}"</example>
         public string GuidLink { get; set; } = "http://opserver.lucca.local/exceptions/detail?id={0}";
 
+        private bool? _guidWithPlaceHolder;
         public bool GuidWithPlaceHolder
         {
             get
@@ -53,6 +54,7 @@ namespace Lucca.Logs.Shared
         /// Separator between for EventId.Id and EventId.Name. Default to .
         /// </summary>
         public string EventIdSeparator { get; set; }
+
         /// <summary>
         /// Skip allocation of <see cref="LogEventInfo.Properties" />-dictionary
         /// </summary>
@@ -62,7 +64,8 @@ namespace Lucca.Logs.Shared
         public bool IgnoreEmptyEventId { get; set; }
 
         internal Func<CloudEvent>? CloudEventAccessor { get; set; }
-        
+
+        private LoggingConfiguration? _nlog;
         public LoggingConfiguration Nlog
         {
             get => _nlog ??= GenerateLuccaDefaultConfig();
@@ -70,9 +73,6 @@ namespace Lucca.Logs.Shared
         }
 
         internal ErrorStore? ExplicitErrorStore { get; set; }
-
-        private LoggingConfiguration? _nlog;
-        private bool? _guidWithPlaceHolder;
 
         public ErrorStore GenerateExceptionalStore()
         {
@@ -93,7 +93,7 @@ namespace Lucca.Logs.Shared
         {
             var nLogConfig = new LoggingConfiguration();
 
-            // FileTarget : pour stoquer localement les excpetions
+            // FileTarget : to save exceptions locally
             var fileTarget = new FileTarget("localTarget")
             {
                 FileName = LogFilePath ?? "${basedir}/logs/logfile.txt",
@@ -108,12 +108,12 @@ namespace Lucca.Logs.Shared
                 MaxArchiveFiles = 100,
                 Layout = LogMeta.LuccaJsonLayout
             };
+
             // 1Mb file size
             var fileRule = new LoggingRule("*", LogLevel.Trace, fileTarget);
             nLogConfig.LoggingRules.Add(fileRule);
 
             return nLogConfig;
         }
-
     }
 }

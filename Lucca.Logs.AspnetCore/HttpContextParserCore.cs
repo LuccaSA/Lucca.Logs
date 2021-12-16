@@ -17,27 +17,24 @@ namespace Lucca.Logs.AspnetCore
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public Guid? ExceptionalLog(Exception exception, Dictionary<string, string?> customData, string categoryName, string appName)
+        public Guid? ExceptionalLog(Exception? exception, Dictionary<string, string?> customData, string categoryName, string appName)
         {
             if (exception is null)
             {
                 return null;
             }
 
-            Error error;
-
-            var request = _httpContextAccessor?.HttpContext?.Request;
-
-            if (request?.HttpContext is not null)
+            Error GetError()
             {
-                error = exception.Log(request.HttpContext, categoryName, false, customData, appName);
-            }
-            else
-            {
-                error = exception.LogNoContext(categoryName, false, customData, appName);
+                var ctx = _httpContextAccessor?.HttpContext;
+                if (ctx is not null)
+                {
+                    return exception.Log(ctx, categoryName, false, customData, appName);
+                }
+                return exception.LogNoContext(categoryName, false, customData, appName);
             }
 
-            return error?.GUID;
+            return GetError()?.GUID;
         }
 
         public IHttpContextRequest? HttpRequestAccessor()
@@ -49,6 +46,9 @@ namespace Lucca.Logs.AspnetCore
 
     public class HttpContextRequestCore : IHttpContextRequest
     {
+        private const string SchemeEnd = "://";
+        private const string Colon = ":";
+
         public HttpRequest HttpRequest { get; }
 
         public HttpContextRequestCore(HttpRequest httpRequest)
@@ -61,7 +61,7 @@ namespace Lucca.Logs.AspnetCore
             var urlBuilder = new StringBuilder();
             if ((uriPart & Uriparts.Scheme) == Uriparts.Scheme && !string.IsNullOrWhiteSpace(HttpRequest.Scheme))
             {
-                urlBuilder.Append(HttpRequest.Scheme + "://");
+                urlBuilder.Append(HttpRequest.Scheme + SchemeEnd);
             }
             if ((uriPart & Uriparts.Host) == Uriparts.Host)
             {
@@ -69,7 +69,7 @@ namespace Lucca.Logs.AspnetCore
             }
             if ((uriPart & Uriparts.Port) == Uriparts.Port && HttpRequest.Host.Port > 0)
             {
-                urlBuilder.Append(":" + HttpRequest.Host.Port);
+                urlBuilder.Append(Colon + HttpRequest.Host.Port);
             }
             if ((uriPart & Uriparts.Path) == Uriparts.Path)
             {
@@ -83,15 +83,7 @@ namespace Lucca.Logs.AspnetCore
             return urlBuilder.ToString();
         }
 
-        public bool ContainsHeader(string header)
-        {
-            return HttpRequest.Headers.ContainsKey(header);
-        }
-
-        public string? GetHeader(string header)
-        {
-            return HttpRequest.Headers[header];
-        }
+        public string? GetHeader(string header) => HttpRequest.Headers[header];
 
         public string? TryGetBodyContent()
         {
@@ -116,10 +108,7 @@ namespace Lucca.Logs.AspnetCore
             }
         }
 
-        public string GetMethod()
-        {
-            return HttpRequest.Method;
-        }
+        public string GetMethod() => HttpRequest.Method;
 
         public string? HostAddress()
         {
