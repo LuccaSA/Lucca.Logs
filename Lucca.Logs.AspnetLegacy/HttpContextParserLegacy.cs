@@ -39,15 +39,7 @@ namespace Lucca.Logs.AspnetLegacy
 
         public IHttpContextRequest? HttpRequestAccessor()
         {
-            HttpRequest? request = null;
-            try
-            {
-                request = _httpContextAccessor?.HttpContext?.Request;
-            }
-            catch (Exception)
-            {
-                // ignored
-            } 
+            var request = _httpContextAccessor?.HttpContext?.Request;
             return request is not null ? new HttpContextRequestLegacy(request) : null;
         }
     }
