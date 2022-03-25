@@ -19,17 +19,17 @@ namespace Lucca.Logs.Shared
         /// <summary>
         /// Default application name
         /// </summary>
-        public string ApplicationName { get; set; }
+        public string? ApplicationName { get; set; }
 
         /// <summary>
         /// Exceptional Connexion String
         /// </summary>
-        public string ConnectionString { get; set; }
+        public string? ConnectionString { get; set; }
 
         /// <summary>
         /// Custom log file path
         /// </summary>
-        public string LogFilePath { get; set; }
+        public string? LogFilePath { get; set; }
 
         /// <summary>
         /// Base URI for external link 
@@ -37,6 +37,7 @@ namespace Lucca.Logs.Shared
         /// <example>"http://opserver.lucca.local/exceptions/detail?id={0}"</example>
         public string GuidLink { get; set; } = "http://opserver.lucca.local/exceptions/detail?id={0}";
 
+        private bool? _guidWithPlaceHolder;
         public bool GuidWithPlaceHolder
         {
             get
@@ -53,6 +54,7 @@ namespace Lucca.Logs.Shared
         /// Separator between for EventId.Id and EventId.Name. Default to .
         /// </summary>
         public string EventIdSeparator { get; set; }
+
         /// <summary>
         /// Skip allocation of <see cref="LogEventInfo.Properties" />-dictionary
         /// </summary>
@@ -61,39 +63,37 @@ namespace Lucca.Logs.Shared
         ///     <c>default(EventId)</c></remarks>
         public bool IgnoreEmptyEventId { get; set; }
 
-        internal Func<CloudEvent> CloudEventAccessor { get; set; }
-        
+        internal Func<CloudEvent>? CloudEventAccessor { get; set; }
+
+        private LoggingConfiguration? _nlog;
         public LoggingConfiguration Nlog
         {
             get => _nlog ??= GenerateLuccaDefaultConfig();
             set => _nlog = value;
         }
 
-        internal ErrorStore ExplicitErrorStore { get; set; }
-
-        private LoggingConfiguration _nlog;
-        private bool? _guidWithPlaceHolder;
+        internal ErrorStore? ExplicitErrorStore { get; set; }
 
         public ErrorStore GenerateExceptionalStore()
         {
-            if (!String.IsNullOrEmpty(ConnectionString))
+            if (!string.IsNullOrEmpty(ConnectionString))
             {
-                return new SQLErrorStore(ConnectionString, ApplicationName);
+                return new SQLErrorStore(ConnectionString, ApplicationName!);
             }
 
-            if (ExplicitErrorStore != null)
+            if (ExplicitErrorStore is not null)
             {
                 return ExplicitErrorStore;
             }
 
-            return new MemoryErrorStore(new ErrorStoreSettings { ApplicationName = ApplicationName });
+            return new MemoryErrorStore(new ErrorStoreSettings { ApplicationName = ApplicationName! });
         }
 
         private LoggingConfiguration GenerateLuccaDefaultConfig()
         {
             var nLogConfig = new LoggingConfiguration();
 
-            // FileTarget : pour stoquer localement les excpetions
+            // FileTarget : to save exceptions locally
             var fileTarget = new FileTarget("localTarget")
             {
                 FileName = LogFilePath ?? "${basedir}/logs/logfile.txt",
@@ -108,12 +108,12 @@ namespace Lucca.Logs.Shared
                 MaxArchiveFiles = 100,
                 Layout = LogMeta.LuccaJsonLayout
             };
+
             // 1Mb file size
             var fileRule = new LoggingRule("*", LogLevel.Trace, fileTarget);
             nLogConfig.LoggingRules.Add(fileRule);
 
             return nLogConfig;
         }
-
     }
 }

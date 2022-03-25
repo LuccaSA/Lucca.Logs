@@ -6,6 +6,7 @@ namespace Lucca.Logs.Shared
 {
     public class CloudEventExtractor : ILogDetailsExtractor
     {
+        private const string Event = "Event";
         private readonly IOptions<LuccaLoggerOptions> _options;
         public CloudEventExtractor(IOptions<LuccaLoggerOptions> options)
         {
@@ -14,25 +15,25 @@ namespace Lucca.Logs.Shared
 
         public LogDetail CreateLogDetail()
         {
-            CloudEvent cloudEvent = _options.Value.CloudEventAccessor();
-            if (cloudEvent == null)
+            CloudEvent cloudEvent = _options.Value.CloudEventAccessor!();
+            if (cloudEvent is null)
             {
-                return new LogDetail { CanExtract = false };
+                return LogDetail.NoExtraction;
             }
+
             return new LogDetail
             {
-                CanExtract = cloudEvent != null,
+                CanExtract = true,
                 PageRest = cloudEvent.Id,
                 PageRest2 = cloudEvent.Type,
                 Page = cloudEvent.Subject,
-                Verb = "Event",
+                Verb = Event,
                 Uri = cloudEvent.Source.ToString(),
                 ServerName = cloudEvent.Source.DnsSafeHost,
                 HostAddress = string.Empty,
                 UserAgent = cloudEvent.SpecVersion.ToString(),
                 CorrelationId = cloudEvent.Extension<DistributedTracingExtension>()?.TraceParent ?? string.Empty,
-                Payload = cloudEvent.Data.ToString(),
-                Warning = string.Empty
+                Payload = cloudEvent.Data.ToString()
             };
         }
     }

@@ -6,13 +6,13 @@ Le contenu à destination de Logmatic passe par un logger NLog, et une structure
 
 Le contenu à destination de OpServer passer par un logger StackExchange.Exceptional.
 
-## Utilisation 
+## Utilisation
 
 En mode injection de dépendance, il suffit de se faire injecter un `ILogger<T>` ou un `ILoggerFactory`, puis de logger de façon standard.
 
 Plus d'infos ici : [Logging in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-2.1&tabs=aspnetcore2x)
 
-## Setup netcoreapp3.1 
+## Setup net6.0
 
 Dans la méthode `ConfigureServices` du startup.cs, ajoutez le registering suivant après `services.AddMvc();`
 
@@ -43,14 +43,14 @@ else
 
 - `app.UseDeveloperExceptionPage();` permet de bénéficier en dev local d'informations détaillées sur les exceptions lorsqu'elles se produisent
 - `app.UseLuccaLogs();` permet d'enregister le middleware permettant d'intercepter les exceptions, et de produire une erreur de sortie correspondante aux settings
-    - `LuccaExceptionHandlerOption` permet de customiser la generation du message d'erreur
-    - 3 handlers pour textplain / html et json sont disponibles
+  - `LuccaExceptionHandlerOption` permet de customiser la generation du message d'erreur
+  - 3 handlers pour textplain / html et json sont disponibles
 
 ## Setup MVC5 / net461
 
 En MVC5, la librairie utilise actuellement en interne la DI de `Microsoft.Extensions.DependencyInjection`. Il sera possible à terme de brancher n'importe quel DI framework (mais pas pour le moment)
 
-Dans le Global.asax.cs, ajouter le register suivant : 
+Dans le Global.asax.cs, ajouter le register suivant :
 
 ```csharp
 GlobalConfiguration.Configuration.Services.AddLuccaLogs();
@@ -68,13 +68,12 @@ Logger.DefaultFactory = LoggerBuilder.CreateLuccaLogsFactory(builder =>
 - `Services.AddLuccaLogs()` permet de register la lib sur les hooks de MVC5
 - `Logger.DefaultFactory = ...` permet de customiser les types registered, et d'ajouter vos propres implémentations
 
-## Utilisation
+## Utilisation net461
 
 Faites vous injecter un `ILogger<T>` dans le constructeur des classes où vous souhaitez logger.
 Utilisez les méthodes standard du framework pour logger ( `_logger.LogError(...)` etc)
 
-Lisez la doc : https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-2.1
-
+Lisez la doc [à cette adresse](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-2.1)
 
 ## Unit tests
 

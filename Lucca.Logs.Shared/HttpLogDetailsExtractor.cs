@@ -2,6 +2,7 @@
 {
     public class HttpLogDetailsExtractor : ILogDetailsExtractor
     {
+        private const string UserAgent = "User-Agent";
         private readonly IHttpContextParser _httpRequest;
 
         public HttpLogDetailsExtractor(IHttpContextParser httpRequest)
@@ -12,28 +13,26 @@
          
         public LogDetail CreateLogDetail()
         {
-            IHttpContextRequest httpRequest = _httpRequest.HttpRequestAccessor();
-            if (httpRequest == null)
+            IHttpContextRequest? httpRequest = _httpRequest.HttpRequestAccessor();
+            if (httpRequest is null)
             {
-                return new LogDetail { CanExtract = false };
+                return LogDetail.NoExtraction;
             }
 
             return new LogDetail
             {
                 CanExtract = true,
-                PageRest = _httpRequest.ExtractUrl(Uripart.Path | Uripart.Query, httpRequest),
-                PageRest2 = _httpRequest.ExtractUrl(Uripart.Path | Uripart.Query, httpRequest),
-                Page = _httpRequest.ExtractUrl(Uripart.Full, httpRequest),
-                Verb = _httpRequest.GetMethod(httpRequest),
-                Uri = _httpRequest.ExtractUrl(Uripart.Path, httpRequest),
-                ServerName = _httpRequest.ExtractUrl(Uripart.Host, httpRequest),
-                HostAddress = _httpRequest.HostAddress(httpRequest),
-                UserAgent = _httpRequest.GetHeader("User-Agent", httpRequest),
-                CorrelationId = _httpRequest.GetHeader(LogMeta._correlationId, httpRequest),
-                Payload = _httpRequest.TryGetBodyContent(httpRequest),
-                Warning = _httpRequest == null ? "HttpContext.Current is null" : null
+                PageRest = httpRequest.ExtractUrl(Uriparts.Path | Uriparts.Query),
+                PageRest2 = httpRequest.ExtractUrl(Uriparts.Path | Uriparts.Query),
+                Page = httpRequest.ExtractUrl(Uriparts.Full),
+                Verb = httpRequest.GetMethod(),
+                Uri = httpRequest.ExtractUrl(Uriparts.Path),
+                ServerName = httpRequest.ExtractUrl(Uriparts.Host),
+                HostAddress = httpRequest.HostAddress(),
+                UserAgent = httpRequest.GetHeader(UserAgent),
+                CorrelationId = httpRequest.GetHeader(LogMeta._correlationId),
+                Payload = httpRequest.TryGetBodyContent()
             };
-
         }
     }
 }

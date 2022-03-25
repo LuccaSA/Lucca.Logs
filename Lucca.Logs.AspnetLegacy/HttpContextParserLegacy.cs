@@ -17,136 +17,110 @@ namespace Lucca.Logs.AspnetLegacy
             _httpContextAccessor = httpContextAccessor;
         }
        
-        public Guid? ExceptionalLog(Exception exception, Dictionary<string, string> customData, string categoryName, string appName)
+        public Guid? ExceptionalLog(Exception? exception, Dictionary<string, string?> customData, string categoryName, string appName)
         {
-            if (exception == null)
+            if (exception is null)
             {
                 return null;
             }
 
-            Error error;
-            var ctx = _httpContextAccessor?.HttpContext;
-            if (ctx != null)
+            Error GetError()
             {
-                error = exception.Log(ctx, categoryName, false, customData, appName);
-            }
-            else
-            {
-                error = exception.LogNoContext(categoryName, false, customData, appName);
+                var ctx = _httpContextAccessor?.HttpContext;
+                if (ctx is not null)
+                {
+                    return exception.Log(ctx, categoryName, false, customData, appName);
+                }
+                return exception.LogNoContext(categoryName, false, customData, appName);
             }
 
-            return error?.GUID;
+            return GetError()?.GUID;
         }
 
-        public string ExtractUrl(Uripart uriPart, IHttpContextRequest httpRequest)
+        public IHttpContextRequest? HttpRequestAccessor()
         {
-            var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
-            if (request == null)
-                return null;
+            var request = _httpContextAccessor?.HttpContext?.Request;
+            return request is not null ? new HttpContextRequestLegacy(request) : null;
+        }
+    }
 
+    internal class HttpContextRequestLegacy : IHttpContextRequest
+    {
+        private const string SchemeEnd = "://";
+        private const string Colon = ":";
+
+        public HttpRequest HttpRequest { get; }
+
+        public HttpContextRequestLegacy(HttpRequest httpRequest)
+        {
+            HttpRequest = httpRequest;
+        }
+
+        public string ExtractUrl(Uriparts uriPart)
+        {
             var urlBuilder = new StringBuilder();
-            if ((uriPart & Uripart.Scheme) == Uripart.Scheme && !String.IsNullOrWhiteSpace(request.Url.Scheme))
+            if ((uriPart & Uriparts.Scheme) == Uriparts.Scheme && !string.IsNullOrWhiteSpace(HttpRequest.Url.Scheme))
             {
-                urlBuilder.Append(request.Url.Scheme + "://");
+                urlBuilder.Append(HttpRequest.Url.Scheme + SchemeEnd);
             }
-            if ((uriPart & Uripart.Host) == Uripart.Host)
+            if ((uriPart & Uriparts.Host) == Uriparts.Host)
             {
-                urlBuilder.Append(request.Url.DnsSafeHost);
+                urlBuilder.Append(HttpRequest.Url.DnsSafeHost);
             }
-            if ((uriPart & Uripart.Port) == Uripart.Port && request.Url.Port > 0)
+            if ((uriPart & Uriparts.Port) == Uriparts.Port && HttpRequest.Url.Port > 0)
             {
-                urlBuilder.Append(":" + request.Url.Port);
+                urlBuilder.Append(Colon + HttpRequest.Url.Port);
             }
-            if ((uriPart & Uripart.Path) == Uripart.Path)
+            if ((uriPart & Uriparts.Path) == Uriparts.Path)
             {
-                urlBuilder.Append(request.Url.LocalPath);
+                urlBuilder.Append(HttpRequest.Url.LocalPath);
             }
-            if ((uriPart & Uripart.Query) == Uripart.Query)
+            if ((uriPart & Uriparts.Query) == Uriparts.Query)
             {
-                urlBuilder.Append(request.Url.Query.ClearQueryStringPassword());
+                urlBuilder.Append(HttpRequest.Url.Query.ClearQueryStringPassword());
             }
             return urlBuilder.ToString();
         }
 
-        public bool ContainsHeader(string header, IHttpContextRequest httpRequest)
-        {
-            var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
-            return request?.Headers.Get(header) != null;
-        }
+        public string? GetHeader(string header) => HttpRequest.Headers.Get(header);
 
-        public string GetHeader(string header, IHttpContextRequest httpRequest)
+        public string? TryGetBodyContent()
         {
-            var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
-            return request?.Headers.Get(header);
-        }
+            if (HttpRequest.InputStream.Length == 0)
+            {
+                return null;
+            }
 
-        public string TryGetBodyContent(IHttpContextRequest httpRequest)
-        {
-            var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
-            string documentContents = null;
             try
             {
-                if (request == null || request.InputStream.Length == 0)
-                {
-                    return null;
-                }
                 using (var stream = new MemoryStream())
                 {
-                    request.InputStream.Seek(0, SeekOrigin.Begin);
-                    request.InputStream.CopyTo(stream);
-                    documentContents = Encoding.UTF8.GetString(stream.ToArray());
+                    HttpRequest.InputStream.Seek(0, SeekOrigin.Begin);
+                    HttpRequest.InputStream.CopyTo(stream);
+                    return Encoding.UTF8.GetString(stream.ToArray());
                 }
             }
             catch (Exception)
             {
                 // discard exception
             }
-            return documentContents;
+            return null;
         }
 
-        public IHttpContextRequest HttpRequestAccessor()
-        {
-            HttpRequest request = null;
-            try
-            {
-                request = _httpContextAccessor?.HttpContext?.Request;
-            }
-            catch (Exception)
-            {
-                // ignored
-            } 
-            return request != null ? new HttpContextRequestLegacy(request) : null;
-        }
+        public string GetMethod() => HttpRequest.HttpMethod;
 
-        public string GetMethod(IHttpContextRequest httpRequest)
+        public string? HostAddress()
         {
-            var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
-            return request?.HttpMethod;
-        }
-
-        public string HostAddress(IHttpContextRequest httpRequest)
-        {
-            var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
-            string ip = null;
-            if (request.Headers.Get(LogMeta._luccaForwardedHeader) != null)
+            string? ip = null;
+            if (HttpRequest.Headers.Get(LogMeta._luccaForwardedHeader) is not null)
             {
-                ip = request.Headers[LogMeta._forwardedHeader];
+                ip = HttpRequest.Headers[LogMeta._forwardedHeader];
             }
             if (string.IsNullOrEmpty(ip))
             {
-                ip = request?.UserHostAddress;
+                ip = HttpRequest.UserHostAddress;
             }
             return ip;
-        }
-    }
-
-    public class HttpContextRequestLegacy : IHttpContextRequest
-    {
-        public HttpRequest HttpRequest { get; }
-
-        public HttpContextRequestLegacy(HttpRequest httpRequest)
-        {
-            HttpRequest = httpRequest;
         }
     }
 }

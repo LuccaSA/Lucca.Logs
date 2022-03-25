@@ -38,7 +38,7 @@ namespace Lucca.Logs.AspnetCore
             }
             catch (Exception ex)
             {
-                _logger.LogError(0, ex, "An unhandled exception has occurred: " + ex.Message);
+                _logger.LogError(0, ex, "An unhandled exception has occurred: {message}", ex.Message);
                 if (context.Response.HasStarted)
                 {
                     _logger.LogWarning("The response has already started, the error handler will not be executed.");
@@ -73,9 +73,9 @@ namespace Lucca.Logs.AspnetCore
             ClearHttpResponseResponse(context, info.StatusCode);
 
             // Extracts the Accept header
-            string acceptable = NegociateAcceptableContentType(context.Request);
+            string? acceptable = NegociateAcceptableContentType(context.Request);
 
-            if (acceptable != null)
+            if (acceptable is not null)
             {
                 if (await TryRenderErrorOnContentTypeAsync(acceptable, context, info))
                 {
@@ -100,19 +100,19 @@ namespace Lucca.Logs.AspnetCore
 
             // fallback on generic text/plain error
             context.Response.ContentType = _textPlain;
-            await context.Response.WriteAsync(info.GenericErrorMessage);
+            await context.Response.WriteAsync(info.GenericErrorMessage ?? GenericExceptionQualifier.DefaultErrorMessage);
         }
 
-        internal static string NegociateAcceptableContentType(HttpRequest httpRequest)
+        internal static string? NegociateAcceptableContentType(HttpRequest httpRequest)
         {
             var contentTypes = GetAcceptableMediaTypes(httpRequest);
             var acceptable = GetFirstAcceptableMatch(contentTypes);
             return acceptable;
         }
 
-        private static string GetFirstAcceptableMatch(IEnumerable<MediaTypeHeaderValue> contentTypes)
+        private static string? GetFirstAcceptableMatch(IEnumerable<MediaTypeHeaderValue>? contentTypes)
         {
-            if (contentTypes == null)
+            if (contentTypes is null)
             {
                 return null;
             }
@@ -134,50 +134,50 @@ namespace Lucca.Logs.AspnetCore
 
         private async Task<bool> TryRenderErrorOnContentTypeAsync(string contentType, HttpContext context, LuccaExceptionBuilderInfo info)
         {
+            Task<bool> GetReportMethodAsync() => contentType switch
+            {
+                _textPlain => TextPlainReportAsync(context, info),
+                _appJson => JsonReportAsync(context, info),
+                _textHtml => HtmlReportAsync(context, info),
+                _ => Task.FromResult(false),
+            };
+
             try
             {
-                switch (contentType)
-                {
-                    case _textPlain:
-                        await TextPlainReport(context, info);
-                        return true;
-                    case _appJson:
-                        await JsonReport(context, info);
-                        return true;
-                    case _textHtml:
-                        await HtmlReport(context, info);
-                        return true;
-                }
+                return await GetReportMethodAsync();
             }
             catch (Exception e)
             {
-                _logger.LogError(0, e, "An exception was thrown attempting to render the error with content type " + contentType);
+                _logger.LogError(0, e, "An exception was thrown attempting to render the error with content type {contentType}", contentType);
             }
             return false;
         }
 
-        private async Task HtmlReport(HttpContext httpContext, LuccaExceptionBuilderInfo info)
+        private async Task<bool> HtmlReportAsync(HttpContext httpContext, LuccaExceptionBuilderInfo info)
         {
             string data = await _options.Value.HtmlResponse(info);
             httpContext.Response.ContentType = _textHtml;
             await httpContext.Response.WriteAsync(data);
+            return true;
         }
 
-        private async Task TextPlainReport(HttpContext httpContext, LuccaExceptionBuilderInfo info)
+        private async Task<bool> TextPlainReportAsync(HttpContext httpContext, LuccaExceptionBuilderInfo info)
         {
             string data = await _options.Value.TextPlainResponse(info);
             httpContext.Response.ContentType = _textPlain;
             await httpContext.Response.WriteAsync(data);
+            return true;
         }
 
-        private async Task JsonReport(HttpContext httpContext, LuccaExceptionBuilderInfo info)
+        private async Task<bool> JsonReportAsync(HttpContext httpContext, LuccaExceptionBuilderInfo info)
         {
             string data = await _options.Value.JsonResponse(info);
             httpContext.Response.ContentType = _appJson;
             await httpContext.Response.WriteAsync(data);
+            return true;
         }
 
-        private static List<MediaTypeHeaderValue> GetAcceptableMediaTypes(HttpRequest request)
+        private static List<MediaTypeHeaderValue>? GetAcceptableMediaTypes(HttpRequest request)
         {
             //https://developer.mozilla.org/en-US/docs/Glossary/Quality_values
             return request.GetTypedHeaders()?.Accept?.OrderByDescending(h => h.Quality ?? 1).ToList();

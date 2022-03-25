@@ -10,7 +10,7 @@ namespace Lucca.Logs.Shared
             _options = options;
         }
 
-        public string AppName => _options.ApplicationName;
+        public string AppName => _options.ApplicationName!;
         public string AppPool { get; } = Environment.GetEnvironmentVariable("APP_POOL_ID", EnvironmentVariableTarget.Process);
     }
 }

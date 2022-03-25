@@ -16,7 +16,7 @@
     <Authors>Lucca team</Authors>
     <Description>Lucca.Logs</Description>
     <PackageProjectUrl>https://github.com/LuccaSA/Lucca.Logs/</PackageProjectUrl>
-    <Copyright>Copyright Lucca 2018</Copyright>
+    <Copyright>Copyright Lucca 2021</Copyright>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -32,7 +32,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(SourceLinkEnabled)' == 'true'">
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
   </ItemGroup>
 
 </Project>

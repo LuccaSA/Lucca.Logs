@@ -17,96 +17,87 @@ namespace Lucca.Logs.AspnetCore
             _httpContextAccessor = httpContextAccessor;
         }
 
-
-        public Guid? ExceptionalLog(Exception exception, Dictionary<string, string> customData, string categoryName, string appName)
+        public Guid? ExceptionalLog(Exception? exception, Dictionary<string, string?> customData, string categoryName, string appName)
         {
-            if (exception == null)
+            if (exception is null)
             {
                 return null;
             }
 
-            Error error;
-
-            var request = _httpContextAccessor?.HttpContext?.Request;
-
-            if (request?.HttpContext != null)
+            Error GetError()
             {
-                error = exception.Log(request.HttpContext, categoryName, false, customData, appName);
-            }
-            else
-            {
-                error = exception.LogNoContext(categoryName, false, customData, appName);
+                var ctx = _httpContextAccessor?.HttpContext;
+                if (ctx is not null)
+                {
+                    return exception.Log(ctx, categoryName, false, customData, appName);
+                }
+                return exception.LogNoContext(categoryName, false, customData, appName);
             }
 
-            return error?.GUID;
+            return GetError()?.GUID;
         }
 
-        public IHttpContextRequest HttpRequestAccessor()
+        public IHttpContextRequest? HttpRequestAccessor()
         {
             var req = _httpContextAccessor?.HttpContext?.Request;
-            return req != null ? new HttpContextRequestCore(req) : null;
+            return req is not null ? new HttpContextRequestCore(req) : null;
+        }
+    }
+
+    public class HttpContextRequestCore : IHttpContextRequest
+    {
+        private const string SchemeEnd = "://";
+        private const string Colon = ":";
+
+        public HttpRequest HttpRequest { get; }
+
+        public HttpContextRequestCore(HttpRequest httpRequest)
+        {
+            HttpRequest = httpRequest;
         }
 
-        public string ExtractUrl(Uripart uriPart, IHttpContextRequest httpRequest)
+        public string ExtractUrl(Uriparts uriPart)
         {
-            var request = (httpRequest as HttpContextRequestCore).HttpRequest;
-            if (request == null)
-                return null;
-
             var urlBuilder = new StringBuilder();
-            if ((uriPart & Uripart.Scheme) == Uripart.Scheme && !String.IsNullOrWhiteSpace(request.Scheme))
+            if ((uriPart & Uriparts.Scheme) == Uriparts.Scheme && !string.IsNullOrWhiteSpace(HttpRequest.Scheme))
             {
-                urlBuilder.Append(request.Scheme + "://");
+                urlBuilder.Append(HttpRequest.Scheme + SchemeEnd);
             }
-            if ((uriPart & Uripart.Host) == Uripart.Host)
+            if ((uriPart & Uriparts.Host) == Uriparts.Host)
             {
-                urlBuilder.Append(request.Host.Host);
+                urlBuilder.Append(HttpRequest.Host.Host);
             }
-            if ((uriPart & Uripart.Port) == Uripart.Port && request.Host.Port > 0)
+            if ((uriPart & Uriparts.Port) == Uriparts.Port && HttpRequest.Host.Port > 0)
             {
-                urlBuilder.Append(":" + request.Host.Port);
+                urlBuilder.Append(Colon + HttpRequest.Host.Port);
             }
-            if ((uriPart & Uripart.Path) == Uripart.Path)
+            if ((uriPart & Uriparts.Path) == Uriparts.Path)
             {
-                urlBuilder.Append(request.PathBase.ToUriComponent());
-                urlBuilder.Append(request.Path.ToUriComponent());
+                urlBuilder.Append(HttpRequest.PathBase.ToUriComponent());
+                urlBuilder.Append(HttpRequest.Path.ToUriComponent());
             }
-            if ((uriPart & Uripart.Query) == Uripart.Query)
+            if ((uriPart & Uriparts.Query) == Uriparts.Query)
             {
-                urlBuilder.Append(request.QueryString.Value.ClearQueryStringPassword());
+                urlBuilder.Append(HttpRequest.QueryString.Value.ClearQueryStringPassword());
             }
             return urlBuilder.ToString();
         }
 
-        public bool ContainsHeader(string header, IHttpContextRequest httpRequest)
-        {
-            var request = (httpRequest as HttpContextRequestCore).HttpRequest;
-            if (request == null)
-                return false;
+        public string? GetHeader(string header) => HttpRequest.Headers[header];
 
-            return request.Headers.ContainsKey(header);
-        }
-
-        public string GetHeader(string header, IHttpContextRequest httpRequest)
+        public string? TryGetBodyContent()
         {
-            var request = (httpRequest as HttpContextRequestCore).HttpRequest;
-            return request?.Headers[header];
-        }
-
-        public string TryGetBodyContent(IHttpContextRequest httpRequest)
-        {
-            var request = (httpRequest as HttpContextRequestCore).HttpRequest;
             try
             {
-                if (request == null || !request.Body.CanRead || !request.Body.CanSeek || request.Body.Length == 0)
+                if (!HttpRequest.Body.CanRead || !HttpRequest.Body.CanSeek || HttpRequest.Body.Length == 0)
                 {
                     return null;
                 }
 
                 using (var stream = new MemoryStream())
                 {
-                    request.Body.Seek(0, SeekOrigin.Begin);
-                    request.Body.CopyTo(stream);
+                    HttpRequest.Body.Seek(0, SeekOrigin.Begin);
+                    HttpRequest.Body.CopyTo(stream);
                     return Encoding.UTF8.GetString(stream.ToArray());
                 }
             }
@@ -117,35 +108,20 @@ namespace Lucca.Logs.AspnetCore
             }
         }
 
-        public string GetMethod(IHttpContextRequest httpRequest)
-        {
-            var request = (httpRequest as HttpContextRequestCore).HttpRequest;
-            return request?.Method;
-        }
+        public string GetMethod() => HttpRequest.Method;
 
-        public string HostAddress(IHttpContextRequest httpRequest)
+        public string? HostAddress()
         {
-            var request = (httpRequest as HttpContextRequestCore).HttpRequest;
-            string ip = null;
-            if (request.Headers.ContainsKey(LogMeta._luccaForwardedHeader))
+            string? ip = null;
+            if (HttpRequest.Headers.ContainsKey(LogMeta._luccaForwardedHeader))
             {
-                ip = request.Headers[LogMeta._forwardedHeader];
+                ip = HttpRequest.Headers[LogMeta._forwardedHeader];
             }
             if (string.IsNullOrEmpty(ip))
             {
-                ip = request?.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+                ip = HttpRequest.HttpContext?.Connection?.RemoteIpAddress?.ToString();
             }
             return ip;
-        }
-    }
-
-    public class HttpContextRequestCore : IHttpContextRequest
-    {
-        public HttpRequest HttpRequest { get; }
-
-        public HttpContextRequestCore(HttpRequest httpRequest)
-        {
-            HttpRequest = httpRequest;
         }
     }
 }

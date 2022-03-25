@@ -5,7 +5,7 @@ namespace Lucca.Logs.AspnetCore
 {
     public static class LuccaLoggerAspnetCoreExtensions
     {
-        public static IApplicationBuilder UseLuccaLogs(this IApplicationBuilder app, LuccaExceptionHandlerOption exceptionHandlerOption = null, bool enableContentLog = true)
+        public static IApplicationBuilder UseLuccaLogs(this IApplicationBuilder app, LuccaExceptionHandlerOption? exceptionHandlerOption = null, bool enableContentLog = true)
         {
             var builder = app;
             if (enableContentLog)

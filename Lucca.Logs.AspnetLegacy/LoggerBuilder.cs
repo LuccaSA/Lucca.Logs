@@ -14,7 +14,7 @@ namespace Lucca.Logs.AspnetLegacy
                 .GetRequiredService<ILoggerFactory>();
         }
 
-        private static readonly ServiceCollection _serviceCollection = new ServiceCollection();
+        private static readonly ServiceCollection _serviceCollection = new();
    
         public static ILoggerFactory CreateLuccaLogsFactory(Action<ILoggingBuilder> configure)
         {
