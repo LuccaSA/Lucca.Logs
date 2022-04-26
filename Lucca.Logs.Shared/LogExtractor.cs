@@ -38,6 +38,9 @@ namespace Lucca.Logs.Shared
                 TryAdd(LogMeta._uri, logdetail.Uri);
                 TryAdd(LogMeta._serverName, logdetail.ServerName);
                 TryAdd(LogMeta._correlationId, logdetail.CorrelationId);
+                TryAdd(LogMeta._luccaForwardedHeader, logdetail.XForwardedFor);
+                TryAdd(LogMeta._cfConnectingIPHeader, logdetail.CFConnectingIP);
+                TryAdd(LogMeta._cfRay, logdetail.CFRAY);
                 TryAdd(LogMeta._hostAddress, logdetail.HostAddress);
                 TryAdd(LogMeta._userAgent, logdetail.UserAgent);
 

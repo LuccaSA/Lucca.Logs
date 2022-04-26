@@ -31,6 +31,9 @@
                 HostAddress = httpRequest.HostAddress(),
                 UserAgent = httpRequest.GetHeader(UserAgent),
                 CorrelationId = httpRequest.GetHeader(LogMeta._correlationId),
+                XForwardedFor = httpRequest.GetHeader(LogMeta._forwardedHeader),
+                CFConnectingIP = httpRequest.GetHeader(LogMeta._cfConnectingIPHeader),
+                CFRAY = httpRequest.GetHeader(LogMeta._cfRay),
                 Payload = httpRequest.TryGetBodyContent()
             };
         }

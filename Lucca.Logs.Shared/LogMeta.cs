@@ -31,6 +31,9 @@ namespace Lucca.Logs.Shared
         internal const string _forwardedHeader = "X-Forwarded-For";
         internal const string _correlationId = "X-Correlation-ID";
 
+        internal const string _cfConnectingIPHeader = "CF-Connecting-IP";
+        internal const string _cfRay = "CF-RAY";
+
         internal const string _traceId = "dd.trace_id";
         internal const string _spanId = "dd.span_id";
 
@@ -52,7 +55,10 @@ namespace Lucca.Logs.Shared
             _exceptionNamespace,
             _httpLikeExceptionStatus,
             _uri,
+            _forwardedHeader,
             _correlationId,
+            _cfConnectingIPHeader,
+            _cfRay,
             _traceId,
             _spanId,
         };
