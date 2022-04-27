@@ -7,8 +7,6 @@
 
     public class LogDetail
     {
-        public static LogDetail NoExtraction = new() { CanExtract = false };
-
         public bool CanExtract { get; set; }
         public string PageRest { get; set; }
         public string PageRest2 { get; set; }
