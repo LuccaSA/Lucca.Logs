@@ -5,6 +5,7 @@ using System.Text;
 using System.Web;
 using Lucca.Logs.Shared;
 using StackExchange.Exceptional;
+using System.Net;
 
 namespace Lucca.Logs.AspnetLegacy
 {
@@ -109,18 +110,21 @@ namespace Lucca.Logs.AspnetLegacy
 
         public string GetMethod() => HttpRequest.HttpMethod;
 
-        public string? HostAddress()
+        public IPAddress? HostAddress()
         {
-            string? ip = null;
-            if (HttpRequest.Headers.Get(LogMeta._luccaForwardedHeader) is not null)
+            var cfIp = HttpRequest.Headers.Get(LogMeta._cfConnectingIPHeader);
+            if (cfIp != null && IPAddress.TryParse(cfIp, out var ip))
             {
-                ip = HttpRequest.Headers[LogMeta._forwardedHeader];
+                return ip;
             }
-            if (string.IsNullOrEmpty(ip))
+
+            var xfwdip = HttpRequest.Headers.Get(LogMeta._forwardedHeader);
+            if (xfwdip != null && IPAddress.TryParse(xfwdip, out ip))
             {
-                ip = HttpRequest.UserHostAddress;
+                return ip;
             }
-            return ip;
+
+            return IPAddress.TryParse(HttpRequest.UserHostAddress ?? string.Empty, out ip) ? ip : null;
         }
     }
 }
