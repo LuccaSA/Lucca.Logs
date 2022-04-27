@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 
 namespace Lucca.Logs.Shared
 {
@@ -12,7 +13,7 @@ namespace Lucca.Logs.Shared
         Guid? ExceptionalLog(Exception exception, Dictionary<string, string> customData, string categoryName, string appName);
         IHttpContextRequest HttpRequestAccessor();
         string GetMethod(IHttpContextRequest httpRequest);
-        string HostAddress(IHttpContextRequest httpRequest);
+        IPAddress HostAddress(IHttpContextRequest httpRequest);
     }
 
     public interface IHttpContextRequest

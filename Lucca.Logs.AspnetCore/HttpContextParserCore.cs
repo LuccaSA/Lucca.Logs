@@ -5,6 +5,7 @@ using System.Text;
 using Lucca.Logs.Shared;
 using Microsoft.AspNetCore.Http;
 using StackExchange.Exceptional;
+using System.Net;
 
 namespace Lucca.Logs.AspnetCore
 {
@@ -119,23 +120,28 @@ namespace Lucca.Logs.AspnetCore
 
         public string GetMethod(IHttpContextRequest httpRequest)
         {
-            var request = (httpRequest as HttpContextRequestCore).HttpRequest;
+            var request = (httpRequest as HttpContextRequestCore)?.HttpRequest;
             return request?.Method;
         }
 
-        public string HostAddress(IHttpContextRequest httpRequest)
+        public IPAddress HostAddress(IHttpContextRequest httpRequest)
         {
-            var request = (httpRequest as HttpContextRequestCore).HttpRequest;
-            string ip = null;
-            if (request.Headers.ContainsKey(LogMeta._luccaForwardedHeader))
+            var request = (httpRequest as HttpContextRequestCore)?.HttpRequest;
+            if (request == null)
+                return null;
+            if (request.Headers.ContainsKey(LogMeta._cfConnectingIPHeader)
+                && IPAddress.TryParse(request.Headers[LogMeta._cfConnectingIPHeader], out var ip))
             {
-                ip = request.Headers[LogMeta._forwardedHeader];
+                return ip;
             }
-            if (string.IsNullOrEmpty(ip))
+
+            if (request.Headers.ContainsKey(LogMeta._luccaForwardedHeader)
+                && IPAddress.TryParse(request.Headers[LogMeta._forwardedHeader], out ip))
             {
-                ip = request?.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+                return ip;
             }
-            return ip;
+
+            return request.HttpContext.Connection.RemoteIpAddress;
         }
     }
 

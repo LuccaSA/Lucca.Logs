@@ -5,6 +5,7 @@ using System.Text;
 using System.Web;
 using Lucca.Logs.Shared;
 using StackExchange.Exceptional;
+using System.Net;
 
 namespace Lucca.Logs.AspnetLegacy
 {
@@ -120,23 +121,28 @@ namespace Lucca.Logs.AspnetLegacy
 
         public string GetMethod(IHttpContextRequest httpRequest)
         {
-            var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
+            var request = (httpRequest as HttpContextRequestLegacy)?.HttpRequest;
             return request?.HttpMethod;
         }
 
-        public string HostAddress(IHttpContextRequest httpRequest)
+        public IPAddress HostAddress(IHttpContextRequest httpRequest)
         {
-            var request = (httpRequest as HttpContextRequestLegacy).HttpRequest;
-            string ip = null;
-            if (request.Headers.Get(LogMeta._luccaForwardedHeader) != null)
+            var request = (httpRequest as HttpContextRequestLegacy)?.HttpRequest;
+            if (request == null)
+                return null;
+            var cfIp = request.Headers.Get(LogMeta._cfConnectingIPHeader);
+            if (cfIp != null && IPAddress.TryParse(cfIp, out var ip))
             {
-                ip = request.Headers[LogMeta._forwardedHeader];
+                return ip;
             }
-            if (string.IsNullOrEmpty(ip))
+
+            var xfwdip = request.Headers.Get(LogMeta._forwardedHeader);
+            if (xfwdip != null && IPAddress.TryParse(xfwdip, out ip))
             {
-                ip = request?.UserHostAddress;
+                return ip;
             }
-            return ip;
+
+            return IPAddress.TryParse(request.UserHostAddress ?? string.Empty, out ip) ? ip : null;
         }
     }
 
