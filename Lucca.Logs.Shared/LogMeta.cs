@@ -31,8 +31,14 @@ namespace Lucca.Logs.Shared
         internal const string _forwardedHeader = "X-Forwarded-For";
         internal const string _correlationId = "X-Correlation-ID";
 
-        internal const string _traceId = "dd.trace_id";
-        internal const string _spanId = "dd.span_id";
+        internal const string _cfConnectingIPHeader = "CF-Connecting-IP";
+        internal const string _cfRay = "CF-RAY";
+
+        internal const string _serviceKey = "dd.service";
+        internal const string _versionKey = "dd.version";
+        internal const string _envKey = "dd.env";
+        internal const string _traceIdKey = "dd.trace_id";
+        internal const string _spanIdKey = "dd.span_id";
 
         private static string[] Keys => new[]
         {
@@ -52,9 +58,15 @@ namespace Lucca.Logs.Shared
             _exceptionNamespace,
             _httpLikeExceptionStatus,
             _uri,
+            _forwardedHeader,
             _correlationId,
-            _traceId,
-            _spanId,
+            _cfConnectingIPHeader,
+            _cfRay,
+            _serviceKey,
+            _versionKey,
+            _envKey,
+            _traceIdKey,
+            _spanIdKey
         };
 
         public static JsonLayout LuccaJsonLayout { get; } = GenerateJsonLayout();

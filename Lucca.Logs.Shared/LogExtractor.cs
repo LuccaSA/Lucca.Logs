@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Datadog.Trace;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Lucca.Logs.Shared
@@ -38,8 +39,17 @@ namespace Lucca.Logs.Shared
                 TryAdd(LogMeta._uri, logdetail.Uri);
                 TryAdd(LogMeta._serverName, logdetail.ServerName);
                 TryAdd(LogMeta._correlationId, logdetail.CorrelationId);
+                TryAdd(LogMeta._forwardedHeader, logdetail.XForwardedFor);
+                TryAdd(LogMeta._cfConnectingIPHeader, logdetail.CFConnectingIP);
+                TryAdd(LogMeta._cfRay, logdetail.CFRAY);
                 TryAdd(LogMeta._hostAddress, logdetail.HostAddress);
                 TryAdd(LogMeta._userAgent, logdetail.UserAgent);
+
+                TryAdd(LogMeta._serviceKey, CorrelationIdentifier.Service);
+                TryAdd(LogMeta._versionKey, CorrelationIdentifier.Version);
+                TryAdd(LogMeta._envKey, CorrelationIdentifier.Env);
+                TryAdd(LogMeta._traceIdKey, CorrelationIdentifier.TraceId.ToString());
+                TryAdd(LogMeta._spanIdKey, CorrelationIdentifier.SpanId.ToString());
 
                 if (!isError)
                 {

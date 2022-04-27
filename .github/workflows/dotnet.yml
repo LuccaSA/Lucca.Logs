@@ -62,7 +62,6 @@ jobs:
       run: |
         dotnet pack Lucca.Logs.Shared\Lucca.Logs.Shared.csproj --configuration Release -o artifacts -p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
         dotnet pack Lucca.Logs.AspnetCore\Lucca.Logs.AspnetCore.csproj --configuration Release -o artifacts -p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
-        dotnet pack Lucca.Logs.AspnetLegacy\Lucca.Logs.AspnetLegacy.csproj --configuration Release -o artifacts -p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
 
     - name: Nuget prerelease push
       run: dotnet nuget push "artifacts/**/*.nupkg" --skip-duplicate --source https://nuget.pkg.github.com/LuccaSA/index.json -k ${{ secrets.GH_PACKAGE_TOKEN }}

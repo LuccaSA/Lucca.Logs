@@ -27,11 +27,14 @@
                 Verb = _httpRequest.GetMethod(httpRequest),
                 Uri = _httpRequest.ExtractUrl(Uripart.Path, httpRequest),
                 ServerName = _httpRequest.ExtractUrl(Uripart.Host, httpRequest),
-                HostAddress = _httpRequest.HostAddress(httpRequest),
+                HostAddress = _httpRequest.HostAddress(httpRequest)?.ToString(),
                 UserAgent = _httpRequest.GetHeader("User-Agent", httpRequest),
                 CorrelationId = _httpRequest.GetHeader(LogMeta._correlationId, httpRequest),
                 Payload = _httpRequest.TryGetBodyContent(httpRequest),
-                Warning = _httpRequest == null ? "HttpContext.Current is null" : null
+                Warning = _httpRequest == null ? "HttpContext.Current is null" : null,
+                XForwardedFor = _httpRequest.GetHeader(LogMeta._forwardedHeader, httpRequest),
+                CFConnectingIP = _httpRequest.GetHeader(LogMeta._cfConnectingIPHeader, httpRequest),
+                CFRAY = _httpRequest.GetHeader(LogMeta._cfRay, httpRequest),
             };
 
         }
