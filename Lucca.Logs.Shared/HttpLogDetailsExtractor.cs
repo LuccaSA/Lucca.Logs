@@ -28,7 +28,7 @@
                 Verb = httpRequest.GetMethod(),
                 Uri = httpRequest.ExtractUrl(Uriparts.Path),
                 ServerName = httpRequest.ExtractUrl(Uriparts.Host),
-                HostAddress = httpRequest.HostAddress(),
+                HostAddress = httpRequest.HostAddress()?.ToString(),
                 UserAgent = httpRequest.GetHeader(UserAgent),
                 CorrelationId = httpRequest.GetHeader(LogMeta._correlationId),
                 XForwardedFor = httpRequest.GetHeader(LogMeta._forwardedHeader),

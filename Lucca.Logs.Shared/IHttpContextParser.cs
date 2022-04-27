@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 
 namespace Lucca.Logs.Shared
 {
@@ -15,6 +16,6 @@ namespace Lucca.Logs.Shared
         string? GetHeader(string header);
         string? TryGetBodyContent();
         string GetMethod();
-        string? HostAddress();
+        IPAddress? HostAddress();
     }
 }
