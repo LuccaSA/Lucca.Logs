@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NLog;
@@ -65,26 +64,6 @@ namespace Lucca.Logs.Shared
         public void Dispose()
         {
             _changeListener?.Dispose();
-        }
-    }
-
-    internal static class CleanExtension
-    {
-        private static readonly Regex _passwordClean = new("(?<=[?&]" + Regex.Escape("password") + "=)[^&]*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-        public static string? ClearQueryStringPassword(this string? source)
-        {
-            if (source is null)
-            {
-                return null;
-            }
-
-            if (source.IndexOf("password", StringComparison.OrdinalIgnoreCase) > -1)
-            {
-               return  _passwordClean.Replace(source, "***");
-            }
-
-            return source;
         }
     }
 }
