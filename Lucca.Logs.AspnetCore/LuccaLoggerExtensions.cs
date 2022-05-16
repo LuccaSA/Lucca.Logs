@@ -110,6 +110,27 @@ namespace Lucca.Logs.AspnetCore
                     o.DefaultStore = errorStore;
                 });
 #endif
+
+                Exceptional.Configure(exceptionalSetting =>
+                {
+                    exceptionalSetting.DefaultStore = errorStore;
+
+                    exceptionalSetting.LogFilters.Cookie["password"] = "***";
+                    exceptionalSetting.LogFilters.Header["password"] = "***";
+                    exceptionalSetting.LogFilters.Form["password"] = "***";
+                    exceptionalSetting.LogFilters.Header["password"] = "***";
+                    exceptionalSetting.LogFilters.QueryString["password"] = "***";
+
+                    exceptionalSetting.OnBeforeLog += (o, eb) =>
+                    {
+                        string? querystring = eb?.Error?.ServerVariables?.Get("QUERY_STRING");
+                        if (querystring is not null)
+                        {
+                            eb!.Error.ServerVariables.Set("QUERY_STRING", querystring.ClearQueryStringPassword());
+                        }
+                    };
+                });
+
             }
             services.PostConfigure<LuccaLoggerOptions>(o =>
             {

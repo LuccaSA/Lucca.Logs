@@ -32,25 +32,6 @@ namespace Lucca.Logs.Shared
         {
             LogManager.Configuration = options.Nlog;
 
-            _exceptionalWrapper.Configure(exceptionalSetting =>
-            {
-                exceptionalSetting.DefaultStore = options.GenerateExceptionalStore();
-
-                exceptionalSetting.LogFilters.Cookie["password"] = "***";
-                exceptionalSetting.LogFilters.Header["password"] = "***";
-                exceptionalSetting.LogFilters.Form["password"] = "***";
-                exceptionalSetting.LogFilters.Header["password"] = "***";
-                exceptionalSetting.LogFilters.QueryString["password"] = "***";
-
-                exceptionalSetting.OnBeforeLog += (o, eb) =>
-                {
-                    string? querystring = eb?.Error?.ServerVariables?.Get("QUERY_STRING");
-                    if (querystring is not null)
-                    {
-                        eb!.Error.ServerVariables.Set("QUERY_STRING", querystring.ClearQueryStringPassword());
-                    }
-                };
-            });
         }
 
         
