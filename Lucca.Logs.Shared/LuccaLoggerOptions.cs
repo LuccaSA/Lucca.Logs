@@ -1,11 +1,7 @@
-using System;
-using System.Text;
 using CloudNative.CloudEvents;
-using NLog;
-using NLog.Config;
-using NLog.Targets;
 using StackExchange.Exceptional;
 using StackExchange.Exceptional.Stores;
+using System;
 
 namespace Lucca.Logs.Shared
 {
@@ -65,13 +61,6 @@ namespace Lucca.Logs.Shared
 
         internal Func<CloudEvent>? CloudEventAccessor { get; set; }
 
-        private LoggingConfiguration? _nlog;
-        public LoggingConfiguration Nlog
-        {
-            get => _nlog ??= GenerateLuccaDefaultConfig();
-            set => _nlog = value;
-        }
-
         internal ErrorStore? ExplicitErrorStore { get; set; }
 
         public ErrorStore GenerateExceptionalStore()
@@ -87,33 +76,6 @@ namespace Lucca.Logs.Shared
             }
 
             return new MemoryErrorStore(new ErrorStoreSettings { ApplicationName = ApplicationName! });
-        }
-
-        private LoggingConfiguration GenerateLuccaDefaultConfig()
-        {
-            var nLogConfig = new LoggingConfiguration();
-
-            // FileTarget : to save exceptions locally
-            var fileTarget = new FileTarget("localTarget")
-            {
-                FileName = LogFilePath ?? "${basedir}/logs/logfile.txt",
-                Encoding = Encoding.UTF8,
-                ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveFileKind = FilePathKind.Relative,
-                ArchiveNumbering = ArchiveNumberingMode.DateAndSequence,
-                EnableArchiveFileCompression = true,
-                ArchiveOldFileOnStartup = true,
-                LineEnding = LineEndingMode.CRLF,
-                ArchiveAboveSize = 1048576,
-                MaxArchiveFiles = 100,
-                Layout = LogMeta.LuccaJsonLayout
-            };
-
-            // 1Mb file size
-            var fileRule = new LoggingRule("*", LogLevel.Trace, fileTarget);
-            nLogConfig.LoggingRules.Add(fileRule);
-
-            return nLogConfig;
         }
     }
 }

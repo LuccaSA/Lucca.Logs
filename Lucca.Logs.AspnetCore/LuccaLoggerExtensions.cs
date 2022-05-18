@@ -6,6 +6,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using StackExchange.Exceptional;
+using Serilog.Core;
+using Microsoft.Extensions.Options;
+using Serilog;
 #if NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Http;
 #else
@@ -94,16 +97,29 @@ namespace Lucca.Logs.AspnetCore
                     configureOptions(o);
                 });
             }
-
+#if NET6_0_OR_GREATER
             if (errorStore is not null)
             {
-#if NET6_0_OR_GREATER
                 services.AddExceptional(o =>
                 {
                     o.Store.Type = errorStore.GetType().ToString();
                     o.DefaultStore = errorStore;
                 });
-#else
+            }
+#endif
+
+            services.PostConfigure<LuccaLoggerOptions>(o =>
+            {
+                if (string.IsNullOrWhiteSpace(o.ApplicationName))
+                {
+                    o.ApplicationName = appName;
+                }
+
+#if !NET6_0_OR_GREATER
+                if (errorStore is null)
+                {
+                    errorStore = o.GenerateExceptionalStore();
+                }
                 Exceptional.Configure(o =>
                 {
                     o.Store.Type = errorStore.GetType().ToString();
@@ -131,33 +147,34 @@ namespace Lucca.Logs.AspnetCore
                     };
                 });
 
-            }
-            services.PostConfigure<LuccaLoggerOptions>(o =>
-            {
-                if (string.IsNullOrWhiteSpace(o.ApplicationName))
-                {
-                    o.ApplicationName = appName;
-                }
             });
+
             services.RegisterLuccaLogsProvider();
             return services;
         }
 
         private static void RegisterLuccaLogsProvider(this IServiceCollection services)
         {
+            services.AddSingleton<LogExtractor>();
+            services.AddSingleton<EnvironmentDetailsExtractor>();
+
             services.AddSingleton<ILogDetailsExtractor, HttpLogDetailsExtractor>();
+            services.AddSingleton<ILogEventEnricher, LuccaLoggerEnricher>();
 
 #if NET6_0_OR_GREATER
             services.TryAddSingleton<IExceptionQualifier, GenericExceptionQualifier>();
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddSingleton<IHttpContextParser, HttpContextParserCore>();
-            services.AddSingleton<ILoggerProvider, LuccaLogsProvider>();
             services.AddSingleton<IExceptionalWrapper, ExceptionalWrapperCore>();
 #else
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessorLegacy>();
             services.TryAddSingleton<IHttpContextParser, HttpContextParserLegacy>();
-            services.AddSingleton<ILoggerProvider, LuccaLogsProvider>();
             services.AddSingleton<IExceptionalWrapper, ExceptionalWrapperLegacy>();
+
+            services.AddSingleton(sp =>
+            {
+                return LuccaLogsLegacyRegistering.BuildLogger(sp);
+            });
 #endif
         }
     }

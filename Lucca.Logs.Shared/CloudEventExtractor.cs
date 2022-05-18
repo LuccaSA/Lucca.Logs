@@ -8,6 +8,7 @@ namespace Lucca.Logs.Shared
     {
         private const string Event = "Event";
         private readonly IOptions<LuccaLoggerOptions> _options;
+
         public CloudEventExtractor(IOptions<LuccaLoggerOptions> options)
         {
             _options = options;

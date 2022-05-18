@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using System;
 
 namespace Lucca.Logs.Shared
@@ -5,9 +6,9 @@ namespace Lucca.Logs.Shared
     public class EnvironmentDetailsExtractor
     {
         private readonly LuccaLoggerOptions _options;
-        public EnvironmentDetailsExtractor(LuccaLoggerOptions options)
+        public EnvironmentDetailsExtractor(IOptions<LuccaLoggerOptions> options)
         {
-            _options = options;
+            _options = options.Value;
         }
 
         public string AppName => _options.ApplicationName!;

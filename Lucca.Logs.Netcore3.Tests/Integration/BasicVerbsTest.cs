@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Lucca.Logs.AspnetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,10 @@ namespace Lucca.Logs.Netcore.Tests.Integration
         private readonly IHostBuilder _hostBuilder;
         public BasicVerbsTest()
         {
+            LuccaLoggerAspnetCoreExtensions.InitLuccaLogs();
+
             _hostBuilder = new HostBuilder()
+                .UseLuccaLogs()
                 .ConfigureWebHost(webHost =>
                 {
                     // Add TestServer
