@@ -1,4 +1,4 @@
-﻿using NLog.Layouts;
+using NLog.Layouts;
 
 namespace Lucca.Logs.Shared
 {

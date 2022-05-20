@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using CloudNative.CloudEvents;
 using NLog;

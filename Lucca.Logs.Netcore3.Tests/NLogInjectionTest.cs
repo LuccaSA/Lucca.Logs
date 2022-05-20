@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Lucca.Logs.AspnetCore;
 using Lucca.Logs.Shared;

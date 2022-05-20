@@ -1,4 +1,4 @@
-﻿using CloudNative.CloudEvents;
+using CloudNative.CloudEvents;
 using CloudNative.CloudEvents.Extensions;
 using Microsoft.Extensions.Options;
 

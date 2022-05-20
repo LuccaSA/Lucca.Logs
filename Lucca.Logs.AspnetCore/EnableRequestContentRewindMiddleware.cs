@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 #if NETCOREAPP2_1
 using Microsoft.AspNetCore.Http.Internal;

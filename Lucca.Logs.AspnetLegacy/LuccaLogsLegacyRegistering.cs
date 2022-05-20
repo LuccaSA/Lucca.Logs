@@ -1,4 +1,4 @@
-﻿using System.Web.Http.Controllers;
+using System.Web.Http.Controllers;
 using System.Web.Http.ExceptionHandling;
 
 namespace Lucca.Logs.AspnetLegacy

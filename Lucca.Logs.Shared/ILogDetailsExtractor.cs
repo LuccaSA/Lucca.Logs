@@ -1,4 +1,4 @@
-﻿namespace Lucca.Logs.Shared
+namespace Lucca.Logs.Shared
 {
     public interface ILogDetailsExtractor
     {

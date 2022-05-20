@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CloudNative.CloudEvents;
 using Lucca.Logs.Shared;
 using Microsoft.Extensions.Configuration;

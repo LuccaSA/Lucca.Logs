@@ -1,4 +1,4 @@
-﻿using Lucca.Logs.Shared;
+using Lucca.Logs.Shared;
 using Microsoft.Extensions.Options;
 
 namespace Lucca.Logs.Netcore.Tests

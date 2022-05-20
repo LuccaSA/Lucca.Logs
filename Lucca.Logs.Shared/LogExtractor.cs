@@ -1,4 +1,4 @@
-﻿using Datadog.Trace;
+using Datadog.Trace;
 using System.Collections.Generic;
 using System.Linq;
 

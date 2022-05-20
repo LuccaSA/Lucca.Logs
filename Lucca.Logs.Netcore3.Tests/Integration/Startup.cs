@@ -1,4 +1,4 @@
-﻿using Lucca.Logs.AspnetCore;
+using Lucca.Logs.AspnetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

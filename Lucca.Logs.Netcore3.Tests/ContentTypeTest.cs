@@ -1,4 +1,4 @@
-﻿using Lucca.Logs.AspnetCore;
+using Lucca.Logs.AspnetCore;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 

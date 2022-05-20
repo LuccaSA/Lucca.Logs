@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using StackExchange.Exceptional.Internal;
 
 namespace Lucca.Logs.Shared
