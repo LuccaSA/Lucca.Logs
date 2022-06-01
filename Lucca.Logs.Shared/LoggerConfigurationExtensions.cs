@@ -10,18 +10,15 @@ namespace Lucca.Logs.Shared
         {
             return loggerConfiguration
                     .Enrich.FromLogContext()
-                    .WriteTo.Async(sinkConfiguration =>
-                    {
-                        sinkConfiguration.File(
+                    .WriteTo.File(
                            new RenderedCompactJsonFormatter(),
                            logPath,
                            rollingInterval: RollingInterval.Day,
                            retainedFileCountLimit: 31,
                            rollOnFileSizeLimit: true,
                            flushToDiskInterval: TimeSpan.FromSeconds(1)
-                       );
-                        sinkConfiguration.Console();
-                    });
+                   )
+                   .WriteTo.Console();
         }
 
 
