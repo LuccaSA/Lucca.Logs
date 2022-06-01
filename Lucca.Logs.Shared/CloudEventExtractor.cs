@@ -1,4 +1,4 @@
-﻿using CloudNative.CloudEvents;
+using CloudNative.CloudEvents;
 using CloudNative.CloudEvents.Extensions;
 using Microsoft.Extensions.Options;
 
@@ -8,6 +8,7 @@ namespace Lucca.Logs.Shared
     {
         private const string Event = "Event";
         private readonly IOptions<LuccaLoggerOptions> _options;
+
         public CloudEventExtractor(IOptions<LuccaLoggerOptions> options)
         {
             _options = options;

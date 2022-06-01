@@ -1,5 +1,3 @@
-﻿using NLog.Layouts;
-
 namespace Lucca.Logs.Shared
 {
     internal static class LogMeta
@@ -68,25 +66,5 @@ namespace Lucca.Logs.Shared
             _traceIdKey,
             _spanIdKey
         };
-
-        public static JsonLayout LuccaJsonLayout { get; } = GenerateJsonLayout();
-
-        private static JsonLayout GenerateJsonLayout()
-        {
-            var jsonLayout = new JsonLayout();
-            jsonLayout.Attributes.Add(new JsonAttribute("date", "${longdate}"));
-            jsonLayout.Attributes.Add(new JsonAttribute("level", "${level:upperCase=true}"));
-            jsonLayout.Attributes.Add(new JsonAttribute("message", "${message}"));
-            jsonLayout.Attributes.Add(new JsonAttribute("hostname", "${machinename}"));
-            jsonLayout.Attributes.Add(new JsonAttribute("exception", "${exception:format=ShortType,Message,Method,Data}"));
-            jsonLayout.Attributes.Add(new JsonAttribute(Link, "${event-properties:item=" + Link + "}"));
-
-            foreach (string key in Keys)
-            {
-                jsonLayout.Attributes.Add(new JsonAttribute(key, "${event-properties:item=" + key + "}"));
-            }
-            jsonLayout.Attributes.Add(new JsonAttribute(_exceptionDetails, "${event-properties:item=" + _exceptionDetails + "}") { Encode = false });
-            return jsonLayout;
-        }
     }
 }

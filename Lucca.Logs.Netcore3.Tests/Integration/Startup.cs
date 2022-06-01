@@ -1,8 +1,10 @@
-﻿using Lucca.Logs.AspnetCore;
+using Lucca.Logs.AspnetCore;
+using Lucca.Logs.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using StackExchange.Exceptional;
 using StackExchange.Exceptional.Stores;
 
@@ -27,13 +29,7 @@ namespace Lucca.Logs.Netcore.Tests.Integration
 
             services.AddSingleton(_memoryErrorStore);
 
-            services.AddLogging(l =>
-            {
-                l.AddLuccaLogs(o =>
-                {
-
-                }, "IntegrationTest", _memoryErrorStore);
-            });
+            services.AddLuccaLogs(o => {}, "IntegrationTest", _memoryErrorStore);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

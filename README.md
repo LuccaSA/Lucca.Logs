@@ -1,8 +1,8 @@
 # Lucca.Logs
 
-Gestion des logs pour les app et webservices lucca. La lib est adossée à Microsoft.Extensions.Logging et permet via un `ILogger<T>` d'envoyer les logs à la fois vers logmatic et OpServer.
+Gestion des logs pour les app et webservices lucca. La lib est adossée à Microsoft.Extensions.Logging et permet via un `ILogger<T>` d'envoyer les logs à la fois vers un fichier (ingéré par Datadog) et OpServer.
 
-Le contenu à destination de Logmatic passe par un logger NLog, et une structure de fichier spécifique à nos besoins sur logmatic.
+Le contenu à destination de Datadog passe par un logger serilog qui écrit dans un fichier en json.
 
 Le contenu à destination de OpServer passer par un logger StackExchange.Exceptional.
 
@@ -14,24 +14,21 @@ Plus d'infos ici : [Logging in ASP.NET Core](https://docs.microsoft.com/en-us/as
 
 ## Setup net6.0
 
-Dans la méthode `ConfigureServices` du startup.cs, ajoutez le registering suivant après `services.AddMvc();`
+Dans votre Program.cs, initiliser le logger de la manière suivante : 
 
 ```csharp
-services.AddLogging(l =>
-{
-    l.AddLuccaLogs(Configuration.GetSection("LuccaLogs"), {appName});
-});
-services.AddSingleton<IExceptionQualifier, GenericExceptionQualifier>(); 
-```
+LuccaLoggerAspnetCoreExtensions.InitLuccaLogs();
 
-- `AddLuccaLogs` permet de register l'ensemble des classes nécessaires à Lucca.Logs
-- En paramètre, on prends la section du fichier de configuration nécessaire.
-- Vous pouvez utiliser une implémentation perso d'un `IExceptionQualifier` au lieu de `GenericExceptionQualifier` permettant de piloter le comportement du logger selon les exceptions
+var builder = WebApplication.CreateBuilder(args);
 
-Dans la méthode `Configure`, ajoutez ceci avant `app.UseEndpoints();` (Attention à l'ordre)
+builder.Host.UseLuccaLogs();
+builder.Services.AddLuccaLogs(builder.Configuration.GetSection("LuccaLogs"), "MyApp");
+builder.Services.AddSingleton<IExceptionQualifier, GenericExceptionQualifier>(); 
 
-```csharp
-if (env.IsDevelopment())
+ 
+...
+var app = builder.Build();
+if (builder.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
@@ -39,12 +36,19 @@ else
 {
     app.UseLuccaLogs(new LuccaExceptionHandlerOption());
 }
+
 ```
+
+- `builder.host.UseLuccaLogs()` init le logger serilog.
+- `builder.Services.AddLuccaLogs` permet de register l'ensemble des classes nécessaires à Lucca.Logs
+- En paramètre, on prends la section du fichier de configuration nécessaire.
+- Vous pouvez utiliser une implémentation perso d'un `IExceptionQualifier` au lieu de `GenericExceptionQualifier` permettant de piloter le comportement du logger selon les exceptions
 
 - `app.UseDeveloperExceptionPage();` permet de bénéficier en dev local d'informations détaillées sur les exceptions lorsqu'elles se produisent
 - `app.UseLuccaLogs();` permet d'enregister le middleware permettant d'intercepter les exceptions, et de produire une erreur de sortie correspondante aux settings
   - `LuccaExceptionHandlerOption` permet de customiser la generation du message d'erreur
   - 3 handlers pour textplain / html et json sont disponibles
+
 
 ## Setup MVC5 / net461
 
@@ -53,20 +57,21 @@ En MVC5, la librairie utilise actuellement en interne la DI de `Microsoft.Extens
 Dans le Global.asax.cs, ajouter le register suivant :
 
 ```csharp
-GlobalConfiguration.Configuration.Services.AddLuccaLogs();
-Logger.DefaultFactory = LoggerBuilder.CreateLuccaLogsFactory(builder =>
+lobalConfiguration.Configuration.Services.AddLuccaLogs();
+GlobalConfiguration.Configuration.Services.Replace(typeof(System.Web.Http.ExceptionHandling.IExceptionHandler), new CCExceptionHandler());
+
+var serviceCollection = new ServiceCollection();
+serviceCollection.AddSingleton<IExceptionQualifier, ExceptionQualifier>();
+serviceCollection.AddLuccaLogs(luccaLogsOptions =>
 {
-    builder.Services.AddSingleton<IExceptionQualifier, LuccaExceptionQualifier>();
-    builder.AddLuccaLogs(luccaLogsOptions =>
-    {
-        luccaLogsOptions.ConnectionString = connectionString;
-        luccaLogsOptions.LogFilePath = logFile;
-    });
-});
+    luccaLogsOptions.ConnectionString = ConfigModelBase.Current.LuccaLogs.ConnectionString;
+    luccaLogsOptions.LogFilePath = ConfigModelBase.Current.LuccaLogs.LogFilePath;
+}, "CC Master");
+Serilog.Log.Logger = serviceCollection.BuildServiceProvider().GetRequiredService<Serilog.ILogger>();
 ```
 
 - `Services.AddLuccaLogs()` permet de register la lib sur les hooks de MVC5
-- `Logger.DefaultFactory = ...` permet de customiser les types registered, et d'ajouter vos propres implémentations
+- `ServiceCollection.AddLuccaLogs(...` permet d'initialiser le logger
 
 ## Utilisation net461
 
