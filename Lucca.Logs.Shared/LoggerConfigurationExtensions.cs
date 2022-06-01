@@ -1,5 +1,5 @@
 using Serilog;
-using Serilog.Formatting.Compact;
+using Serilog.Formatting.Json;
 using System;
 
 namespace Lucca.Logs.Shared
@@ -11,7 +11,7 @@ namespace Lucca.Logs.Shared
             return loggerConfiguration
                     .Enrich.FromLogContext()
                     .WriteTo.File(
-                           new RenderedCompactJsonFormatter(),
+                           new JsonFormatter(renderMessage: true),
                            logPath,
                            rollingInterval: RollingInterval.Day,
                            retainedFileCountLimit: 31,
