@@ -11,7 +11,7 @@ namespace Lucca.Logs.Shared
             return loggerConfiguration
                     .Enrich.FromLogContext()
                     .WriteTo.File(
-                           new RenderedCompactJsonFormatter(),
+                           new LuccaJsonFormatter(),
                            logPath,
                            rollingInterval: RollingInterval.Day,
                            retainedFileCountLimit: 31,
