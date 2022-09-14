@@ -9,6 +9,7 @@ using StackExchange.Exceptional;
 using Serilog.Core;
 using Microsoft.Extensions.Options;
 using Serilog;
+using System.Text.RegularExpressions;
 #if NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Http;
 #else
@@ -50,6 +51,7 @@ namespace Lucca.Logs.AspnetCore
             {
                 var luccaLogsOption = config.Get<LuccaLoggerOptions>();
                 e.DefaultStore = luccaLogsOption.GenerateExceptionalStore();
+                e.DataIncludeRegex = new Regex("Lucca.*", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
             });
 #endif
             if (configureOptions is not null)
