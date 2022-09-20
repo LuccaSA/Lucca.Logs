@@ -102,3 +102,9 @@ Pour celà, il faut modifier le fichier `appSettings.json` du projet concerné a
 ```
 
 > Demandez le mot de passe à l'équipe plateforme.
+
+## Enrichir vos logs sur OpServer
+
+Compléter le dictionnaire `Data` de vos `Exception` en préfixant les clés avec `Lucca.`
+
+Vous retrouverez vos données custom dans la section `Custom` d'une exception sur OpServer.
