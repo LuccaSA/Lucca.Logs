@@ -2,7 +2,17 @@
 
 Gestion des logs pour les app et webservices lucca. La lib est adossée à Microsoft.Extensions.Logging et permet via un `ILogger<T>` d'envoyer les logs à la fois vers un fichier (ingéré par Datadog) et OpServer.
 
-Le contenu à destination de Datadog passe par un logger serilog qui écrit dans un fichier en json.
+Le contenu à destination de Datadog passe par un logger serilog qui écrit dans un fichier en json. Vous pouvez configurer la quantité de logs générés en modifiant votre fichier `appSettings.json` : 
+
+```json
+{
+    "Serilog": {
+        "MinimumLevel": {
+            "Default": "Warning"
+        }
+    }
+}
+```
 
 Le contenu à destination de OpServer passer par un logger StackExchange.Exceptional.
 
