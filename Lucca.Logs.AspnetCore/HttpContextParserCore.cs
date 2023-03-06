@@ -1,11 +1,12 @@
+using Lucca.Logs.Shared;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
+using StackExchange.Exceptional;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using Lucca.Logs.Shared;
-using Microsoft.AspNetCore.Http;
-using StackExchange.Exceptional;
 using System.Net;
+using System.Text;
 
 namespace Lucca.Logs.AspnetCore
 {
@@ -25,12 +26,20 @@ namespace Lucca.Logs.AspnetCore
                 return null;
             }
 
-            Error GetError()
+            Error? GetError()
             {
                 var ctx = _httpContextAccessor?.HttpContext;
                 if (ctx is not null)
                 {
-                    return exception.Log(ctx, categoryName, false, customData, appName);
+                    try
+                    {
+                        return exception.Log(ctx, categoryName, false, customData, appName);
+                    }
+                    catch (ConnectionAbortedException a) when (a.InnerException is InvalidOperationException)
+                    {
+                        // The connection was aborted by the application. --> Reading is already in progress.
+                        // we can't use the httpContext
+                    }
                 }
                 return exception.LogNoContext(categoryName, false, customData, appName);
             }
