@@ -10,6 +10,8 @@ using Serilog.Core;
 using Microsoft.Extensions.Options;
 using Serilog;
 using System.Text.RegularExpressions;
+using System.Collections.Specialized;
+using System.Net;
 #if NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Http;
 #else
@@ -98,7 +100,7 @@ namespace Lucca.Logs.AspnetCore
             }
 #endif
 
-            services.PostConfigure<LuccaLoggerOptions>(o =>
+            services.PostConfigure((Action<LuccaLoggerOptions>)(o =>
             {
                 if (string.IsNullOrWhiteSpace(o.ApplicationName))
                 {
@@ -134,13 +136,54 @@ namespace Lucca.Logs.AspnetCore
                         {
                             eb!.Error.ServerVariables.Set("QUERY_STRING", querystring.ClearQueryStringPassword());
                         }
+                        
+                        ClearGuids(eb?.Error?.Cookies);
+
+                        ClearGuids(eb?.Error?.RequestHeaders);
                     };
                 });
 
-            });
+            }));
 
             services.RegisterLuccaLogsProvider();
             return services;
+        }
+
+        private static void ClearGuids(NameValueCollection? nc)
+        {
+            if (nc is null)
+            {
+                return;
+            }
+            foreach (string key in nc)
+            {
+                nc[key] = RedactContent(nc[key]);
+            }
+        }
+
+        private static Regex _guidRegex = new Regex(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", RegexOptions.Compiled);
+
+        private static string? RedactContent(string? value)
+        {
+            if (value is null)
+            {
+                return null;
+            }
+            var matches = _guidRegex.Matches(value);
+            foreach (Match match in matches)
+            {
+                var guid = match.Value;
+                var redactedGuid = RedactGuid(guid);
+                value = value.Replace(guid, redactedGuid);
+            }
+            return value;
+        }
+
+        private static string RedactGuid(string guid)
+        {
+            var guidParts = guid.Split('-');
+            var redactedGuid = $"{guidParts[0]}-{guidParts[1]}-xxxx-xxxx-xxxxxxxxxxxx";
+            return redactedGuid;
         }
 
         private static void RegisterLuccaLogsProvider(this IServiceCollection services)
