@@ -6,7 +6,7 @@ root = true
 # Use tabs for indentation. (because)
 [*]
 indent_style = tab
-end_of_line = crlf
+end_of_line = lf
 # (Please don't specify an indent_size here; that has too many unintended consequences.)
 
 # Code files

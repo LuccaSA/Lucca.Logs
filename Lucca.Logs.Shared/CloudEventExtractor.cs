@@ -16,7 +16,7 @@ namespace Lucca.Logs.Shared
 
         public LogDetail CreateLogDetail()
         {
-            CloudEvent? cloudEvent = _options.Value.CloudEventAccessor();
+            CloudEvent? cloudEvent = _options.Value.CloudEventAccessor?.Invoke();
             if (cloudEvent is null)
             {
                 return LogDetail.NoExtraction;
