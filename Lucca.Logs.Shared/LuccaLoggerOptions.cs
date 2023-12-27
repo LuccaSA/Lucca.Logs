@@ -59,7 +59,7 @@ namespace Lucca.Logs.Shared
         ///     <c>default(EventId)</c></remarks>
         public bool IgnoreEmptyEventId { get; set; }
 
-        internal Func<CloudEvent?> CloudEventAccessor { get; set; }
+        internal Func<CloudEvent?>? CloudEventAccessor { get; set; }
 
         internal ErrorStore? ExplicitErrorStore { get; set; }
 

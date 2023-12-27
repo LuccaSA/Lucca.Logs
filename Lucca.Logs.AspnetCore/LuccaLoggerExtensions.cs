@@ -52,7 +52,10 @@ namespace Lucca.Logs.AspnetCore
             services.AddExceptional(e =>
             {
                 var luccaLogsOption = config.Get<LuccaLoggerOptions>();
-                e.DefaultStore = luccaLogsOption.GenerateExceptionalStore();
+                if (luccaLogsOption is not null)
+                {
+                    e.DefaultStore = luccaLogsOption.GenerateExceptionalStore();
+                }
                 e.DataIncludeRegex = new Regex("Lucca.*", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
             });
 #endif
